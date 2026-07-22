@@ -77,6 +77,7 @@ JavaScript never needed this — it runs in the browser engine itself, always.
 Everything is in `index.html`. Two things worth editing:
 
 - **`BANK`** — the exercises. Each entry is `{c: concept, t: title, b: brief, o: exact expected output, h: [three hints]}`. Set `o` to `null` if there's no exact output to check.
+- **`LESSONS`** — the syntax lesson behind each concept, shown by the **Teach me this** button. Each entry is `{i: intro paragraph, s: [[code, what it does], …], w: [common mistakes]}`. Every concept in `LADDER` should have one.
 - **`LADDER`** — the concept order per language. The app always serves you the first concept you haven't cleared.
 
 To update the live app, commit the changed file to `main` (Option A redeploys it
