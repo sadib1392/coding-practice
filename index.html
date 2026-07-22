@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>Practice Log</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Practice">
+<meta name="theme-color" content="#FBFAF8">
+<style>
+  html{color-scheme:light only;}
+  :root{
+    color-scheme:light only;
+    --paper:#FBFAF8; --card:#FFFFFF; --deep:#F4F5F2; --ink:#2E3330; --soft:#7C857F;
+    --rule:#E1E4DF; --gold:#9C6A08; --sig:#B03428; --teal:#137565;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh; color:var(--ink); background:var(--paper);
+    font-family:var(--sans);
+    padding:calc(26px + env(safe-area-inset-top)) 18px calc(60px + env(safe-area-inset-bottom));
+    -webkit-text-size-adjust:100%;
+  }
+  #app{max-width:660px;margin:0 auto}
+  h1{font-size:18px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;margin:0}
+  h2{font-size:20px;font-weight:500;letter-spacing:-.01em;margin:8px 0 12px;line-height:1.3}
+  header{border-bottom:1px solid var(--rule);padding-bottom:16px;margin-bottom:22px;
+    display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px}
+  .meta{font-size:12px;color:var(--soft);letter-spacing:.04em}
+  nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:10px;
+    padding:20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(20,25,22,.04)}
+  .card.thick{border-width:2px}
+  .lab{font-size:11px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--soft);display:block}
+  .brief{font-family:var(--serif);font-size:17px;line-height:1.65;margin:0;white-space:pre-wrap}
+  pre{font-family:var(--mono);font-size:14px;background:var(--deep);border:1px solid var(--rule);
+    border-radius:6px;padding:12px;margin:8px 0 0;white-space:pre-wrap;line-height:1.55;overflow-x:auto}
+  button{font-family:var(--sans);cursor:pointer}
+  .tab{font-size:12px;font-weight:500;letter-spacing:.05em;background:transparent;color:var(--soft);
+    border:1px solid var(--rule);border-radius:6px;padding:7px 12px}
+  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .primary{font-size:15px;font-weight:500;letter-spacing:.02em;background:var(--ink);
+    color:#fff;border:none;border-radius:8px;padding:14px 18px;width:100%;margin-top:14px}
+  .primary:disabled{opacity:.4}
+  .ghost{font-size:13px;font-weight:400;background:transparent;color:var(--ink);
+    border:1px solid var(--rule);border-radius:6px;padding:9px 14px}
+  textarea{width:100%;min-height:210px;margin-top:16px;padding:14px;font-family:var(--mono);
+    font-size:15px;line-height:1.6;color:var(--ink);background:var(--deep);
+    border:1px solid var(--rule);border-radius:8px;resize:vertical}
+  .bar{height:8px;background:var(--deep);border-radius:4px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:var(--gold);transition:width 1s linear}
+  .clock{font-family:var(--mono);font-size:28px;font-weight:400;letter-spacing:-.02em}
+  .hint{font-family:var(--serif);font-size:16px;line-height:1.6;color:var(--soft);
+    border-left:3px solid var(--gold);padding-left:12px;margin-bottom:10px}
+  .hint b{font-family:var(--sans);font-size:11px;letter-spacing:.1em;color:var(--gold)}
+  .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .pips{display:flex;gap:3px;margin:6px 0 8px}
+  .pips i{flex:1;height:5px;border-radius:3px;background:var(--deep)}
+  .note{font-family:var(--serif);font-size:15.5px;line-height:1.6;margin:0;color:var(--soft)}
+  .verdict{font-family:var(--serif);font-size:16.5px;line-height:1.65;margin-top:18px;
+    padding-top:14px;border-top:1px solid var(--rule)}
+  .lad{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule);
+    font-size:14.5px}
+  .banner{border-color:var(--sig);color:var(--sig);font-size:14px;line-height:1.6}
+  footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--rule);
+    font-size:12.5px;color:var(--soft);line-height:1.65}
+  .teal{color:var(--teal)} .sig{color:var(--sig)} .gold{color:var(--gold)}
+
+  /* Re-assert the light palette if the container or OS forces dark mode */
+  @media (prefers-color-scheme:dark){
+    html,body{color-scheme:light only;background:#FBFAF8 !important;color:#2E3330 !important}
+    .card{background:#FFFFFF !important;color:#2E3330 !important}
+    pre,textarea{background:#F4F5F2 !important;color:#2E3330 !important}
+    .primary{background:#2E3330 !important;color:#FFFFFF !important}
+    .tab.on{background:#2E3330 !important;color:#FFFFFF !important}
+    .tab,.ghost{background:transparent !important}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============ data ============ */
+const LANGS = {
+  python:{label:"Python",tag:"PY",star:true,runs:"pyodide"},
+  javascript:{label:"JavaScript",tag:"JS",runs:"native"},
+  r:{label:"R",tag:"R",runs:false},
+  mermaid:{label:"Mermaid",tag:"MMD",runs:false},
+};
+const LADDER = {
+  python:["variables & types","strings","conditionals","loops","lists","dicts","functions",
+    "list comprehensions","file I/O","error handling","classes","iterators & generators"],
+  javascript:["let/const & types","template literals","arrays","objects","functions & arrow fns",
+    "map/filter/reduce","destructuring","promises","async/await","closures"],
+  r:["vectors","data types","data frames","indexing","apply family","functions"],
+  mermaid:["flowchart syntax","node shapes","edge types","sequence diagrams","state diagrams"],
+};
+const BANK = {
+python:[
+ {c:"variables & types",t:"Receipt total",b:"Three prices: 4.99, 12.50, 3.25. Store them, add them, print the total to two decimals with a dollar sign in front.",o:"$20.74",h:["What type does arithmetic need, and what does the dollar sign need?","f-strings format inside the braces: f\"{v:.2f}\"","total = a + b + c, then print(f\"${total:.2f}\")"]},
+ {c:"variables & types",t:"Seconds to clock",b:"Given secs = 3725, print it as H:MM:SS.",o:"1:02:05",h:["Integer division and modulo split a number into parts.","3725 // 3600 gives hours; what's left over gives the rest.","Use // and %, then f\"{h}:{m:02d}:{s:02d}\""]},
+ {c:"strings",t:"Initials",b:"Given full_name = 'ada lovelace', print the initials in uppercase, separated and followed by periods.",o:"A.L.",h:["Splitting on a space gives a list of words.","word[0] is the first character; .upper() changes case.","parts = full_name.split(), then build from parts[0][0] and parts[1][0]"]},
+ {c:"strings",t:"Reverse the words",b:"Given s = 'code every single day', print the words in reverse order, space separated.",o:"day single every code",h:["Two steps: break apart, then reassemble.","A list can be reversed with [::-1]; ' '.join() puts it back.","' '.join(s.split()[::-1])"]},
+ {c:"conditionals",t:"Grade band",b:"Given score = 73, print 'A' for 90+, 'B' for 80-89, 'C' for 70-79, otherwise 'F'.",o:"C",h:["Order matters — which check must come first?","elif chains stop at the first true branch.","if score >= 90: ... elif score >= 80: ... elif score >= 70: ... else: ..."]},
+ {c:"conditionals",t:"Leap year",b:"Given year = 1900, print True if it is a leap year, otherwise False. Divisible by 4, except centuries, unless divisible by 400.",o:"False",h:["Three rules, and they override each other in order.","Divisible by 400 wins; divisible by 100 loses; divisible by 4 wins.","(y % 4 == 0 and y % 100 != 0) or y % 400 == 0"]},
+ {c:"loops",t:"Countdown",b:"Print 10 down to 1, each on its own line, then print Liftoff.",o:"10\n9\n8\n7\n6\n5\n4\n3\n2\n1\nLiftoff",h:["range() takes a third argument.","range(start, stop, step) — stop is exclusive, step can be negative.","for n in range(10, 0, -1): print(n)"]},
+ {c:"loops",t:"Multiples sum",b:"Print the sum of every number below 30 that is divisible by 3 or 5.",o:"195",h:["One pass, one running total.","The modulo operator tests divisibility.","total = 0; for n in range(30): if n % 3 == 0 or n % 5 == 0: total += n"]},
+ {c:"lists",t:"Second largest",b:"Given nums = [4, 17, 9, 17, 2], print the second largest DISTINCT value.",o:"9",h:["Duplicates are the trap.","A set removes duplicates; then sort what is left.","sorted(set(nums))[-2]"]},
+ {c:"lists",t:"Running total",b:"Given nums = [3, 1, 4, 1, 5], print a list of the running totals.",o:"[3, 4, 8, 9, 14]",h:["Each entry depends on the one before it.","Keep a total outside the loop and append after each addition.","total = 0; out = []; for n in nums: total += n; out.append(total)"]},
+ {c:"dicts",t:"Word count",b:"Given text = 'the cat the dog the bird', print a dict mapping each word to its number of occurrences.",o:"{'the': 3, 'cat': 1, 'dog': 1, 'bird': 1}",h:["The first sighting of a word needs different handling.","dict.get(key, 0) returns a default instead of raising.","counts[word] = counts.get(word, 0) + 1"]},
+ {c:"dicts",t:"Flip it",b:"Given ages = {'ana': 31, 'bo': 27}, print a dict with the values as keys and keys as values.",o:"{31: 'ana', 27: 'bo'}",h:["You need both halves of each pair at once.","dict.items() yields key/value tuples you can unpack.","{v: k for k, v in ages.items()}"]},
+ {c:"functions",t:"Celsius converter",b:"Write c_to_f(c) converting Celsius to Fahrenheit, then print the result for 37.",o:"98.6",h:["Formula: c * 9/5 + 32.","A function should return, not print, if the caller prints.","def c_to_f(c): return c * 9/5 + 32"]},
+ {c:"functions",t:"Prime check",b:"Write is_prime(n) returning True or False. Print is_prime(91).",o:"False",h:["You only need to test divisors up to a point.","Nothing above the square root can be a new factor.","for i in range(2, int(n ** 0.5) + 1): if n % i == 0: return False"]},
+ {c:"list comprehensions",t:"Squares of evens",b:"From nums = [1,2,3,4,5,6], print a list of the squares of only the even numbers. One line.",o:"[4, 16, 36]",h:["A comprehension can carry a condition at the end.","[expression for item in list if condition]","[n**2 for n in nums if n % 2 == 0]"]},
+ {c:"list comprehensions",t:"Flatten",b:"Given rows = [[1,2],[3,4],[5]], print a single flat list of all values. One line.",o:"[1, 2, 3, 4, 5]",h:["A comprehension can carry two for clauses.","The outer loop comes first, left to right.","[v for row in rows for v in row]"]},
+ {c:"file I/O",t:"Write then read",b:"Write the three lines red, green, blue to notes.txt, then read the file back and print the number of lines.",o:"3",h:["Two open() calls, or one with a mode change.","The with statement closes the file for you.","with open('notes.txt','w') as f: f.write('red\\ngreen\\nblue\\n') then read and use .splitlines()"]},
+ {c:"error handling",t:"Safe divide",b:"Write divide(a, b) returning a/b, but printing 'undefined' and returning None when b is zero. Call divide(10, 0), then print divide(10, 4).",o:"undefined\n2.5",h:["Which exception does dividing by zero raise?","try/except ZeroDivisionError catches exactly that.","try: return a / b — except ZeroDivisionError: print('undefined'); return None"]},
+ {c:"error handling",t:"Tolerant parse",b:"Given vals = ['3', 'x', '7'], print the sum of only the entries that convert to integers.",o:"10",h:["Failing to convert should not stop the loop.","int('x') raises ValueError — catch it and move on.","for v in vals: try: total += int(v) except ValueError: pass"]},
+ {c:"classes",t:"Counter class",b:"Write a class Tally with a method add() that increments an internal count, and a method total() that returns it. Add three times, then print the total.",o:"3",h:["State lives on the instance, not the class.","__init__ runs at creation; self holds the state.","def __init__(self): self.count = 0"]},
+ {c:"iterators & generators",t:"Even generator",b:"Write a generator evens(n) yielding the first n even numbers starting at 0. Print list(evens(5)).",o:"[0, 2, 4, 6, 8]",h:["A generator uses a different keyword than return.","yield hands back one value and pauses.","def evens(n): for i in range(n): yield i * 2"]},
+],
+javascript:[
+ {c:"let/const & types",t:"Swap without temp",b:"Given let a = 1, b = 2, swap them in a single line, then log both on one line.",o:"2 1",h:["Arrays can be taken apart on the left of an assignment.","Destructuring assignment works with array literals.","[a, b] = [b, a]"]},
+ {c:"let/const & types",t:"Coercion trap",b:"Log the result of comparing the string '5' to the number 5 with strict equality, then with loose equality, on separate lines.",o:"false\ntrue",h:["Two operators, two answers.","=== compares type as well as value.","console.log('5' === 5) then console.log('5' == 5)"]},
+ {c:"template literals",t:"Title case",b:"Given first = 'ada' and last = 'lovelace', log 'Ada Lovelace' using a template literal.",o:"Ada Lovelace",h:["Capitalize each piece before interpolating.","s[0].toUpperCase() + s.slice(1) capitalizes a word.","Write a cap() helper, then log `${cap(first)} ${cap(last)}`"]},
+ {c:"arrays",t:"Unique sorted",b:"Given nums = [5,3,5,1,3], log a sorted array of the unique values.",o:"[1,3,5]",h:["A Set drops duplicates but is not an array.","[...new Set(arr)] spreads it back into an array.","[...new Set(nums)].sort((a,b) => a - b)"]},
+ {c:"arrays",t:"Chunk it",b:"Given nums = [1,2,3,4,5], log an array of pairs: [[1,2],[3,4],[5]].",o:"[[1,2],[3,4],[5]]",h:["Step through the array two at a time.","slice(i, i + 2) grabs a window.","for (let i = 0; i < nums.length; i += 2) out.push(nums.slice(i, i + 2))"]},
+ {c:"objects",t:"Count by key",b:"Given pets = [{type:'cat'},{type:'dog'},{type:'cat'}], log an object counting each type.",o:'{"cat":2,"dog":1}',h:["The first time you see a type needs a default.","(obj[k] || 0) + 1 handles the missing case.","pets.reduce((acc, p) => { acc[p.type] = (acc[p.type] || 0) + 1; return acc }, {})"]},
+ {c:"functions & arrow fns",t:"Multiplier factory",b:"Write make(n) returning a function that multiplies its argument by n. Log make(3)(7).",o:"21",h:["A function can return another function.","The inner function still sees n after make returns.","const make = n => x => x * n"]},
+ {c:"map/filter/reduce",t:"Total paid",b:"Given orders = [{amt:20,paid:true},{amt:15,paid:false},{amt:30,paid:true}], log the sum of paid amounts.",o:"50",h:["Two operations, not one.","filter narrows the list, reduce collapses it to a number.","orders.filter(o => o.paid).reduce((s, o) => s + o.amt, 0)"]},
+ {c:"map/filter/reduce",t:"Longest word",b:"Given s = 'never stop shipping small things', log the longest word.",o:"shipping",h:["Split first, then compare as you go.","reduce can carry the best-so-far.","s.split(' ').reduce((a, b) => b.length > a.length ? b : a)"]},
+ {c:"destructuring",t:"Pull it apart",b:"Given user = {name:'Ada', addr:{city:'London'}}, log the name and city on one line using destructuring only.",o:"Ada London",h:["Destructuring can reach into nested objects.","{ addr: { city } } pulls city out of the nested object.","const { name, addr: { city } } = user"]},
+ {c:"promises",t:"Delayed log",b:"Write wait(ms) returning a promise that resolves after ms. Use it to log 'done' after 300ms.",o:"done",h:["setTimeout takes a callback — what belongs there?","new Promise(resolve => ...) hands you resolve to call later.","const wait = ms => new Promise(r => setTimeout(r, ms))"]},
+ {c:"async/await",t:"In sequence",b:"Using a wait(ms) helper you write, log 'one' then 'two' with a 200ms gap, using async/await.",o:"one\ntwo",h:["await pauses until the promise settles.","Your top-level code already runs inside an async function here.","await wait(200) between the two logs"]},
+ {c:"closures",t:"Private counter",b:"Write counter() returning an object with inc() and value(). Call inc twice, then log value().",o:"2",h:["The count must not be reachable from outside.","A variable declared inside counter() survives in the returned functions.","let n = 0; return { inc: () => n++, value: () => n }"]},
+],
+r:[
+ {c:"vectors",t:"Vector stats",b:"Create a vector of 3, 8, 12, 5, 9 and print its mean and its maximum.",o:null,h:["Both exist as built-ins.","mean() and max() take a vector directly.","v <- c(3,8,12,5,9); mean(v); max(v)"]},
+ {c:"data types",t:"Coerce and check",b:"Create c(1, 'a', TRUE) and print its class. Explain in a comment why it is what it is.",o:null,h:["Vectors hold one type only.","R promotes everything to the most permissive type.","class(c(1,'a',TRUE)) returns character"]},
+ {c:"data frames",t:"Filter rows",b:"Build a data frame with name (Ana, Bo, Cy) and score (88, 72, 95). Print only rows where score exceeds 80.",o:null,h:["Bracket indexing takes rows before the comma.","df[condition, ] keeps matching rows and all columns.","df[df$score > 80, ]"]},
+ {c:"indexing",t:"Every other",b:"Given v <- 1:10, print every second element starting from the first.",o:null,h:["Indexing accepts a vector of positions.","seq() can build the positions you need.","v[seq(1, length(v), by = 2)]"]},
+ {c:"apply family",t:"Column means",b:"Given a data frame with a = c(1,2,3) and b = c(4,5,6), print the mean of each column without a loop.",o:null,h:["The apply family walks rows or columns for you.","sapply() over a data frame iterates its columns.","sapply(df, mean)"]},
+ {c:"functions",t:"Default argument",b:"Write greet(name, greeting = 'Hello') printing them joined by a space. Call it once with and once without the second argument.",o:null,h:["Defaults go in the signature.","paste() joins with a space by default.","greet <- function(name, greeting = 'Hello') print(paste(greeting, name))"]},
+],
+mermaid:[
+ {c:"flowchart syntax",t:"Login flow",b:"Write a top-down flowchart: Start goes to 'Enter password', branching to 'Access granted' if correct and back to 'Enter password' if wrong.",o:null,h:["Direction is declared on the first line.","Decisions use curly braces; edge labels sit inside pipes.","flowchart TD, then A[Start] --> B{Correct?} and B -->|Yes| C[...]"]},
+ {c:"node shapes",t:"Four shapes",b:"Draw a flowchart using a rectangle, a rounded box, a diamond, and a circle, connected in a line.",o:null,h:["Each shape is a different bracket style.","[] is a rectangle, () is rounded, {} is a diamond, (()) is a circle.","A[Rect] --> B(Round) --> C{Diamond} --> D((Circle))"]},
+ {c:"edge types",t:"Dotted and thick",b:"Draw three nodes connected by one normal arrow, one dotted arrow, and one thick arrow.",o:null,h:["Arrow syntax varies by the characters between the dashes.","-.-> is dotted and ==> is thick.","A --> B then B -.-> C then C ==> D"]},
+ {c:"sequence diagrams",t:"Request and reply",b:"Diagram a user requesting data from a server and the server replying, with the reply drawn dashed.",o:null,h:["Arrow style encodes request versus response.","->> is solid, -->> is dashed.","sequenceDiagram, then User->>Server: Get data and Server-->>User: Data"]},
+ {c:"state diagrams",t:"Order lifecycle",b:"Draw a state diagram: an order moves from Pending to Shipped to Delivered, and Pending can also go to Cancelled.",o:null,h:["State diagrams have a declared start marker.","[*] marks the entry point.","stateDiagram-v2, then [*] --> Pending and Pending --> Shipped"]},
+],
+};
+
+/* ============ storage ============ */
+const KEY="practicelog.offline.v1";
+const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[]};
+const clone=(o)=>JSON.parse(JSON.stringify(o));
+let S;
+try{ S = JSON.parse(localStorage.getItem(KEY)) || clone(blank); }
+catch(e){ S = clone(blank); }
+if(!S || typeof S !== "object") S = clone(blank);
+for(const k in blank) if(S[k]===undefined) S[k]=clone(blank[k]);
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ flash("Progress could not be saved — storage is full or blocked."); } }
+
+/* ============ helpers ============ */
+const $=(s)=>document.querySelector(s);
+const el=(tag,attrs={},...kids)=>{const n=document.createElement(tag);
+  for(const[k,v]of Object.entries(attrs)){ if(k==="class")n.className=v; else if(k.startsWith("on"))n.addEventListener(k.slice(2),v); else if(v!==null&&v!==undefined)n.setAttribute(k,v); }
+  kids.flat().forEach(c=>c!=null&&n.append(c.nodeType?c:document.createTextNode(c))); return n;};
+const today=()=>new Date().toISOString().slice(0,10);
+const dayGap=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+const norm=(s)=>String(s??"").replace(/\r/g,"").split("\n").map(l=>l.trimEnd()).join("\n").replace(/\s+/g," ").trim();
+const online=()=>navigator.onLine;
+
+/* ============ session state ============ */
+let task=null, hintTier=0, secs=0, timer=null, running=false, exec=null, grade=null, banner=null, view="practice", busy=null;
+
+function flash(msg){ banner=msg; render(); }
+function startTimer(){ if(timer)clearInterval(timer); running=true; timer=setInterval(()=>{secs++; const c=$("#clock"),b=$("#bar"); if(c){c.textContent=fmtClock(); c.className="clock "+(secs>=900?"teal":"");} if(b){b.style.width=Math.min(100,secs/900*100)+"%"; b.style.background=secs>=900?"var(--teal)":"var(--gold)";}},1000); }
+function stopTimer(){ running=false; if(timer)clearInterval(timer); }
+const fmtClock=()=>String(Math.floor(secs/60)).padStart(2,"0")+":"+String(secs%60).padStart(2,"0");
+
+/* ============ execution ============ */
+let pyodide=null, pyTried=false;
+const PY_CDNS=["https://cdn.jsdelivr.net/pyodide/v0.26.4/full/","https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.26.4/"];
+function inject(base){return new Promise((ok,no)=>{const s=document.createElement("script");s.src=base+"pyodide.js";s.onload=ok;s.onerror=()=>no(new Error("blocked"));document.head.appendChild(s);});}
+async function bootPython(){
+  if(pyodide) return pyodide;
+  let last;
+  for(const base of PY_CDNS){
+    try{ if(!window.loadPyodide) await inject(base);
+      pyodide = await window.loadPyodide({indexURL:base}); return pyodide; }
+    catch(e){ last=e; }
+  }
+  pyTried=true;
+  throw new Error(online()?"Python runtime unreachable":"no connection");
+}
+async function runPython(code){
+  const py=await bootPython(); const out=[];
+  py.setStdout({batched:s=>out.push(s)}); py.setStderr({batched:s=>out.push(s)});
+  try{ await py.runPythonAsync(code); return {ok:true,output:out.join("\n")}; }
+  catch(e){ return {ok:false,output:out.join("\n"),error:String(e.message||e).split("\n").filter(Boolean).slice(-3).join("\n")}; }
+}
+async function runJS(code){
+  const out=[]; const fmt=v=>typeof v==="string"?v:(()=>{try{return JSON.stringify(v)}catch(e){return String(v)}})();
+  const shim={log:(...a)=>out.push(a.map(fmt).join(" ")),error:(...a)=>out.push(a.map(fmt).join(" ")),warn:()=>{},info:(...a)=>out.push(a.map(fmt).join(" "))};
+  try{
+    const fn=new Function("console",`return (async()=>{\n${code}\n})()`);
+    await fn(shim);
+    await new Promise(r=>setTimeout(r,700));
+    return {ok:true,output:out.join("\n")};
+  }catch(e){ return {ok:false,output:out.join("\n"),error:String(e.message||e)}; }
+}
+
+/* ============ static checks ============ */
+function lint(lang,code){
+  const lines=code.split("\n"), f=[];
+  const longest=Math.max(...lines.map(l=>l.length));
+  if(longest>95) f.push({k:"readability",m:`A line runs ${longest} characters. Break it up.`});
+  const names=[...code.matchAll(/\b([a-zA-Z_]\w*)\s*=[^=]/g)].map(m=>m[1]);
+  const terse=names.filter(n=>n.length<=2&&!["i","j","k","n","x","y"].includes(n));
+  if(terse.length) f.push({k:"readability",m:`Names like "${terse[0]}" say nothing. Spell them out.`});
+  if(lang==="python"){
+    if(/range\(\s*len\(/.test(code)) f.push({k:"idiomatic",m:"range(len(x)) is a C loop wearing Python. Iterate the items, or use enumerate()."});
+    if(/==\s*(True|False)\b/.test(code)) f.push({k:"idiomatic",m:"Test truthiness directly — `if flag:` not `if flag == True:`."});
+    if(/\+=\s*["']/.test(code)&&/\bfor\b/.test(code)) f.push({k:"efficiency",m:"Building a string with += in a loop reallocates every pass. Collect into a list, then .join()."});
+    if(lines.length>15&&!/\bdef\b/.test(code)) f.push({k:"readability",m:"Fifteen-plus lines with no function. Give the logic a name."});
+  }
+  if(lang==="javascript"){
+    if(/\bvar\b/.test(code)) f.push({k:"idiomatic",m:"`var` is legacy. Use const, or let when you genuinely reassign."});
+    if(/[^=!<>]==[^=]/.test(code)) f.push({k:"idiomatic",m:"Use === . Loose equality coerces types and will bite you."});
+    if(/for\s*\(\s*(let|var)\s+\w+\s*=\s*0/.test(code)&&/\.push\(/.test(code)) f.push({k:"idiomatic",m:"An index loop that pushes into an array is usually .map() or .filter()."});
+  }
+  if(lang==="mermaid"){
+    if(!/^\s*(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|gantt|erDiagram)/m.test(code)) f.push({k:"correctness",m:"No diagram type declared on the first line."});
+    if(!/(-->|->>|---|-\.->|==>)/.test(code)) f.push({k:"correctness",m:"No edges found. A diagram with no connections is not a diagram."});
+  }
+  if(lang==="r"){
+    if(/=\s*(?!=)/.test(code)&&!/<-/.test(code)) f.push({k:"idiomatic",m:"R convention is <- for assignment, not =."});
+    if(/for\s*\(/.test(code)) f.push({k:"idiomatic",m:"Explicit for loops are rare in R. Reach for the apply family or a vectorised operation."});
+  }
+  return f;
+}
+function gradeIt(lang,code,ex,t){
+  const f=lint(lang,code), pick=k=>{const hit=f.find(x=>x.k===k);return hit&&hit.m;};
+  let correctness=3, note="Not auto-verifiable — check your output against Expected yourself.";
+  if(ex){
+    if(!ex.ok){ correctness=1; note="It crashed: "+ex.error; }
+    else if(t.o!=null){
+      const hit=norm(ex.output)===norm(t.o);
+      correctness=hit?5:2;
+      note=hit?"Output matches exactly.":`Ran clean, but printed "${(ex.output||"nothing").trim()}" instead of "${t.o}".`;
+    } else { correctness=4; note="Ran cleanly. No exact-output check for this one."; }
+  }
+  const sub=(k,good)=>pick(k)?3:good;
+  return {
+    scores:{correctness,readability:sub("readability",4),idiomatic:sub("idiomatic",4),efficiency:sub("efficiency",5)},
+    notes:{
+      correctness:pick("correctness")||note,
+      readability:pick("readability")||"Nothing structural to flag.",
+      idiomatic:pick("idiomatic")||"Reads like the language.",
+      efficiency:pick("efficiency")||"Not relevant at this size.",
+    },
+    verdict: correctness===5?"Correct output, verified by running it."
+      : correctness===1?"It does not run. Fix the error before worrying about style."
+      : correctness===2?"Output did not match. Read the diff line by line."
+      : "Graded on static checks only — no runtime available for this language.",
+    mastered: correctness>=4,
+  };
+}
+
+/* ============ actions ============ */
+function nextConcept(){ const solid=S.solid[S.lang]||[]; return LADDER[S.lang].find(c=>!solid.includes(c))||"review"; }
+function pickTask(){
+  const solid=S.solid[S.lang]||[], target=nextConcept(), pool=BANK[S.lang]||[];
+  const matches=pool.filter(x=>x.c===target);
+  const unseen=pool.filter(x=>!solid.includes(x.c));
+  const set = matches.length?matches : (unseen.length?unseen:pool);
+  return set[Math.floor(Math.random()*set.length)]||null;
+}
+function newTask(){
+  task=pickTask(); hintTier=0; exec=null; grade=null; banner=null; secs=0;
+  if(!task){ flash("No exercises left in this language. Add more to BANK."); return; }
+  startTimer(); render();
+  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+}
+async function submit(){
+  const code=$("#code").value;
+  if(!code.trim()||!task) return;
+  stopTimer(); busy="Running your code…"; banner=null; render();
+  const kind=LANGS[S.lang].runs;
+  exec=null;
+  if(kind==="native"){ exec=await runJS(code); }
+  else if(kind==="pyodide"){
+    busy = pyodide?"Running your code…":(online()?"Booting Python — one-time ~20s download":"Checking for the Python runtime…"); render();
+    try{ exec=await runPython(code); }
+    catch(e){
+      S.queue.push({date:today(),lang:S.lang,concept:task.c,title:task.t,code,expected:task.o,secs}); persist();
+      banner=`Python could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
+    }
+  }
+  grade=gradeIt(S.lang,code,exec,task);
+  logSession(grade);
+  busy=null; render();
+  setTimeout(()=>{const n=$("#gradecard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+}
+function logSession(g){
+  const mins=Math.max(1,Math.round(secs/60)), d=today();
+  const gap=S.streak.last?dayGap(S.streak.last,d):null;
+  S.streak={count:gap===0?S.streak.count:gap===1?S.streak.count+1:1,last:d};
+  S.sessions.unshift({date:d,lang:S.lang,mins,topic:task.c,score:g.scores.correctness,verdict:g.verdict});
+  const solid=S.solid[S.lang]||[], shaky=S.shaky[S.lang]||[];
+  const pass=g.mastered&&g.scores.correctness>=4;
+  S.solid[S.lang]=pass?[...new Set([...solid,task.c])]:solid;
+  S.shaky[S.lang]=pass?shaky.filter(c=>c!==task.c):[...new Set([...shaky,task.c])];
+  persist();
+}
+async function drainQueue(){
+  if(!S.queue.length) return;
+  busy="Grading queued submissions…"; render();
+  const still=[];
+  for(const q of S.queue){
+    if(q.lang!=="python"){ still.push(q); continue; }
+    try{
+      const ex=await runPython(q.code);
+      const g=gradeIt("python",q.code,ex,{o:q.expected});
+      const solid=S.solid.python||[], shaky=S.shaky.python||[];
+      const pass=g.mastered;
+      S.sessions.unshift({date:q.date,lang:"python",mins:Math.max(1,Math.round(q.secs/60)),topic:q.concept,score:g.scores.correctness,verdict:"(queued) "+g.verdict});
+      S.solid.python=pass?[...new Set([...solid,q.concept])]:solid;
+      S.shaky.python=pass?shaky.filter(c=>c!==q.concept):[...new Set([...shaky,q.concept])];
+    }catch(e){ still.push(q); }
+  }
+  S.queue=still; persist();
+  busy=null; banner=still.length?`${still.length} still pending — Python runtime is still unreachable.`:"Queue cleared. Results are in the ledger.";
+  render();
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=el("a",{href:URL.createObjectURL(blob),download:"practice-log.json"});
+  document.body.append(a); a.click(); a.remove();
+}
+
+
+/* ============ PWA: install + offline runtime ============ */
+let swReg=null, cachedFiles=0;
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").then(r=>{swReg=r; askRuntime();}).catch(()=>{});
+  navigator.serviceWorker.addEventListener("message",e=>{
+    if(e.data&&e.data.type==="runtime-status"){ cachedFiles=e.data.files; render(); }
+  });
+}
+function askRuntime(){ if(navigator.serviceWorker&&navigator.serviceWorker.controller)
+  navigator.serviceWorker.controller.postMessage("runtime-status"); }
+function standalone(){
+  try{
+    if(window.navigator&&window.navigator.standalone===true) return true;
+    if(typeof window.matchMedia==="function") return window.matchMedia("(display-mode: standalone)").matches;
+  }catch(e){}
+  return false;
+}
+
+async function cacheRuntime(){
+  if(!online()){ banner="Connect to wifi first — this downloads about 12 MB."; render(); return; }
+  busy="Downloading Python runtime…"; banner=null; render();
+  try{
+    await bootPython();
+    await runPython("print('ready')");
+    banner="Python runtime cached. It will now work with no signal.";
+  }catch(e){ banner="Could not cache the runtime: "+e.message; }
+  busy=null; askRuntime(); render();
+}
+
+/* ============ render ============ */
+function render(){
+  const app=$("#app"); app.innerHTML="";
+  const solid=S.solid[S.lang]||[], shaky=S.shaky[S.lang]||[];
+  const totalMins=S.sessions.reduce((a,s)=>a+s.mins,0);
+
+  app.append(el("header",{},
+    el("h1",{},"Practice Log"),
+    el("div",{class:"meta"},`${S.streak.count} DAY STREAK · ${totalMins} MIN · ${online()?"ONLINE":"OFFLINE"}`)
+  ));
+
+  const nav=el("nav",{});
+  for(const[k,v]of Object.entries(LANGS))
+    nav.append(el("button",{class:"tab"+(S.lang===k?" on":""),onclick:()=>{S.lang=k;persist();task=null;exec=null;grade=null;stopTimer();render();}},v.tag+(v.star?" ★":"")));
+  nav.append(el("span",{style:"flex:1"}));
+  nav.append(el("button",{class:"tab",onclick:()=>{view=view==="practice"?"ledger":"practice";render();}},view==="practice"?"LEDGER":"PRACTICE"));
+  app.append(nav);
+
+  if(banner) app.append(el("div",{class:"card banner"},banner));
+  if(S.queue.length) app.append(el("div",{class:"card"},
+    el("span",{class:"lab"},`${S.queue.length} submission${S.queue.length>1?"s":""} awaiting real execution`),
+    el("button",{class:"ghost",style:"margin-top:10px",onclick:drainQueue},"Grade queued")));
+
+  if(view==="ledger"){ renderLedger(app,solid,shaky); }
+  else{
+    // timer
+    const bar=el("i",{id:"bar",style:`width:${Math.min(100,secs/900*100)}%`});
+    const tcard=el("div",{class:"card"},
+      el("div",{class:"row",style:"margin-bottom:8px"},
+        el("span",{class:"lab"},"Today's 15 minutes"),
+        el("span",{id:"clock",class:"clock"+(secs>=900?" teal":"")},fmtClock())),
+      el("div",{class:"bar"},bar));
+    if(task) tcard.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>{running?stopTimer():startTimer();render();}},running?"Pause":"Resume"));
+    app.append(tcard);
+
+    // milestone
+    const runs=LANGS[S.lang].runs;
+    app.append(el("div",{class:"card"},
+      el("span",{class:"lab"},"Next milestone"),
+      el("div",{style:"font-size:18px;font-weight:400;margin-top:6px"},nextConcept()),
+      el("div",{class:"meta",style:"margin-top:4px"},
+        `${solid.length} / ${LADDER[S.lang].length} cleared · ${runs==="native"?"graded by running your code":runs==="pyodide"?"graded by running your code (needs runtime)":"static checks only"}`),
+      el("button",{class:"primary",onclick:newTask},task?"Next exercise":"Give me an exercise")
+    ));
+
+    if(task) renderTask(app);
+    if(exec) renderRun(app);
+    if(grade) renderGrade(app);
+  }
+
+  const foot=el("footer",{});
+  const ready = cachedFiles>0 || !!pyodide;
+  foot.append(el("div",{},
+    ready ? "Python runtime is cached — it runs with no signal. JavaScript always has."
+          : "JavaScript runs fully offline. Python needs its runtime cached once while connected."));
+  const acts=el("div",{style:"display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"});
+  if(!ready) acts.append(el("button",{class:"ghost",onclick:cacheRuntime},"Cache Python for offline (~12 MB)"));
+  acts.append(el("button",{class:"ghost",onclick:exportData},"Export progress"));
+  foot.append(acts);
+  if(!standalone()) foot.append(el("div",{style:"margin-top:14px"},
+    "Not installed yet. iOS: Share \u2192 Add to Home Screen. Android: menu \u2192 Install app."));
+  app.append(foot);
+}
+
+function renderTask(app){
+  const c=el("div",{class:"card",id:"taskcard"});
+  c.append(el("span",{class:"lab"},task.c),el("h2",{},task.t),el("p",{class:"brief"},task.b));
+  c.append(el("div",{style:"margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)"},
+    el("span",{class:"lab"},task.o!=null?"Expected output · checked automatically":"Expected result · not auto-checkable"),
+    el("pre",{},task.o??"—")));
+  const hints=el("div",{style:"margin-top:14px"});
+  task.h.slice(0,hintTier).forEach((h,i)=>hints.append(el("div",{class:"hint"},el("b",{},"TIER "+(i+1)),el("br"),h)));
+  if(hintTier<task.h.length) hints.append(el("button",{class:"ghost",onclick:()=>{hintTier++;render();}},hintTier===0?"I'm stuck — nudge me":"Next hint"));
+  c.append(hints);
+  const ta=el("textarea",{id:"code",spellcheck:"false",autocapitalize:"off",autocorrect:"off",placeholder:`Write your ${LANGS[S.lang].label} here…`});
+  ta.value = window._draft || "";
+  ta.addEventListener("input",e=>{window._draft=e.target.value;});
+  ta.addEventListener("focus",()=>{if(!running&&!grade)startTimer();});
+  c.append(ta);
+  c.append(el("button",{class:"primary",disabled:busy?"":null,onclick:submit},busy||(LANGS[S.lang].runs?"Run and grade":"Check and grade")));
+  app.append(c);
+}
+
+function renderRun(app){
+  const pass=exec.ok&&task.o!=null&&norm(exec.output)===norm(task.o);
+  const cls=pass?"teal":"sig";
+  const c=el("div",{class:"card thick",style:`border-color:var(--${pass?"teal":"sig"})`});
+  c.append(el("div",{class:"row"},el("span",{class:"lab"},"Execution"),
+    el("span",{class:cls,style:"font-size:13px;font-weight:500;letter-spacing:.06em"},
+      !exec.ok?"ERROR":task.o==null?"RAN":pass?"PASS":"MISMATCH")));
+  if(!exec.ok){ c.append(el("span",{class:"lab",style:"margin-top:10px"},"Traceback"),el("pre",{class:"sig"},exec.error)); }
+  c.append(el("span",{class:"lab",style:"margin-top:10px"},"Your output"),el("pre",{},exec.output||"(nothing printed)"));
+  if(task.o!=null&&!pass) c.append(el("span",{class:"lab",style:"margin-top:10px"},"Expected"),el("pre",{class:"teal"},task.o));
+  app.append(c);
+}
+
+function renderGrade(app){
+  const c=el("div",{class:"card thick",id:"gradecard"});
+  c.append(el("div",{class:"row"},el("span",{class:"lab"},"Graded"),
+    el("span",{class:"meta"},exec?"BY EXECUTION":"STATIC ONLY")));
+  ["correctness","readability","idiomatic","efficiency"].forEach(k=>{
+    const v=grade.scores[k], cls=v>=4?"teal":v>=3?"gold":"sig";
+    const pips=el("div",{class:"pips"});
+    for(let n=1;n<=5;n++){const i=el("i");if(n<=v)i.style.background=`var(--${v>=4?"teal":v>=3?"gold":"sig"})`;pips.append(i);}
+    c.append(el("div",{style:"margin-top:12px"},
+      el("div",{class:"row",style:"font-size:12px;font-weight:400;letter-spacing:.06em;text-transform:uppercase"},
+        el("span",{},k+(k==="correctness"&&exec?" · by execution":"")),
+        el("span",{class:cls,style:"font-weight:500"},v+"/5")),
+      pips, el("p",{class:"note"},grade.notes[k])));
+  });
+  c.append(el("p",{class:"verdict"},grade.verdict));
+  app.append(c);
+}
+
+function renderLedger(app,solid,shaky){
+  const lad=el("div",{class:"card"},el("span",{class:"lab"},LANGS[S.lang].label+" ladder"));
+  LADDER[S.lang].forEach(c=>{
+    const done=solid.includes(c),weak=shaky.includes(c);
+    lad.append(el("div",{class:"lad"},
+      el("span",{class:done?"teal":weak?"sig":"",style:"width:16px"},done?"✓":weak?"!":"·"),
+      el("span",{style:done?"":"color:var(--soft)"},c)));
+  });
+  app.append(lad);
+  const ses=el("div",{class:"card"},el("span",{class:"lab"},"Sessions"));
+  const mine=S.sessions.filter(s=>s.lang===S.lang);
+  if(!mine.length) ses.append(el("p",{class:"note"},"Nothing logged in "+LANGS[S.lang].label+" yet."));
+  mine.slice(0,40).forEach(s=>ses.append(el("div",{style:"padding:8px 0;border-bottom:1px solid var(--rule)"},
+    el("div",{class:"row",style:"font-size:13px"},
+      el("span",{},`${s.date} · ${s.topic}`),
+      el("span",{class:s.score>=4?"teal":"sig"},`${s.score}/5 · ${s.mins}m`)),
+    el("p",{class:"note",style:"margin-top:4px"},s.verdict))));
+  app.append(ses);
+}
+
+window.addEventListener("online",render);
+window.addEventListener("offline",render);
+window.addEventListener("error",function(e){
+  const a=document.getElementById("app");
+  if(a && !a.children.length){
+    a.innerHTML='<div class="card banner"><b>Something broke on load.</b><br>'+
+      String(e.message||e)+'</div>';
+  }
+});
+try{ render(); }
+catch(e){
+  document.getElementById("app").innerHTML=
+    '<div class="card banner"><b>Render failed.</b><br>'+String(e.message||e)+'</div>';
+}
+</script>
+</body>
+</html>
