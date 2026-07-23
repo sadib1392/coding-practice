@@ -20,6 +20,7 @@ const APP_FILES = [
   "./book/ch08.js",
   "./book/ch09.js",
   "./book/ch10.js",
+  "./book/ch11.js",
   "./book/ch12.js",
   "./book/ch13.js",
   "./book/ch14.js",
