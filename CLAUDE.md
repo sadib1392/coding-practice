@@ -53,20 +53,27 @@ Everything below is merged to `main` and deployed:
   `LESSONS`, graded drills, streaks, ledger, offline queue for Python.
 - **Lessons** for all 33 ladder concepts (12 py / 10 js / 6 r / 5 mermaid):
   intro `i`, syntax pairs `s`, gotchas `w`.
-- **Extended Python lessons**: every Python concept also has `read`
-  (multi-paragraph prose) and `practice` (3 predict-the-output problems each,
-  36 total). JS/R/Mermaid don't have these yet — the shape is optional and
-  backward compatible. **Extending read/practice to JS is a natural next task.**
+- **Extended lessons**: every Python concept (12) and every R concept (15) has
+  `read` (multi-paragraph prose) and `practice` (3 predict-the-output problems).
+  JS/Mermaid don't have these yet — the shape is optional and backward
+  compatible. **Extending read/practice to JS is a natural next task.**
+- **R ladder is 15 concepts** covering base R and the tidyverse, with 2 BANK
+  drills each (30). Every R drill carries a real expected output captured from
+  WebR — they were all `o:null` before R could execute.
 - **Text highlighting**: select prose in lessons or book → floating Highlight
   button → saved as character-offset ranges in `S.highlights`, keyed per prose
   block; tap a highlight to remove. Survives reload.
-- **Book course** (BOOK tab): chapter reader following the curriculum of
-  *Automate the Boring Stuff with Python* (3rd ed.) by Al Sweigart, with
-  **original lesson text** (see "Book content policy" below). **ALL 24
-  chapters of the 3e are complete** (ch01–ch24): each has 7–9 sections,
-  exactly 10 reveal-answer questions, and exactly 4 graded exercises mapped
-  to `LADDER.python` concepts. Per-section mark-as-read, progress meters,
-  and a "pick up where you left off" card on the practice view.
+- **Two book courses** (BOOK tab shows the book for the current language tab):
+  - **Python** — *Automate the Boring Stuff with Python* (3e), Al Sweigart.
+    **All 24 chapters complete** (ch01–ch24).
+  - **R** — *R for Data Science* (2e), Wickham/Çetinkaya-Rundel/Grolemund.
+    **All 29 chapters complete** (r01–r29).
+  Both use **original lesson text** (see "Book content policy"). Every chapter
+  has 6–9 sections, exactly 10 reveal-answer questions, and exactly 4 graded
+  exercises mapped to that language's ladder concepts. R chapters may carry a
+  `pkgs` array naming the WebR packages their exercises need. Per-section
+  mark-as-read, progress meters, a "pick up where you left off" card, and a
+  chapter path with crowns.
 - **3e chapter map differs from older editions** (verified against the live
   3e TOC): ch2 is if-else only (truthiness moved to ch3), ch3 Loops, ch4
   Functions, ch5 Debugging, ch6 Lists, ch7 Dictionaries, ch8 Strings, ch9
@@ -190,6 +197,24 @@ Verified facts, not assumptions:
   wording. `getwd()` is `/home/web_user`; relative-path file I/O works; the
   global env and filesystem persist between runs, so blocks needing a clean
   slate start with `rm(list = ls())` and file writes are idempotent.
+- **Errors print as `Error: <message>`** — WebR drops the `Error in <call> :`
+  prefix desktop R shows, and rlang's multi-line bullets do not survive
+  `captureConditions:false`. To teach the full message, catch it and print
+  `conditionMessage(e)` (or `conditionMessage(e$parent)` for purrr/dplyr).
+  `traceback()` returns `No traceback available`. Warnings print *before* the
+  value here, and carry their call even though errors do not.
+- Printing a ggplot emits no text **unless drawing raises a warning**, in which
+  case the warning is the entire output.
+
+**Package availability in WebR, probed rather than assumed.** Installs: dplyr,
+tidyr, tibble, ggplot2, stringr, forcats, lubridate, purrr, readr, readxl,
+writexl, DBI, RSQLite, dbplyr, duckdb, jsonlite, rvest, xml2, nanoparquet,
+googlesheets4, styler, lintr. **Does not install: `arrow`** — note that
+`installPackages(['arrow'])` returns *without throwing* and the package is
+simply absent afterwards, so check `packageVersion()` rather than trusting the
+call. googlesheets4 installs but needs network plus browser OAuth, so it stays
+output-free. Chapters 22 (arrow) and 24's network fetches are the only
+library workflows taught output-free; everything else runs for real.
 
 ## Book content policy (important)
 
@@ -294,10 +319,16 @@ Python for offline" on wifi.
 
 ## Roadmap (owner's priorities)
 
-1. ~~Book chapters~~ **DONE 2026-07-23: all 24 3e chapters are built,**
-   execution-verified, and wired in. Future book work is edits, not additions.
-2. Extend `read`/`practice` lesson sections to JavaScript concepts.
-3. More Python BANK drills (2-3 per concept; `while` loops and string
+1. ~~Python book chapters~~ **DONE: all 24 3e chapters.**
+2. ~~WebR execution for R~~ **DONE: R runs and is graded by execution.**
+3. ~~R book~~ **DONE: all 29 r4ds 2e chapters,** plus the 15-concept R ladder
+   with lessons and drills. Future book work is edits, not additions.
+4. Extend `read`/`practice` lesson sections to JavaScript concepts — the last
+   language without them.
+5. More Python BANK drills (2-3 per concept; `while` loops and string
    formatting underrepresented).
-4. WebR execution for R (same shape as `bootPython`).
-5. Offered but not requested: locked chapter progression.
+6. Gamification follow-ups the owner has NOT asked for, so do not add
+   unprompted: locked chapter progression (the path deliberately does not gate),
+   streak-freeze spending UI, and any leaderboard (there is no backend, and a
+   fabricated one would be dishonest — the weekly chart is the owner's own
+   history on purpose).

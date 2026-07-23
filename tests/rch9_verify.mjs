@@ -172,6 +172,19 @@ check('claim: coord_cartesian with limits is still CoordCartesian',
 check('claim: a misspelled column builds a layer and fails at ggplot_build',
   await R.run('typo <- ggplot(stalls, aes(x = waitmin, y = price)) + geom_point()\nlength(typo$layers)\nggplot_build(typo)'),
   '[1] 1\nError: Problem while computing aesthetics.');
+// Numbers the prose spells out in words are invisible to the diffing above, so
+// bind the ones that are claims about the data to the values R just produced.
+const prose = CH.sections.flatMap((s) => s.body.map((b) => b[1])).join('\n');
+checkTrue('s1 prose spells the category counts the table printed',
+  /Five grill stalls, four noodles, three sweets/.test(prose));
+checkTrue('s4 prose spells the panel count the layout table printed',
+  /Six panels, two venues by three cuisines/.test(prose));
+checkTrue('s3 prose spells the group counts the build reported',
+  /Three trend lines against one/.test(prose));
+check('claim: the counts the prose spells out are the counts in the data',
+  await R.run('as.numeric(table(stalls$cuisine))\nnrow(ggplot_build(f2)$layout$layout)\nlength(unique(ggplot_build(global)$data[[2]]$group))'),
+  '[1] 5 4 3\n[1] 6\n`geom_smooth()` using formula = \'y ~ x\'\n[1] 3');
+
 // question 4: facet_wrap params name the column, and the panel count comes from the build.
 check('claim: FacetNull on a plain plot, FacetWrap after faceting',
   await R.run('class(pts$facet)[1]\nclass(f1$facet)[1]'), '[1] "FacetNull"\n[1] "FacetWrap"');
@@ -264,10 +277,15 @@ const solutionNumbers = (code) => {
   for (const m of code.matchAll(/\bc\(([^()]*)\)/g))
     for (const n of m[1].matchAll(/-?\d+(?:\.\d+)?/g)) nums.add(n[0]);
   for (const m of code.matchAll(/\b[a-zA-Z._][\w.]*\s*=\s*(-?\d+(?:\.\d+)?)/g)) nums.add(m[1]);
+  // trailing positional numbers, e.g. the digits argument of round(x, 3)
+  for (const m of code.matchAll(/,\s*(\d+)\)/g)) nums.add(m[1]);
   return [...nums];
 };
+// A plain substring test would let 2 match inside 62, so require a numeric boundary.
+const briefNames = (brief, n) =>
+  new RegExp('(?<![\\d.])' + n.replace('.', '\\.') + '(?!\\d)').test(brief);
 for (let i = 0; i < CH.exercises.length; i++) {
-  const missing = solutionNumbers(SOLUTIONS[i]).filter((n) => !CH.exercises[i].b.includes(n));
+  const missing = solutionNumbers(SOLUTIONS[i]).filter((n) => !briefNames(CH.exercises[i].b, n));
   checkTrue('exercise ' + (i + 1) + ' brief names every number its solution uses',
     missing.length === 0, 'missing from the brief: ' + missing.join(', '));
 }

@@ -100,7 +100,7 @@ await pair(S1, 3, 's1 glimpse turns the table on its side');
 
 await pair(S2, 0, 's2 count of a categorical column');
 await pair(S2, 2, 's2 numeric summary exposes two impossible values');
-await pair(S2, 4, 's2 one outlier makes 19 bins, 15 of them empty');
+await pair(S2, 4, 's2 one outlier makes 19 bins, 14 of them empty');
 
 await pair(S3, 0, 's3 cut_width bins drop the empty intervals');
 await pair(S3, 2, 's3 .drop = FALSE keeps all 19 levels');
@@ -136,6 +136,21 @@ check('claim: a plot with nothing to warn about prints no text',
 check('claim: 19 bins, 14 empty, two bars holding 25 of the 30 samples',
   await R.run('nrow(ggplot_build(h)$data[[1]])\nsum(ggplot_build(h)$data[[1]]$count == 0)\nsum(sort(ggplot_build(h)$data[[1]]$count, decreasing = TRUE)[1:2])'),
   '[1] 19\n[1] 14\n[1] 25');
+// Numbers the prose spells out in words are invisible to the diffing above, so
+// bind the ones that are claims about the data to the values R just produced.
+const prose = CH.sections.flatMap((s) => s.body.map((b) => b[1])).join('\n');
+checkTrue('s2 note spells the bin numbers the histogram actually produced',
+  /Nineteen bins, fourteen of them empty, and twenty-five of the thirty samples/.test(prose));
+checkTrue('s3 prose spells the three clump sizes the bins actually show',
+  /ten samples near 13, nine near 17, six near 21/.test(prose));
+checkTrue('s5 prose spells the filter arithmetic it just printed',
+  /Sixteen and ten make twenty-six, not thirty/.test(prose));
+checkTrue('s7 prose spells the row count of the binned cross-count',
+  /no exceptions in the twenty-four rows/.test(prose));
+check('claim: the s3 clumps are 10 near 13, 9 near 17, 6 near 21',
+  await R.run('bins <- samples |> filter(temp_c < 40) |>\n  count(bin = cut_width(temp_c, width = 2, boundary = 0))\nbins$n[bins$bin %in% c("(12,14]", "(16,18]", "(20,22]")]'),
+  '[1] 10  9  6');
+
 // s4 prose / question 5: the median is unchanged by removing the two faults.
 check('claim: the median survives the faults, the mean and range do not',
   await R.run('identical(median(samples$temp_c), median(clean$temp_c, na.rm = TRUE))\nidentical(mean(samples$temp_c), mean(clean$temp_c, na.rm = TRUE))'),
@@ -250,10 +265,15 @@ const solutionNumbers = (code) => {
   for (const m of code.matchAll(/\bc\(([^()]*)\)/g))
     for (const n of m[1].matchAll(/-?\d+(?:\.\d+)?/g)) nums.add(n[0]);
   for (const m of code.matchAll(/\b[a-zA-Z._][\w.]*\s*=\s*(-?\d+(?:\.\d+)?)/g)) nums.add(m[1]);
+  // trailing positional numbers, e.g. the digits argument of round(x, 2)
+  for (const m of code.matchAll(/,\s*(\d+)\)/g)) nums.add(m[1]);
   return [...nums];
 };
+// A plain substring test would let 2 match inside 62, so require a numeric boundary.
+const briefNames = (brief, n) =>
+  new RegExp('(?<![\\d.])' + n.replace('.', '\\.') + '(?!\\d)').test(brief);
 for (let i = 0; i < CH.exercises.length; i++) {
-  const missing = solutionNumbers(SOLUTIONS[i]).filter((n) => !CH.exercises[i].b.includes(n));
+  const missing = solutionNumbers(SOLUTIONS[i]).filter((n) => !briefNames(CH.exercises[i].b, n));
   checkTrue('exercise ' + (i + 1) + ' brief names every number its solution uses',
     missing.length === 0, 'missing from the brief: ' + missing.join(', '));
 }

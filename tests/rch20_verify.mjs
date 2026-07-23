@@ -253,10 +253,20 @@ for (let i = 0; i < CH.exercises.length; i++) {
 }
 
 // A grader that only ever passes is worthless: prove wrong answers miss.
-const wrong1 = await R.run(SOLUTIONS[3].replace('range = "A1:B3"', 'range = "A1:B4"'));
-checkTrue('exercise 4 rejects the wrong range', wrong1 !== CH.exercises[3].o, wrong1);
-const wrong2 = await R.run(SOLUTIONS[2].replace(', col_types = c("text", "numeric")', ''));
-checkTrue('exercise 3 rejects dropping col_types', wrong2 !== CH.exercises[2].o, wrong2);
+// The guard matters as much as the check — a replace() whose pattern does not
+// match would leave the correct solution in place and "prove" nothing.
+const drift = async (i, from, to, label) => {
+  const bad = SOLUTIONS[i].replace(from, to);
+  if (!checkTrue(label + ' (drift was actually planted)', bad !== SOLUTIONS[i],
+    'replace() did not match: ' + from)) return;
+  const got = await R.run(bad);
+  checkTrue(label, got !== CH.exercises[i].o, got);
+};
+
+await drift(0, 'c(4.5, 2, 6.5)', 'c(4.5, 2, 6.6)', 'exercise 1 rejects a changed value');
+await drift(1, 'sheet = "Glazes"', 'sheet = "Kilns"', 'exercise 2 rejects the wrong sheet');
+await drift(2, ', col_types = c("text", "numeric")', '', 'exercise 3 rejects dropping col_types');
+await drift(3, 'range = "A1:B3"', 'range = "A1:B4"', 'exercise 4 rejects the wrong range');
 
 await R.close();
 done();
