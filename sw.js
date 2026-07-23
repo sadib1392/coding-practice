@@ -26,6 +26,7 @@ const APP_FILES = [
   "./book/ch14.js",
   "./book/ch15.js",
   "./book/ch18.js",
+  "./book/ch24.js",
 ];
 
 self.addEventListener("install", (e) => {
