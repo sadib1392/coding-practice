@@ -2,8 +2,9 @@ import { JSDOM } from 'jsdom';
 import fs from 'fs';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const ch01 = fs.readFileSync(new URL('../book/ch01.js', import.meta.url), 'utf8');
-const ch02 = fs.readFileSync(new URL('../book/ch02.js', import.meta.url), 'utf8');
+const bookDir = new URL('../book/', import.meta.url);
+const chapterSrc = fs.readdirSync(bookDir).filter(f => /^ch\d+\.js$/.test(f)).sort()
+  .map(f => fs.readFileSync(new URL(f, bookDir), 'utf8'));
 const KEY = 'practicelog.offline.v1';
 
 function makeDom(seedJSON) {
@@ -14,9 +15,9 @@ function makeDom(seedJSON) {
       if (seedJSON) { try { win.localStorage.setItem(KEY, seedJSON); } catch (e) {} }
       // The real page loads the book/chNN.js files via script tags BEFORE the
       // inline script; jsdom-from-string skips external scripts, so replicate
-      // the order by evaluating them pre-parse.
-      win.eval(ch01);
-      win.eval(ch02);
+      // the order by evaluating them pre-parse. A broken file only fails the
+      // run if its chapter is wired into BOOK_ORDER (checked below).
+      chapterSrc.forEach(src => { try { win.eval(src); } catch (e) {} });
     },
   });
   const w = dom.window;
@@ -129,22 +130,33 @@ setTimeout(async () => {
   const list2 = d2.querySelector('#app').textContent;
   check(list2.includes('Read ✓'), 'read state restored after reload');
 
-  // --- chapter 2: list, reader, exercise flow ---
+  // --- every chapter in BOOK_ORDER: listed, opens, renders declared counts ---
   const dom3 = makeDom(null);
   const w3 = dom3.window, d3 = w3.document;
+  const ORDER = JSON.parse(w3.eval('JSON.stringify(BOOK_ORDER)'));
+  const META = JSON.parse(w3.eval(
+    'JSON.stringify(Object.fromEntries(Object.entries(bookChapters()).map(' +
+    '([id,c])=>[id,{n:c.n,t:c.title,s:c.sections.length,q:c.questions.length,x:c.exercises.length}])))'));
+  check(ORDER.every(id => META[id]), `every BOOK_ORDER id has a loaded chapter file (${ORDER.length} wired)`);
   clickIn(d3, 'BOOK');
-  const t3 = d3.querySelector('#app').textContent;
-  check(t3.includes('if-else and Flow Control'), 'chapter 2 listed on the book view');
-  check(t3.includes('0 / 8 sections read'), 'chapter 2 progress meter at 0/8');
-  const starts = [...d3.querySelectorAll('button')].filter(b => b.textContent.includes('Start chapter'));
-  check(starts.length === 2, 'both chapters offer Start chapter');
-  starts[1].click();
-  const card3 = d3.querySelector('#bookcard');
-  check(!!card3 && card3.textContent.includes('if-else and Flow Control'), 'chapter 2 reader opens');
-  check(card3.querySelectorAll('[id^="bsec"]').length === 8, 'all 8 ch02 sections render');
-  check([...card3.querySelectorAll('button')].filter(b => b.textContent.includes('Reveal answer')).length === 10, 'all 10 ch02 questions have reveal buttons');
-  const ex3btns = [...card3.querySelectorAll('button')].filter(b => b.textContent.includes('Start exercise'));
-  check(ex3btns.length === 4, 'all 4 ch02 exercises listed');
+  for (let i = 0; i < ORDER.length; i++) {
+    const m = META[ORDER[i]];
+    const open = [...d3.querySelectorAll('button')].filter(b => /Start chapter|Continue chapter/.test(b.textContent));
+    if (open.length !== ORDER.length) { check(false, `chapter list shows ${open.length} chapters, want ${ORDER.length}`); break; }
+    open[i].click();
+    const card = d3.querySelector('#bookcard');
+    const secs = card ? card.querySelectorAll('[id^="bsec"]').length : 0;
+    const revs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Reveal answer')).length : 0;
+    const exs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Start exercise')).length : 0;
+    check(!!card && card.textContent.includes(m.t) && secs === m.s && revs === m.q && exs === m.x,
+      `ch${m.n} "${m.t}": ${secs}/${m.s} sections, ${revs}/${m.q} questions, ${exs}/${m.x} exercises`);
+    clickIn(d3, 'All chapters');
+  }
+
+  // --- second chapter deep flow: exercise opens, queue tags, drain credits ---
+  const open2 = [...d3.querySelectorAll('button')].filter(b => /Start chapter|Continue chapter/.test(b.textContent));
+  open2[1].click();
+  const ex3btns = [...d3.querySelectorAll('#bookcard button')].filter(b => b.textContent.includes('Start exercise'));
   ex3btns[0].click();
   await wait(20);
   check(d3.querySelector('#app').textContent.includes('Book exercise · Chapter 2 · conditionals'), 'ch02 exercise opens labeled with chapter and concept');
