@@ -2,39 +2,44 @@
 
 Fifteen minutes of code a day. Correctness is graded by actually running your code, not by opinion.
 
-## Put it online (one time, ~10 minutes)
+## Put it online
 
-You need a GitHub account. Everything below is free.
+The files already live in this repo (`sadib1392/coding-practice`), so all that's
+left is to switch GitHub Pages on. The live URL will be:
 
-1. Go to **github.com/new**
-   - Repository name: `practice-log`
-   - Visibility: **Public** (GitHub Pages needs this on the free tier)
-   - Do **not** check "Add a README"
-   - Create repository
+```
+https://sadib1392.github.io/coding-practice/
+```
 
-2. On the empty repo page, click **uploading an existing file**
+Pick **one** of the two ways below — they're mutually exclusive, so don't do both.
 
-3. Drag in all seven files from this folder:
-   ```
-   index.html
-   sw.js
-   manifest.webmanifest
-   icon-192.png
-   icon-512.png
-   icon-maskable-512.png
-   apple-touch-icon.png
-   ```
-   Then **Commit changes**.
+### Option A — automatic (recommended)
 
-4. **Settings** → **Pages** (left sidebar)
+A workflow at `.github/workflows/deploy-pages.yml` builds and publishes the site
+on every push to `main`, and turns Pages on the first time it runs. To use it,
+get that workflow onto `main` (merge the branch it's on). Then:
+
+1. Open the **Actions** tab and watch the **Deploy to GitHub Pages** run finish (~1 min).
+2. The live URL is printed on that run, and appears under **Settings → Pages**.
+
+After this, every future change you push to `main` redeploys the app on its own —
+you never touch settings again.
+
+### Option B — manual toggle (30 seconds, no merge)
+
+The files are already on `main`, so you can just flip the switch:
+
+1. **Settings → Pages** (left sidebar)
    - Source: **Deploy from a branch**
    - Branch: `main`, folder: `/ (root)`
    - Save
+2. Wait about a minute, reload the Pages settings screen. Your URL appears at the top:
+   ```
+   https://sadib1392.github.io/coding-practice/
+   ```
 
-5. Wait about a minute, then reload the Pages settings screen. Your URL appears at the top:
-   ```
-   https://YOUR-USERNAME.github.io/practice-log/
-   ```
+> If you use Option B and later want the auto-deploy from Option A, that's fine —
+> just don't try to run both at the same time.
 
 ## Install it on your phone
 
@@ -72,9 +77,13 @@ JavaScript never needed this — it runs in the browser engine itself, always.
 Everything is in `index.html`. Two things worth editing:
 
 - **`BANK`** — the exercises. Each entry is `{c: concept, t: title, b: brief, o: exact expected output, h: [three hints]}`. Set `o` to `null` if there's no exact output to check.
+- **`LESSONS`** — the syntax lesson behind each concept, shown by the **Teach me this** button. Each entry is `{i: intro paragraph, s: [[code, what it does], …], w: [common mistakes]}`. Every concept in `LADDER` should have one.
 - **`LADDER`** — the concept order per language. The app always serves you the first concept you haven't cleared.
 
-To update the live app, upload the changed file to GitHub again. The service worker is network-first on the app itself, so you'll get the new version on your next launch with signal.
+To update the live app, commit the changed file to `main` (Option A redeploys it
+automatically; with Option B, the change is served as soon as it's on `main`). The
+service worker is network-first on the app itself, so you'll get the new version on
+your next launch with signal.
 
 ## Your data
 

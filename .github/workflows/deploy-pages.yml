@@ -1,0 +1,46 @@
+name: Deploy to GitHub Pages
+
+# Publishes the site at https://sadib1392.github.io/coding-practice/
+# Runs on every push to main, and can be triggered by hand from the Actions tab.
+# configure-pages with enablement:true turns GitHub Pages on the first time it runs,
+# so no manual Settings -> Pages step is required.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once; let a running one finish rather than cancelling it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages (enable if needed)
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Whole repo root is the site; index.html is the entry point.
+          path: .
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

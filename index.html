@@ -162,6 +162,433 @@ mermaid:[
 ],
 };
 
+/* ============ lessons ============ */
+const LESSONS = {
+python:{
+ "variables & types":{
+  i:"Python reads a variable's type from the value you assign — you never declare it. But the type still governs what works: you can add two numbers or two strings, but adding a number to a string raises. The three you meet first are int, float, and str.",
+  s:[["x = 5","An int — a whole number, no decimal point."],
+     ["pi = 3.14","A float — the decimal point makes it a float."],
+     ["name = \"Ada\"","A str — text, in quotes."],
+     ["type(x)","Reports the type: <class 'int'>."],
+     ["int(\"5\")","Converts the string \"5\" to the number 5."],
+     ["str(5)","Converts the number 5 to the string \"5\"."],
+     ["5 / 2","Division always gives a float: 2.5."]],
+  w:["Input arrives as a str even when it looks like a number. \"5\" + 5 raises — convert with int() first.",
+     "= assigns, == compares. Using = where you meant == is a syntax error inside an if.",
+     "/ always returns a float: 4 / 2 is 2.0, not 2. Use // for integer division."]
+ },
+ "strings":{
+  i:"A string is an ordered sequence of characters. You can index it, slice it, and call methods on it, but you can never change one in place — every string method returns a new string and leaves the original untouched.",
+  s:[["s = \"hello\"","A string of five characters."],
+     ["s[0]","First character: \"h\". Indexing starts at 0."],
+     ["s[-1]","Last character: \"o\". Negative counts from the end."],
+     ["s[1:4]","Slice from 1 up to but not including 4: \"ell\"."],
+     ["s.upper()","A new uppercase string; s itself is unchanged."],
+     ["\"a,b,c\".split(\",\")","Splits on the comma into ['a', 'b', 'c']."],
+     ["\" \".join([\"a\",\"b\"])","Joins a list into \"a b\"."],
+     ["f\"{s} world\"","An f-string; the braces insert the value of s."]],
+  w:["Strings are immutable. s[0] = \"H\" raises — build a new string instead.",
+     "Slicing is start-inclusive, stop-exclusive. s[1:4] gives three characters, not four.",
+     "split() with no argument splits on any run of whitespace and drops empties — not the same as split(\" \")."]
+ },
+ "conditionals":{
+  i:"An if statement runs a block only when its condition is truthy. elif checks a further condition only if the ones above it failed, and else catches everything left. The first branch that is true wins and the rest are skipped.",
+  s:[["if x > 0:","Runs the indented block when x is greater than 0."],
+     ["elif x == 0:","Checked only if the if above was false."],
+     ["else:","Runs when every condition above was false."],
+     ["if 0 <= x < 10:","Chained comparison; x is between 0 and 9."],
+     ["if name:","Truthy test; an empty string and 0 count as false."],
+     ["a and b","True only when both are truthy."],
+     ["a or b","True when either is truthy."]],
+  w:["The colon and the indentation define the block. Forget the colon and it is a syntax error; wrong indentation runs the wrong lines.",
+     "elif chains stop at the first true branch. Put the most specific test first.",
+     "Testing == True is redundant. Write if flag:, not if flag == True:."]
+ },
+ "loops":{
+  i:"A for loop repeats a block once for each item in a sequence, and range() gives you numbers to count over. A while loop repeats as long as a condition stays true — you are responsible for making that condition eventually become false.",
+  s:[["for x in [1,2,3]:","Runs the block with x set to each item in turn."],
+     ["for i in range(3):","i takes 0, 1, 2 — the stop value is excluded."],
+     ["range(2, 8)","The numbers 2 through 7."],
+     ["range(10, 0, -1)","Counts down: 10, 9, ..., 1."],
+     ["for i, v in enumerate(seq):","i is the index, v is the item."],
+     ["while n > 0:","Repeats while n stays positive."],
+     ["break","Leaves the loop immediately."],
+     ["continue","Skips to the next iteration."]],
+  w:["range(1, 5) is 1, 2, 3, 4 — the stop value is never reached.",
+     "A while loop whose condition never turns false runs forever. Make sure something inside changes it.",
+     "Do not loop over range(len(seq)) to read items — loop the items directly, or use enumerate() for the index."]
+ },
+ "lists":{
+  i:"A list is an ordered, changeable collection. You can append to it, index into it, and slice it. Unlike a string, you can modify a list in place — which also means two names can point at the same list and both see a change.",
+  s:[["nums = [3, 1, 2]","A list of three ints."],
+     ["nums.append(4)","Adds 4 to the end, in place."],
+     ["nums[0]","First item: 3."],
+     ["nums[-1]","Last item."],
+     ["sorted(nums)","A new sorted list; nums is unchanged."],
+     ["nums.sort()","Sorts in place and returns None."],
+     ["len(nums)","How many items."],
+     ["nums[1:]","Everything from index 1 onward."]],
+  w:["nums.sort() returns None. Writing nums = nums.sort() throws the list away.",
+     "b = a does not copy the list — both names share it. Use a[:] or list(a) for a copy.",
+     "append() adds one item; extend() or + adds each item of another list."]
+ },
+ "dicts":{
+  i:"A dictionary maps keys to values. You look things up by key, not by position, and lookup stays fast no matter how big the dict gets. Keys are unique — assigning to an existing key overwrites it.",
+  s:[["d = {\"a\": 1, \"b\": 2}","Maps \"a\" to 1 and \"b\" to 2."],
+     ["d[\"a\"]","Looks up the value 1."],
+     ["d[\"c\"] = 3","Adds a new key."],
+     ["d.get(\"z\", 0)","Returns 0 instead of raising when \"z\" is missing."],
+     ["\"a\" in d","Tests for a key, not a value."],
+     ["d.items()","Yields (key, value) pairs."],
+     ["d.keys()","The keys; d.values() gives the values."]],
+  w:["d[\"z\"] raises KeyError when the key is absent. Use d.get(key, default) when it might be.",
+     "in checks keys, not values.",
+     "Counting things, the first sighting of a key has nothing to add to. counts[k] = counts.get(k, 0) + 1 handles it."]
+ },
+ "functions":{
+  i:"A function packages a piece of logic under a name so you can call it repeatedly. It takes arguments, does work, and returns a value. If you write no return statement, it returns None.",
+  s:[["def add(a, b):","Defines a function taking two arguments."],
+     ["    return a + b","Hands a value back to the caller."],
+     ["add(2, 3)","Calls it; evaluates to 5."],
+     ["def greet(name=\"there\"):","name has a default value."],
+     ["greet()","Uses the default: \"there\"."],
+     ["x = add(1, 2)","Stores the returned value."]],
+  w:["A function with no return statement returns None. print() shows a value; return hands it back — they are not the same.",
+     "Do not use a mutable default like def f(x=[]) — the one list is reused across calls.",
+     "Arguments match by position unless you name them: add(b=3, a=2) works by name."]
+ },
+ "list comprehensions":{
+  i:"A list comprehension builds a list in one expression: take each item from a sequence, optionally filter it, and transform it. It replaces the common pattern of making an empty list and appending in a loop.",
+  s:[["[x*2 for x in nums]","Doubles each item into a new list."],
+     ["[x for x in nums if x > 0]","Keeps only the positive items."],
+     ["[x*2 for x in nums if x > 0]","Filter first, then transform."],
+     ["[c.upper() for c in \"abc\"]","Works over any iterable."],
+     ["{x for x in nums}","Braces build a set instead."],
+     ["{k: v for k, v in pairs}","A dict comprehension."]],
+  w:["The if goes after the for when filtering. An if/else transform goes before the for: [a if cond else b for x in seq].",
+     "A comprehension builds the whole list in memory. For huge data, a generator in round brackets streams instead.",
+     "Nesting more than two fors is unreadable — fall back to a plain loop."]
+ },
+ "file I/O":{
+  i:"Reading and writing files means opening a path in a mode, working with the file object, then closing it. The with statement opens the file and guarantees it is closed even if something fails partway through.",
+  s:[["with open(\"f.txt\") as fh:","Opens for reading; closes automatically at the end."],
+     ["    text = fh.read()","The whole file as one string."],
+     ["fh.readlines()","A list of lines, newlines included."],
+     ["for line in fh:","Iterates one line at a time."],
+     ["open(\"f.txt\", \"w\")","Write mode — truncates the file first."],
+     ["open(\"f.txt\", \"a\")","Append mode — keeps existing content."],
+     ["fh.write(\"hi\\n\")","Writes a string; you add the newline yourself."]],
+  w:["\"w\" mode erases the file the moment you open it. Use \"a\" to add without losing what is there.",
+     "write() does not add a newline — include \\n yourself.",
+     "Without with, an unclosed file may not flush its writes to disk. Prefer with."]
+ },
+ "error handling":{
+  i:"When code hits something it cannot handle it raises an exception, which stops the program unless you catch it. try/except lets you attempt risky code and respond to specific failures instead of crashing.",
+  s:[["try:","Starts a block that might fail."],
+     ["    risky()","The code that could raise."],
+     ["except ValueError:","Handles that one exception type."],
+     ["except (TypeError, KeyError):","Handles either of several types."],
+     ["except Exception as e:","Binds the error object to e."],
+     ["finally:","Runs no matter what, error or not."],
+     ["raise ValueError(\"bad\")","Raises one yourself."]],
+  w:["A bare except: catches everything, including typos and Ctrl-C. Catch the specific type you expect.",
+     "Do not wrap a huge block in one try. Catch around the single line that can fail, so you know what failed.",
+     "Catching an error and doing nothing (pass) hides bugs. At least report it."]
+ },
+ "classes":{
+  i:"A class is a blueprint for objects that bundle data with the functions that act on it. __init__ sets up each new instance, and self is how every method refers to the particular object it was called on.",
+  s:[["class Dog:","Defines a new type."],
+     ["    def __init__(self, name):","Runs when you create one."],
+     ["        self.name = name","Stores data on the instance."],
+     ["    def speak(self):","A method; self is the instance."],
+     ["d = Dog(\"Rex\")","Creates an instance; __init__ runs."],
+     ["d.name","Reads the stored attribute."],
+     ["d.speak()","Calls the method on d."]],
+  w:["Every method's first parameter is self. Forget it and calling gives a \"takes 0 positional arguments\" error.",
+     "self.name (data on the object) is not the same as a plain variable name inside a method. Assign to self to make it stick.",
+     "__init__ builds the object; it must return None, nothing else."]
+ },
+ "iterators & generators":{
+  i:"An iterator produces values one at a time on demand. A generator is the easy way to write one: a function that yields values instead of returning once. It pauses at each yield and resumes where it left off, so it never holds the whole sequence at once.",
+  s:[["def count(n):","A generator function."],
+     ["    for i in range(n):","Loops inside it."],
+     ["        yield i","Hands back one value, then pauses."],
+     ["g = count(3)","Creates the generator; runs no body yet."],
+     ["next(g)","Pulls the next value: 0."],
+     ["for x in count(3):","Iterates until it is exhausted."],
+     ["list(count(3))","Forces all values into a list."]],
+  w:["A generator is single-use. Once exhausted, looping it again yields nothing — call the function again for a fresh one.",
+     "yield makes the whole function a generator; calling it runs none of the body until you iterate.",
+     "next() on an exhausted generator raises StopIteration. A for loop handles that for you."]
+ }
+},
+javascript:{
+ "let/const & types":{
+  i:"Declare a variable with const when it never gets reassigned and let when it does. JavaScript has a small set of primitive types and coerces between them freely — convenient until it surprises you, so compare with === to keep types out of it.",
+  s:[["const x = 5;","A binding you will not reassign."],
+     ["let y = 1;","A binding you can reassign."],
+     ["y = 2;","Fine for let; a const would throw."],
+     ["typeof x","\"number\"."],
+     ["5 === 5","Strict equality: value and type must match."],
+     ["\"5\" == 5","Loose equality: true, after coercion."],
+     ["null == undefined","true — both mean \"no value\"."]],
+  w:["const stops reassignment, not mutation. A const array can still be pushed to.",
+     "== coerces types: \"\" == 0 and \"5\" == 5 are both true. Use === unless you have a reason.",
+     "typeof null is \"object\" — a historical bug. Check x === null explicitly."]
+ },
+ "template literals":{
+  i:"A template literal is a string in backticks. Inside it, ${...} evaluates any expression and drops the result into the string, and the string can span several lines with no escapes. It replaces clumsy + concatenation.",
+  s:[["`hello`","A plain string in backticks."],
+     ["`Hi ${name}`","Inserts the value of name."],
+     ["`${a + b}`","Any expression works inside the braces."],
+     ["`${x.toFixed(2)}`","Method calls too."],
+     ["`${cond ? \"y\" : \"n\"}`","A ternary inside the interpolation."]],
+  w:["It is a backtick, not a single quote. 'Hi ${name}' stays literal — no interpolation happens.",
+     "Everything between the backticks is kept verbatim, including indentation and line breaks.",
+     "${} takes an expression, not a statement. You cannot put an if inside — use a ternary."]
+ },
+ "arrays":{
+  i:"An array is an ordered, resizable list. It has methods for adding, removing, and copying, and some change the array in place while others return a new one — knowing which is which saves you from lost data.",
+  s:[["const a = [1, 2, 3];","A three-element array."],
+     ["a.push(4)","Adds to the end, in place."],
+     ["a.pop()","Removes and returns the last element."],
+     ["a.length","The count."],
+     ["a.slice(1, 3)","A new array of elements 1 and 2; original unchanged."],
+     ["a.includes(2)","true if the value is present."],
+     ["[...new Set(a)]","Drops duplicate values."]],
+  w:["slice() copies; splice() changes the array in place. The names are easy to swap.",
+     "sort() sorts as strings by default: [10, 2].sort() reorders wrong. Pass (a, b) => a - b for numbers.",
+     "const a still allows a.push — const locks the binding, not the contents."]
+ },
+ "objects":{
+  i:"An object maps string keys to values. You reach a value by key with dot or bracket notation. Objects model a thing with named fields, and they are passed around by reference, not copied.",
+  s:[["const o = {name: \"Ada\", age: 36};","Two key/value pairs."],
+     ["o.name","Dot access: \"Ada\"."],
+     ["o[\"age\"]","Bracket access, for dynamic keys."],
+     ["o.city = \"London\"","Adds a key."],
+     ["Object.keys(o)","An array of the keys."],
+     ["Object.entries(o)","An array of [key, value] pairs."],
+     ["\"name\" in o","Tests for a key."]],
+  w:["Use brackets when the key is in a variable: o[k], not o.k (which looks for a literal \"k\").",
+     "const o = other copies the reference; changing o.x changes other.x. Spread {...o} for a shallow copy.",
+     "Reading a missing key gives undefined, not an error — a typo in a key name fails silently."]
+ },
+ "functions & arrow fns":{
+  i:"A function takes arguments and returns a value. Arrow functions are a shorter syntax; a one-expression arrow returns that expression with no return keyword. Arrows also keep the surrounding this instead of getting their own.",
+  s:[["function add(a, b) { return a + b; }","A named function."],
+     ["const add = (a, b) => a + b;","The same thing as an arrow."],
+     ["const sq = x => x * x;","One argument needs no parentheses."],
+     ["const f = () => 42;","No arguments."],
+     ["const g = x => ({v: x});","Wrap a returned object literal in parentheses."],
+     ["function f(a = 1) {}","A default argument."]],
+  w:["An arrow with braces needs an explicit return: x => { return x*2 }. Without braces it returns automatically.",
+     "To return an object literal from an arrow, wrap it: x => ({a: x}). Bare braces read as a function body.",
+     "Arrow functions have no own this — do not use them as object methods that rely on this."]
+ },
+ "map/filter/reduce":{
+  i:"These three replace most loops over arrays. map transforms every element into a new array, filter keeps the elements that pass a test, and reduce boils the whole array down to a single value. None of them change the original.",
+  s:[["nums.map(x => x * 2)","A new array, each element doubled."],
+     ["nums.filter(x => x > 0)","Only the elements that pass the test."],
+     ["nums.reduce((acc, x) => acc + x, 0)","Sums into acc, starting at 0."],
+     ["nums.map((x, i) => i)","The callback also receives the index."],
+     ["words.filter(Boolean)","Drops empty and falsy entries."],
+     ["nums.reduce((a, b) => Math.max(a, b))","No seed: starts from the first element."]],
+  w:["map always returns an array of the same length. To get fewer, that is filter.",
+     "reduce needs a starting value as the second argument; leave it off on an empty array and it throws.",
+     "These return new arrays. nums.map(...) on its own line does nothing unless you use the result."]
+ },
+ "destructuring":{
+  i:"Destructuring unpacks values out of arrays and objects into variables in one statement. Array destructuring goes by position; object destructuring goes by key name.",
+  s:[["const [a, b] = [1, 2];","a is 1, b is 2."],
+     ["const [x, , z] = arr;","Skip the middle element."],
+     ["const [head, ...rest] = arr;","rest is an array of the remainder."],
+     ["const {name, age} = person;","Pull keys by name."],
+     ["const {name: n} = person;","Rename to n."],
+     ["const {city = \"NA\"} = person;","A default when the key is missing."],
+     ["[a, b] = [b, a];","Swap without a temporary."]],
+  w:["Object destructuring matches by key name, so order does not matter — but the names must match the keys exactly.",
+     "Renaming is {key: newName}, which reads backwards the first few times.",
+     "Destructuring null or undefined throws. Give a fallback: const {x} = obj || {}."]
+ },
+ "promises":{
+  i:"A promise represents a value that is not ready yet — the result of something asynchronous. It settles once, either fulfilled with a value or rejected with an error, and you attach handlers with .then and .catch.",
+  s:[["fetch(url)","Returns a promise, not the data."],
+     ["p.then(v => ...)","Runs when it fulfills, with the value."],
+     ["p.catch(e => ...)","Runs if it rejects."],
+     ["p.finally(() => ...)","Runs either way."],
+     ["Promise.resolve(5)","An already-fulfilled promise."],
+     ["Promise.all([p1, p2])","Fulfills with both results, or rejects on the first failure."]],
+  w:[".then gives you the value; the promise object itself is not the value. You cannot read it synchronously.",
+     "An unhandled rejection is a silent bug. Always attach a .catch (or use try/catch with await).",
+     "Promise.all rejects as soon as any one rejects. Use Promise.allSettled to get every result regardless."]
+ },
+ "async/await":{
+  i:"async/await is syntax over promises that lets asynchronous code read top to bottom. await pauses inside an async function until a promise settles and gives you its value; errors surface as normal exceptions you catch with try/catch.",
+  s:[["async function f() {}","Always returns a promise."],
+     ["const v = await p;","Waits for p, then v is its value."],
+     ["const data = await fetch(url);","Pauses until the fetch settles."],
+     ["try { await p } catch (e) {}","Catches a rejection as an exception."],
+     ["await Promise.all([a, b])","Wait for several at once."],
+     ["const f = async () => { await g(); };","An async arrow function."]],
+  w:["await only works inside an async function. At the top level of a normal script it is a syntax error.",
+     "Awaiting inside a loop runs the calls one after another. To run them together, start them all, then await Promise.all.",
+     "An async function returns a promise even when you return a plain value — the caller still awaits it."]
+ },
+ "closures":{
+  i:"A closure is a function that remembers the variables from the scope where it was created, even after that scope has finished. It is what lets an inner function keep using an outer function's variables after the outer one returns.",
+  s:[["function make(n) { return () => n; }","The returned function closes over n."],
+     ["const get5 = make(5);","n is fixed at 5 for this one."],
+     ["get5()","Returns 5, from the remembered n."],
+     ["function counter() { let c = 0; return () => ++c; }","Keeps private state."],
+     ["const next = counter();","One counter with its own c."],
+     ["next(); next();","1, then 2 — c persists between calls."]],
+  w:["Each call to the outer function makes a fresh closure with its own variables. Two counters do not share a count.",
+     "A closure captures the variable, not a snapshot of its value. In a var loop, all closures see the final value — use let.",
+     "Closures keep their captured variables alive in memory; holding many of them adds up."]
+ }
+},
+r:{
+ "vectors":{
+  i:"The vector is R's basic unit — an ordered sequence of values of one type. Most operations work on a whole vector at once, element by element, so you rarely write a loop.",
+  s:[["v <- c(1, 2, 3)","c() combines values into a vector."],
+     ["v * 2","Multiplies every element: 2 4 6."],
+     ["v + c(10, 20, 30)","Element-wise addition."],
+     ["length(v)","How many elements."],
+     ["sum(v)","Adds them: 6."],
+     ["1:5","A vector 1 2 3 4 5."],
+     ["seq(0, 1, by = 0.25)","0 0.25 0.5 0.75 1."]],
+  w:["A vector holds one type. c(1, \"a\") coerces every element to character.",
+     "Operating on two vectors of different lengths recycles the shorter one, often silently — a common cause of wrong answers.",
+     "R indexing starts at 1, not 0."]
+ },
+ "data types":{
+  i:"R's common types are numeric, character, logical, and the factor for categories. A value can be missing, marked NA, and NA is contagious — most operations on it return NA unless you say otherwise.",
+  s:[["x <- 3.14","numeric."],
+     ["s <- \"text\"","character."],
+     ["b <- TRUE","logical — TRUE/FALSE, all caps."],
+     ["class(x)","Reports the type."],
+     ["as.numeric(\"5\")","Converts \"5\" to 5."],
+     ["is.na(x)","Tests for a missing value."],
+     ["f <- factor(c(\"a\",\"b\",\"a\"))","A categorical vector."]],
+  w:["Logicals are TRUE and FALSE (or T and F), all caps — not Python's True/False.",
+     "Any arithmetic involving NA gives NA. Use sum(v, na.rm = TRUE) to skip it.",
+     "A factor prints like text but is stored as integer codes; treating it as a string can surprise you."]
+ },
+ "data frames":{
+  i:"A data frame is a table: named columns, each a vector, all the same length. It is how R holds rectangular data. Columns can differ in type, but within a column every value is the same type.",
+  s:[["df <- data.frame(a = 1:3, b = c(\"x\",\"y\",\"z\"))","Two columns."],
+     ["df$a","The column named a, as a vector."],
+     ["df[[\"b\"]]","The same column, by name."],
+     ["nrow(df)","Number of rows."],
+     ["ncol(df)","Number of columns."],
+     ["head(df, 2)","The first two rows."],
+     ["df$c <- df$a * 2","Adds a new column."]],
+  w:["df$a returns a vector; df[\"a\"] returns a one-column data frame. The bracket difference changes the type.",
+     "Old versions of R turned string columns into factors by default. Pass stringsAsFactors = FALSE if you are on one.",
+     "Every column must be the same length; mismatched lengths error or recycle."]
+ },
+ "indexing":{
+  i:"You pull pieces out of vectors and data frames with square brackets. For a data frame the form is [rows, columns]: leave one side blank to take all of it. You can index by position, by name, or by a logical test.",
+  s:[["v[1]","The first element (R counts from 1)."],
+     ["v[c(1, 3)]","Elements 1 and 3."],
+     ["v[-1]","Everything except the first."],
+     ["v[v > 2]","Only the elements passing the test."],
+     ["df[1, ]","Row 1, all columns."],
+     ["df[, \"a\"]","All rows, column a."],
+     ["df[df$a > 1, ]","Rows where a > 1."]],
+  w:["v[-1] means \"drop element 1\", not \"the last element\" as in Python. Negative indices exclude.",
+     "In df[rows, cols], the comma matters: df[1] is column 1, df[1, ] is row 1.",
+     "A logical index must be the right length, or it recycles and selects the wrong rows."]
+ },
+ "apply family":{
+  i:"Instead of writing loops, R applies a function across a structure. sapply and lapply walk a vector or list; apply walks the rows or columns of a matrix or data frame. They collect the results together.",
+  s:[["sapply(1:3, function(x) x^2)","1 4 9, simplified to a vector."],
+     ["lapply(1:3, function(x) x^2)","The same, returned as a list."],
+     ["sapply(df, class)","The class of each column."],
+     ["apply(m, 1, sum)","Row sums of a matrix (margin 1)."],
+     ["apply(m, 2, sum)","Column sums (margin 2)."],
+     ["vapply(v, f, numeric(1))","Like sapply, but you assert the return type."]],
+  w:["apply's second argument is the margin: 1 is rows, 2 is columns. Swapping them computes the wrong axis.",
+     "sapply tries to simplify and sometimes returns a matrix or a list you did not expect. lapply always returns a list.",
+     "These are not faster than a for loop by magic — they are about clarity, not speed."]
+ },
+ "functions":{
+  i:"You define a function with function(), and the value of its last expression is returned automatically — you rarely write return. Assign it to a name to call it.",
+  s:[["sq <- function(x) x^2","A one-line function."],
+     ["sq(4)","Calls it: 16."],
+     ["f <- function(x, y = 1) x + y","y has a default."],
+     ["f(3)","Uses the default: 4."],
+     ["g <- function(x) { r <- x*2; r }","The last expression is returned."],
+     ["return(x)","An explicit early return."]],
+  w:["The last evaluated expression is the return value; ending on an assignment returns nothing visible.",
+     "Arguments are lazy — not evaluated until used. A default can even refer to another argument.",
+     "Assigning with <- inside a function creates a local copy; it does not change the caller's variable."]
+ }
+},
+mermaid:{
+ "flowchart syntax":{
+  i:"A flowchart starts by declaring the diagram type and a direction, then lists nodes and the arrows between them. Mermaid lays it out for you — you only describe what connects to what.",
+  s:[["flowchart TD","Declares a flowchart, top-down."],
+     ["flowchart LR","Left-to-right instead."],
+     ["A --> B","An arrow from node A to node B."],
+     ["A --> B --> C","A chain in one line."],
+     ["A[Start] --> B[End]","Nodes with labels."]],
+  w:["The first line must declare the type (flowchart or graph) and a direction, or nothing renders.",
+     "Node ids are the bare words (A, B); the text in brackets is only the label.",
+     "TD/TB is top-down, LR is left-right. Mixing up the letters just rotates the layout."]
+ },
+ "node shapes":{
+  i:"The bracket you wrap a node's label in decides its shape — a rectangle, a rounded box, a diamond for decisions, and so on. The shape carries meaning, so pick it to match the node's role.",
+  s:[["A[Square]","A rectangle."],
+     ["B(Rounded)","Rounded corners."],
+     ["C([Stadium])","A pill / stadium shape."],
+     ["D{Decision}","A diamond, for a branch point."],
+     ["E[[Subroutine]]","A framed process box."],
+     ["F[(Database)]","A cylinder."]],
+  w:["Every opening bracket needs its matching close of the same kind. Mismatched brackets stop the whole diagram rendering.",
+     "The diamond {} is for decisions — use it where the flow splits, not for an ordinary step.",
+     "If a label has special characters, wrap it in quotes: A[\"a/b (c)\"]."]
+ },
+ "edge types":{
+  i:"Edges are not all the same. A solid arrow shows normal flow, a dotted arrow a weaker or optional link, a thick arrow emphasis, and you can label any of them to say what the connection means.",
+  s:[["A --> B","A solid arrow."],
+     ["A --- B","A plain line, no arrowhead."],
+     ["A -.-> B","A dotted arrow."],
+     ["A ==> B","A thick arrow."],
+     ["A -->|yes| B","A labelled arrow."],
+     ["A -- text --> B","Another way to label an edge."]],
+  w:["The arrowhead is the > at the end. A --- B has no head and reads as an undirected link.",
+     "A label goes in |pipes| right after the arrow, or between two dashes — do not mix the two forms in one edge.",
+     "Dotted and thick are -.-> and ==>; get the dots or dashes wrong and it falls back to a plain line."]
+ },
+ "sequence diagrams":{
+  i:"A sequence diagram shows messages passing between participants over time, read top to bottom. Each participant gets a vertical lifeline, and arrows between lifelines are the messages — solid for calls, dashed for replies.",
+  s:[["sequenceDiagram","Declares the diagram type."],
+     ["participant Server","Names a participant explicitly."],
+     ["A->>B: Request","A solid arrow carrying a message."],
+     ["B-->>A: Reply","A dashed arrow, for the response."],
+     ["A-)B: Async","An open arrowhead, asynchronous."],
+     ["Note over A: text","A note on the diagram."]],
+  w:["Sequence arrows use ->> and -->>, not the flowchart's -->. Flowchart syntax will not render here.",
+     "The message text goes after a colon on the same line. Forget the colon and the label drops.",
+     "Order is time: put the messages in the order they actually happen, top to bottom."]
+ },
+ "state diagrams":{
+  i:"A state diagram shows the states something can be in and the transitions between them. A special start marker shows where it begins, and each arrow can carry the event that causes the move.",
+  s:[["stateDiagram-v2","Declares the diagram type."],
+     ["[*] --> Idle","The start marker points at the first state."],
+     ["Idle --> Running","A transition."],
+     ["Running --> [*]","A transition to the end."],
+     ["Running --> Idle: stop","A transition with an event label."],
+     ["state \"Waiting\" as W","Give a state a display name."]],
+  w:["[*] is both the start and the end marker; which it means depends on whether it is the arrow's source or target.",
+     "Use stateDiagram-v2, not the older stateDiagram, for the current layout engine.",
+     "The event label goes after a colon on the transition, the same as a sequence message."]
+ }
+},
+};
+
 /* ============ storage ============ */
 const KEY="practicelog.offline.v1";
 const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[]};
@@ -184,7 +611,7 @@ const norm=(s)=>String(s??"").replace(/\r/g,"").split("\n").map(l=>l.trimEnd()).
 const online=()=>navigator.onLine;
 
 /* ============ session state ============ */
-let task=null, hintTier=0, secs=0, timer=null, running=false, exec=null, grade=null, banner=null, view="practice", busy=null;
+let task=null, lesson=null, hintTier=0, secs=0, timer=null, running=false, exec=null, grade=null, banner=null, view="practice", busy=null;
 
 function flash(msg){ banner=msg; render(); }
 function startTimer(){ if(timer)clearInterval(timer); running=true; timer=setInterval(()=>{secs++; const c=$("#clock"),b=$("#bar"); if(c){c.textContent=fmtClock(); c.className="clock "+(secs>=900?"teal":"");} if(b){b.style.width=Math.min(100,secs/900*100)+"%"; b.style.background=secs>=900?"var(--teal)":"var(--gold)";}},1000); }
@@ -289,8 +716,13 @@ function pickTask(){
   const set = matches.length?matches : (unseen.length?unseen:pool);
   return set[Math.floor(Math.random()*set.length)]||null;
 }
+function teach(){
+  lesson=nextConcept(); task=null; exec=null; grade=null; banner=null;
+  render();
+  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+}
 function newTask(){
-  task=pickTask(); hintTier=0; exec=null; grade=null; banner=null; secs=0;
+  task=pickTask(); lesson=null; hintTier=0; exec=null; grade=null; banner=null; secs=0;
   if(!task){ flash("No exercises left in this language. Add more to BANK."); return; }
   startTimer(); render();
   setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
@@ -395,7 +827,7 @@ function render(){
 
   const nav=el("nav",{});
   for(const[k,v]of Object.entries(LANGS))
-    nav.append(el("button",{class:"tab"+(S.lang===k?" on":""),onclick:()=>{S.lang=k;persist();task=null;exec=null;grade=null;stopTimer();render();}},v.tag+(v.star?" ★":"")));
+    nav.append(el("button",{class:"tab"+(S.lang===k?" on":""),onclick:()=>{S.lang=k;persist();task=null;lesson=null;exec=null;grade=null;stopTimer();render();}},v.tag+(v.star?" ★":"")));
   nav.append(el("span",{style:"flex:1"}));
   nav.append(el("button",{class:"tab",onclick:()=>{view=view==="practice"?"ledger":"practice";render();}},view==="practice"?"LEDGER":"PRACTICE"));
   app.append(nav);
@@ -419,14 +851,18 @@ function render(){
 
     // milestone
     const runs=LANGS[S.lang].runs;
-    app.append(el("div",{class:"card"},
+    const nc=nextConcept();
+    const mile=el("div",{class:"card"},
       el("span",{class:"lab"},"Next milestone"),
-      el("div",{style:"font-size:18px;font-weight:400;margin-top:6px"},nextConcept()),
+      el("div",{style:"font-size:18px;font-weight:400;margin-top:6px"},nc),
       el("div",{class:"meta",style:"margin-top:4px"},
-        `${solid.length} / ${LADDER[S.lang].length} cleared · ${runs==="native"?"graded by running your code":runs==="pyodide"?"graded by running your code (needs runtime)":"static checks only"}`),
-      el("button",{class:"primary",onclick:newTask},task?"Next exercise":"Give me an exercise")
-    ));
+        `${solid.length} / ${LADDER[S.lang].length} cleared · ${runs==="native"?"graded by running your code":runs==="pyodide"?"graded by running your code (needs runtime)":"static checks only"}`));
+    if(LESSONS[S.lang]&&LESSONS[S.lang][nc])
+      mile.append(el("button",{class:"ghost",style:"margin-top:14px",onclick:teach},"Teach me this"));
+    mile.append(el("button",{class:"primary",onclick:newTask},task?"Next exercise":"Give me an exercise"));
+    app.append(mile);
 
+    if(lesson) renderLesson(app);
     if(task) renderTask(app);
     if(exec) renderRun(app);
     if(grade) renderGrade(app);
@@ -446,6 +882,26 @@ function render(){
   app.append(foot);
 }
 
+function renderLesson(app){
+  const data=(LESSONS[S.lang]||{})[lesson];
+  const c=el("div",{class:"card",id:"lessoncard"});
+  c.append(el("span",{class:"lab"},"Lesson · "+LANGS[S.lang].label),el("h2",{},lesson));
+  if(!data){ c.append(el("p",{class:"brief"},"No lesson written for this concept yet.")); app.append(c); return; }
+  c.append(el("p",{class:"brief"},data.i));
+  const syn=el("div",{style:"margin-top:16px"});
+  syn.append(el("span",{class:"lab"},"Syntax"));
+  data.s.forEach(([code,desc])=>{
+    syn.append(el("pre",{style:"margin-top:12px"},code));
+    syn.append(el("p",{class:"note",style:"margin-top:4px"},desc));
+  });
+  c.append(syn);
+  const warn=el("div",{style:"margin-top:16px"});
+  warn.append(el("span",{class:"lab"},"Common mistakes"));
+  data.w.forEach(g=>warn.append(el("div",{class:"hint",style:"margin-top:10px"},g)));
+  c.append(warn);
+  c.append(el("button",{class:"primary",onclick:newTask},"Give me an exercise on this"));
+  app.append(c);
+}
 function renderTask(app){
   const c=el("div",{class:"card",id:"taskcard"});
   c.append(el("span",{class:"lab"},task.c),el("h2",{},task.t),el("p",{class:"brief"},task.b));

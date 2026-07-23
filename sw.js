@@ -1,5 +1,5 @@
 /* Practice Log service worker */
-const SHELL = "shell-v1";
+const SHELL = "shell-v2";
 const RUNTIME = "pyodide-v1";
 
 const APP_FILES = [
