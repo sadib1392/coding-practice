@@ -12,6 +12,7 @@ const APP_FILES = [
   "./apple-touch-icon.png",
   "./book/ch01.js",
   "./book/ch02.js",
+  "./book/ch03.js",
 ];
 
 self.addEventListener("install", (e) => {
