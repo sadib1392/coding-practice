@@ -38,6 +38,7 @@ const APP_FILES = [
   "./book/r02.js",
   "./book/r03.js",
   "./book/r04.js",
+  "./book/r05.js",
   "./book/r06.js",
 ];
 
