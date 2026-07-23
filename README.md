@@ -72,6 +72,22 @@ JavaScript never needed this — it runs in the browser engine itself, always.
 | R | Static checks only | Yes |
 | Mermaid | Syntax validation | Yes |
 
+## The book
+
+The **BOOK** tab is a chapter-by-chapter Python course following the curriculum of
+*Automate the Boring Stuff with Python* (3rd ed.) by Al Sweigart. The lesson text is
+original to this app; the real book is free to read at
+<https://automatetheboringstuff.com/3e/> and each chapter links to its original.
+
+Each chapter has readings (highlightable, like lessons), practice questions with
+reveal-style answers, and graded exercises that run your code. Progress — sections
+read, exercises passed, and your last position — is saved on the device, and a
+"pick up where you left off" card appears on the practice screen.
+
+Chapters live in `book/chNN.js` files. To add one: create the file (copy the shape
+of `book/ch01.js`), add a `<script src="book/chNN.js">` tag in `index.html`, add the
+id to `BOOK_ORDER`, and add the file to `APP_FILES` in `sw.js` (then bump `SHELL`).
+
 ## Changing it later
 
 Everything is in `index.html`. Two things worth editing:

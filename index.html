@@ -100,6 +100,7 @@
 <body>
 <div id="app"></div>
 
+<script src="book/ch01.js"></script>
 <script>
 /* ============ data ============ */
 const LANGS = {
@@ -623,9 +624,18 @@ mermaid:{
 },
 };
 
+/* ============ book ============ */
+// Chapter content lives in book/chNN.js files (plain script tags, no build step).
+// Each file registers itself on window.BOOK.chapters; BOOK_ORDER controls sequence.
+const BOOK_META={title:"Automate the Boring Stuff with Python",edition:"3rd edition",author:"Al Sweigart",
+  url:"https://automatetheboringstuff.com/3e/",
+  credit:"Original lessons written for this app, following the book's chapter-by-chapter curriculum. The book itself is free to read online."};
+const BOOK_ORDER=["ch01"];
+const bookChapters=()=> (window.BOOK&&window.BOOK.chapters)||{};
+
 /* ============ storage ============ */
 const KEY="practicelog.offline.v1";
-const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{}};
+const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{}}};
 const clone=(o)=>JSON.parse(JSON.stringify(o));
 let S;
 try{ S = JSON.parse(localStorage.getItem(KEY)) || clone(blank); }
@@ -645,7 +655,7 @@ const norm=(s)=>String(s??"").replace(/\r/g,"").split("\n").map(l=>l.trimEnd()).
 const online=()=>navigator.onLine;
 
 /* ============ session state ============ */
-let task=null, lesson=null, hintTier=0, secs=0, timer=null, running=false, exec=null, grade=null, banner=null, view="practice", busy=null;
+let task=null, lesson=null, hintTier=0, secs=0, timer=null, running=false, exec=null, grade=null, banner=null, view="practice", busy=null, bookCh=null;
 
 function flash(msg){ banner=msg; render(); }
 function startTimer(){ if(timer)clearInterval(timer); running=true; timer=setInterval(()=>{secs++; const c=$("#clock"),b=$("#bar"); if(c){c.textContent=fmtClock(); c.className="clock "+(secs>=900?"teal":"");} if(b){b.style.width=Math.min(100,secs/900*100)+"%"; b.style.background=secs>=900?"var(--teal)":"var(--gold)";}},1000); }
@@ -772,7 +782,7 @@ async function submit(){
     busy = pyodide?"Running your code…":(online()?"Booting Python — one-time ~20s download":"Checking for the Python runtime…"); render();
     try{ exec=await runPython(code); }
     catch(e){
-      S.queue.push({date:today(),lang:S.lang,concept:task.c,title:task.t,code,expected:task.o,secs}); persist();
+      S.queue.push({date:today(),lang:S.lang,concept:task.c,title:task.t,code,expected:task.o,secs,book:task.book||null}); persist();
       banner=`Python could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
     }
   }
@@ -790,6 +800,12 @@ function logSession(g){
   const pass=g.mastered&&g.scores.correctness>=4;
   S.solid[S.lang]=pass?[...new Set([...solid,task.c])]:solid;
   S.shaky[S.lang]=pass?shaky.filter(c=>c!==task.c):[...new Set([...shaky,task.c])];
+  if(task.book&&pass){
+    ensureBook();
+    const arr=S.book.ex[task.book]||[];
+    if(!arr.includes(task.t)) arr.push(task.t);
+    S.book.ex[task.book]=arr;
+  }
   persist();
 }
 async function drainQueue(){
@@ -806,12 +822,53 @@ async function drainQueue(){
       S.sessions.unshift({date:q.date,lang:"python",mins:Math.max(1,Math.round(q.secs/60)),topic:q.concept,score:g.scores.correctness,verdict:"(queued) "+g.verdict});
       S.solid.python=pass?[...new Set([...solid,q.concept])]:solid;
       S.shaky.python=pass?shaky.filter(c=>c!==q.concept):[...new Set([...shaky,q.concept])];
+      if(q.book&&pass){
+        ensureBook();
+        const arr=S.book.ex[q.book]||[];
+        if(!arr.includes(q.title)) arr.push(q.title);
+        S.book.ex[q.book]=arr;
+      }
     }catch(e){ still.push(q); }
   }
   S.queue=still; persist();
   busy=null; banner=still.length?`${still.length} still pending — Python runtime is still unreachable.`:"Queue cleared. Results are in the ledger.";
   render();
 }
+/* ============ book actions ============ */
+function ensureBook(){ if(!S.book||typeof S.book!=="object") S.book={last:null,read:{},ex:{}};
+  if(!S.book.read) S.book.read={}; if(!S.book.ex) S.book.ex={}; }
+function chRead(chId){ return (S.book&&S.book.read&&S.book.read[chId])||{}; }
+function bookExDone(chId){ return (S.book&&S.book.ex&&S.book.ex[chId])||[]; }
+function firstUnread(chId){
+  const ch=bookChapters()[chId]; if(!ch) return 0;
+  const r=chRead(chId);
+  for(let i=0;i<ch.sections.length;i++) if(!r[i]) return i;
+  return ch.sections.length-1;
+}
+function openBook(chId,sec){
+  view="book"; bookCh=chId;
+  if(S.lang!=="python"){ S.lang="python"; persist(); }
+  render();
+  const target=sec!=null?sec:firstUnread(chId);
+  setTimeout(()=>{const n=$("#bsec"+target); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+}
+function markRead(chId,i){
+  ensureBook();
+  if(!S.book.read[chId]) S.book.read[chId]={};
+  S.book.read[chId][i]=true;
+  const ch=bookChapters()[chId];
+  S.book.last={ch:chId,sec:Math.min(i+1,(ch?ch.sections.length:1)-1)};
+  persist(); render();
+}
+function startBookExercise(chId,i){
+  const ch=bookChapters()[chId]; if(!ch||!ch.exercises[i]) return;
+  if(S.lang!=="python"){ S.lang="python"; persist(); }
+  task=clone(ch.exercises[i]); task.book=chId;
+  lesson=null; hintTier=0; exec=null; grade=null; banner=null; secs=0; view="practice";
+  startTimer(); render();
+  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+}
+
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
   const a=el("a",{href:URL.createObjectURL(blob),download:"practice-log.json"});
@@ -865,9 +922,11 @@ function hlSpans(key, txt){
   if(pos<txt.length) nodes.push(txt.slice(pos));
   return nodes;
 }
-function hlEl(tag, cls, concept, idx, txt){
-  const key=S.lang+"|"+concept+"|"+idx;
+function hlElK(tag, cls, key, txt){
   return el(tag,{class:cls,"data-hl":key}, ...hlSpans(key,txt));
+}
+function hlEl(tag, cls, concept, idx, txt){
+  return hlElK(tag, cls, S.lang+"|"+concept+"|"+idx, txt);
 }
 function mergeRanges(rs){
   const s=[...rs].sort((a,b)=>a[0]-b[0]); const out=[];
@@ -963,7 +1022,8 @@ function render(){
   for(const[k,v]of Object.entries(LANGS))
     nav.append(el("button",{class:"tab"+(S.lang===k?" on":""),onclick:()=>{S.lang=k;persist();task=null;lesson=null;exec=null;grade=null;stopTimer();render();}},v.tag+(v.star?" ★":"")));
   nav.append(el("span",{style:"flex:1"}));
-  nav.append(el("button",{class:"tab",onclick:()=>{view=view==="practice"?"ledger":"practice";render();}},view==="practice"?"LEDGER":"PRACTICE"));
+  [["practice","PRACTICE"],["book","BOOK"],["ledger","LEDGER"]].forEach(([v,label])=>
+    nav.append(el("button",{class:"tab"+(view===v?" on":""),onclick:()=>{view=v;render();}},label)));
   app.append(nav);
 
   if(banner) app.append(el("div",{class:"card banner"},banner));
@@ -972,7 +1032,18 @@ function render(){
     el("button",{class:"ghost",style:"margin-top:10px",onclick:drainQueue},"Grade queued")));
 
   if(view==="ledger"){ renderLedger(app,solid,shaky); }
+  else if(view==="book"){ renderBook(app); }
   else{
+    // continue-the-book card
+    const lastB=S.book&&S.book.last, lastCh=lastB&&bookChapters()[lastB.ch];
+    if(lastCh){
+      const r=chRead(lastB.ch), readN=Object.keys(r).filter(k=>r[k]).length;
+      app.append(el("div",{class:"card"},
+        el("span",{class:"lab"},"Book · pick up where you left off"),
+        el("div",{style:"font-size:17px;margin-top:6px"},`Chapter ${lastCh.n}: ${lastCh.title}`),
+        el("div",{class:"meta",style:"margin-top:4px"},`${readN} / ${lastCh.sections.length} sections read · next: ${lastCh.sections[Math.min(lastB.sec,lastCh.sections.length-1)].t}`),
+        el("button",{class:"ghost",style:"margin-top:12px",onclick:()=>openBook(lastB.ch)},"Continue reading")));
+    }
     // timer
     const bar=el("i",{id:"bar",style:`width:${Math.min(100,secs/900*100)}%`});
     const tcard=el("div",{class:"card"},
@@ -1077,7 +1148,8 @@ function renderLesson(app){
 }
 function renderTask(app){
   const c=el("div",{class:"card",id:"taskcard"});
-  c.append(el("span",{class:"lab"},task.c),el("h2",{},task.t),el("p",{class:"brief"},task.b));
+  const chOfTask=task.book&&bookChapters()[task.book];
+  c.append(el("span",{class:"lab"},chOfTask?`Book exercise · Chapter ${chOfTask.n} · ${task.c}`:task.c),el("h2",{},task.t),el("p",{class:"brief"},task.b));
   c.append(el("div",{style:"margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)"},
     el("span",{class:"lab"},task.o!=null?"Expected output · checked automatically":"Expected result · not auto-checkable"),
     el("pre",{},task.o??"—")));
@@ -1122,6 +1194,103 @@ function renderGrade(app){
       pips, el("p",{class:"note"},grade.notes[k])));
   });
   c.append(el("p",{class:"verdict"},grade.verdict));
+  app.append(c);
+}
+
+function renderBook(app){
+  const chs=bookChapters();
+  if(bookCh&&chs[bookCh]){ renderChapter(app,bookCh,chs[bookCh]); return; }
+
+  const head=el("div",{class:"card"});
+  head.append(el("span",{class:"lab"},"The book"),
+    el("h2",{},BOOK_META.title),
+    el("p",{class:"note"},`${BOOK_META.author} · ${BOOK_META.edition}. ${BOOK_META.credit}`),
+    el("div",{style:"margin-top:10px"},el("a",{href:BOOK_META.url,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:14px"},"Read the original online →")));
+  app.append(head);
+
+  const any=BOOK_ORDER.some(id=>chs[id]);
+  if(!any){ app.append(el("div",{class:"card"},el("p",{class:"note"},"No chapters are loaded. Chapter files live in the book/ folder and register themselves on load."))); return; }
+
+  BOOK_ORDER.forEach(id=>{
+    const ch=chs[id]; if(!ch) return;
+    const r=chRead(id), total=ch.sections.length;
+    const readN=Object.keys(r).filter(k=>r[k]).length;
+    const exN=bookExDone(id).length, exT=ch.exercises.length;
+    const done=readN>=total&&exN>=exT;
+    const c=el("div",{class:"card"});
+    c.append(el("div",{class:"row"},
+      el("span",{class:"lab"},"Chapter "+ch.n),
+      el("span",{class:done?"teal":"meta",style:"font-size:11px;letter-spacing:.08em"},done?"COMPLETE":(readN||exN)?"IN PROGRESS":"UNREAD")));
+    c.append(el("h2",{style:"margin:6px 0"},ch.title));
+    c.append(el("p",{class:"note"},ch.blurb));
+    c.append(el("div",{class:"meta",style:"margin-top:8px"},`${readN} / ${total} sections read · ${exN} / ${exT} exercises passed`));
+    c.append(el("button",{class:"primary",onclick:()=>openBook(id)},readN===0?"Start chapter":"Continue chapter"));
+    app.append(c);
+  });
+}
+
+function renderChapter(app,chId,ch){
+  const c=el("div",{class:"card",id:"bookcard"});
+  c.append(el("button",{class:"ghost",style:"margin-bottom:16px",onclick:()=>{bookCh=null;render();}},"← All chapters"));
+  c.append(el("span",{class:"lab"},"Chapter "+ch.n+" · "+BOOK_META.title),el("h2",{},ch.title));
+  if(window.getSelection) c.append(el("div",{class:"meta",style:"margin:-2px 0 2px"},"Select any text to highlight it · tap a highlight to remove"));
+  c.append(el("div",{style:"margin:8px 0 2px"},el("a",{href:ch.src,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:13px"},"Read the original chapter →")));
+
+  const r=chRead(chId);
+  ch.sections.forEach((sec,si)=>{
+    const s=el("div",{id:"bsec"+si,style:"margin-top:24px;padding-top:18px;border-top:1px solid var(--rule)"});
+    s.append(el("div",{style:"font-size:17px;font-weight:500;margin-bottom:10px"},sec.t));
+    sec.body.forEach((blk,bi)=>{
+      const k=blk[0], v=blk[1];
+      if(k==="p") s.append(hlElK("p","read","book|"+chId+"|s"+si+"|b"+bi,v));
+      else if(k==="code") s.append(el("pre",{style:"margin-bottom:13px"},v));
+      else if(k==="note") s.append(hlElK("div","hint","book|"+chId+"|s"+si+"|b"+bi,v));
+    });
+    const isRead=!!r[si];
+    s.append(el("button",{class:"ghost",style:"margin-top:8px"+(isRead?";color:var(--teal);border-color:var(--teal)":""),
+      onclick:()=>markRead(chId,si)},isRead?"Read ✓":"Mark section as read"));
+    c.append(s);
+  });
+
+  if(ch.questions&&ch.questions.length){
+    const qs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+    qs.append(el("span",{class:"lab"},"Practice questions"));
+    qs.append(el("p",{class:"note",style:"margin-top:4px"},"Answer from memory first, then reveal. If one surprises you, reread its section before moving on."));
+    ch.questions.forEach((item,qi)=>{
+      const box=el("div",{class:"prob"});
+      box.append(hlElK("p","read","book|"+chId+"|q"+qi,item.q));
+      const ans=el("div",{style:"display:none;margin-top:8px"});
+      ans.append(el("p",{class:"why"},item.a));
+      const btn=el("button",{class:"ghost",style:"margin-top:8px"},"Reveal answer");
+      btn.addEventListener("click",()=>{
+        const shown=ans.style.display!=="none";
+        ans.style.display=shown?"none":"block";
+        btn.textContent=shown?"Reveal answer":"Hide answer";
+      });
+      box.append(btn,ans);
+      qs.append(box);
+    });
+    c.append(qs);
+  }
+
+  if(ch.exercises&&ch.exercises.length){
+    const done=bookExDone(chId);
+    const xs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+    xs.append(el("span",{class:"lab"},"Graded exercises"));
+    xs.append(el("p",{class:"note",style:"margin-top:4px"},"These run your code for real. Pass them all to complete the chapter."));
+    ch.exercises.forEach((ex,xi)=>{
+      const passed=done.includes(ex.t);
+      const box=el("div",{class:"prob"});
+      box.append(el("div",{class:"row"},
+        el("span",{class:"lab"},"Exercise "+(xi+1)),
+        el("span",{class:passed?"teal":"meta",style:"font-size:12px"},passed?"PASSED ✓":"")));
+      box.append(el("div",{style:"font-size:16px;font-weight:500;margin-top:4px"},ex.t));
+      box.append(el("p",{class:"note",style:"margin-top:4px"},ex.b));
+      box.append(el("button",{class:passed?"ghost":"primary",style:"margin-top:10px",onclick:()=>startBookExercise(chId,xi)},passed?"Do it again":"Start exercise"));
+      xs.append(box);
+    });
+    c.append(xs);
+  }
   app.append(c);
 }
 
