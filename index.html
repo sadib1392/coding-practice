@@ -75,6 +75,14 @@
   footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--rule);
     font-size:12.5px;color:var(--soft);line-height:1.65}
   .teal{color:var(--teal)} .sig{color:var(--sig)} .gold{color:var(--gold)}
+  .read{font-family:var(--serif);font-size:16.5px;line-height:1.72;margin:0 0 13px;color:var(--ink)}
+  [data-hl]{-webkit-tap-highlight-color:transparent}
+  mark.hl{background:#FCE7A6;color:var(--ink);border-radius:2px;padding:0 1px;cursor:pointer}
+  #hlbtn{position:fixed;display:none;z-index:60;background:var(--ink);color:#fff;border:none;
+    border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;letter-spacing:.03em;
+    box-shadow:0 2px 10px rgba(20,25,22,.28)}
+  .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+  .why{font-family:var(--serif);font-size:15px;line-height:1.6;margin:8px 0 0;color:var(--soft)}
 
   /* Re-assert the light palette if the container or OS forces dark mode */
   @media (prefers-color-scheme:dark){
@@ -84,6 +92,8 @@
     .primary{background:#2E3330 !important;color:#FFFFFF !important}
     .tab.on{background:#2E3330 !important;color:#FFFFFF !important}
     .tab,.ghost{background:transparent !important}
+    mark.hl{background:#FCE7A6 !important;color:#2E3330 !important}
+    #hlbtn{background:#2E3330 !important;color:#FFFFFF !important}
   }
 </style>
 </head>
@@ -176,7 +186,9 @@ python:{
      ["5 / 2","Division always gives a float: 2.5."]],
   w:["Input arrives as a str even when it looks like a number. \"5\" + 5 raises — convert with int() first.",
      "= assigns, == compares. Using = where you meant == is a syntax error inside an if.",
-     "/ always returns a float: 4 / 2 is 2.0, not 2. Use // for integer division."]
+     "/ always returns a float: 4 / 2 is 2.0, not 2. Use // for integer division."],
+  read:["A variable in Python is a name pointing at a value, not a labelled box you pour a value into. When you write x = 5, Python builds the value 5 and binds the name x to it. Assign x to something else later and the name simply points elsewhere — the old value is untouched.","Because the value carries the type, the same operator can mean different things. + adds two numbers but joins two strings, and it refuses to mix the two; that TypeError is Python protecting you from guessing what you meant. To cross between types you convert on purpose, with int(), float(), or str().","The division operator / always produces a float, even when the result is whole: 4 / 2 is 2.0, not 2. Use // when you want the integer floor and % when you want the remainder. Those three — /, //, % — come up constantly once you start pulling numbers apart."],
+  practice:[{code:"x = 7\ny = 2\nprint(x / y)\nprint(x // y)\nprint(x % y)",out:"3.5\n3\n1",why:"/ is float division, // floors to a whole number, % is the remainder."},{code:"a = \"3\"\nb = 4\nprint(a * b)",out:"3333",why:"A string times an integer repeats it — \"3\" * 4 is not arithmetic."},{code:"print(type(5).__name__)\nprint(int(\"10\") + int(\"5\"))",out:"int\n15",why:"type(x).__name__ gives the type's name; int() parses the strings before adding."}]
  },
  "strings":{
   i:"A string is an ordered sequence of characters. You can index it, slice it, and call methods on it, but you can never change one in place — every string method returns a new string and leaves the original untouched.",
@@ -190,7 +202,9 @@ python:{
      ["f\"{s} world\"","An f-string; the braces insert the value of s."]],
   w:["Strings are immutable. s[0] = \"H\" raises — build a new string instead.",
      "Slicing is start-inclusive, stop-exclusive. s[1:4] gives three characters, not four.",
-     "split() with no argument splits on any run of whitespace and drops empties — not the same as split(\" \")."]
+     "split() with no argument splits on any run of whitespace and drops empties — not the same as split(\" \")."],
+  read:["A string is a sequence of characters in a fixed order, and everything you do to one produces a new string rather than changing the original. That immutability is the most important fact about strings: s.upper() hands back a new string and leaves s exactly as it was, so you have to capture the result to keep it.","You reach into a string by indexing and slicing. s[0] is the first character, s[-1] the last, and s[1:4] a slice that includes the start index and excludes the stop — so it gives three characters, not four. Slicing tolerates being slightly out of range instead of raising, which makes it forgiving.","Two methods do most of the work of taking text apart and putting it back together: split() breaks a string into a list on a separator, and join() glues a list back into one string. f-strings, written f\"{value}\", drop values straight into text and are the modern way to format."],
+  practice:[{code:"s = \"python\"\nprint(s[1:4])\nprint(s[::-1])\nprint(len(s))",out:"yth\nnohtyp\n6",why:"Slice [1:4] is start-inclusive and stop-exclusive; [::-1] reverses; len counts characters."},{code:"print(\"a-b-c\".split(\"-\"))\nprint(\"_\".join([\"x\", \"y\", \"z\"]))",out:"['a', 'b', 'c']\nx_y_z",why:"split() returns a list; join() builds one string from a list."},{code:"name = \"ada\"\nprint(f\"{name.capitalize()} is {len(name)}\")",out:"Ada is 3",why:"capitalize() upper-cases the first letter; len counts the letters."}]
  },
  "conditionals":{
   i:"An if statement runs a block only when its condition is truthy. elif checks a further condition only if the ones above it failed, and else catches everything left. The first branch that is true wins and the rest are skipped.",
@@ -203,7 +217,9 @@ python:{
      ["a or b","True when either is truthy."]],
   w:["The colon and the indentation define the block. Forget the colon and it is a syntax error; wrong indentation runs the wrong lines.",
      "elif chains stop at the first true branch. Put the most specific test first.",
-     "Testing == True is redundant. Write if flag:, not if flag == True:."]
+     "Testing == True is redundant. Write if flag:, not if flag == True:."],
+  read:["An if statement chooses whether to run a block based on whether its condition is truthy, and Python counts more than True as truthy. Any non-zero number and any non-empty string, list, or dict is true, while 0, an empty string, an empty list, and None are false. That is why if name: reads as \"if name has anything in it\".","elif and else build a chain of alternatives. Python checks the conditions top to bottom, runs the block for the first one that is true, and skips the rest entirely. Order therefore matters: put the most specific test first, or a broader one above it will win before the specific one is ever reached.","The colon and the indentation are structure, not decoration. The colon ends the condition and the indented lines beneath it are the block, so changing the indentation changes what runs. A one-line choice can be written as a conditional expression: \"pass\" if score >= 60 else \"fail\"."],
+  practice:[{code:"x = 0\nif x:\n    print(\"truthy\")\nelse:\n    print(\"falsy\")",out:"falsy",why:"0 is falsy, so the else branch runs."},{code:"n = 15\nif n % 3 == 0 and n % 5 == 0:\n    print(\"both\")\nelif n % 3 == 0:\n    print(\"three\")\nelse:\n    print(\"neither\")",out:"both",why:"15 is divisible by both 3 and 5, so the first branch wins."},{code:"score = 82\nprint(\"pass\" if score >= 60 else \"fail\")",out:"pass",why:"The conditional expression returns one value or the other; 82 >= 60 is true."}]
  },
  "loops":{
   i:"A for loop repeats a block once for each item in a sequence, and range() gives you numbers to count over. A while loop repeats as long as a condition stays true — you are responsible for making that condition eventually become false.",
@@ -217,7 +233,9 @@ python:{
      ["continue","Skips to the next iteration."]],
   w:["range(1, 5) is 1, 2, 3, 4 — the stop value is never reached.",
      "A while loop whose condition never turns false runs forever. Make sure something inside changes it.",
-     "Do not loop over range(len(seq)) to read items — loop the items directly, or use enumerate() for the index."]
+     "Do not loop over range(len(seq)) to read items — loop the items directly, or use enumerate() for the index."],
+  read:["A for loop walks through the items of a sequence, binding each to your loop variable in turn. You rarely need index numbers to do it — for item in things: hands you the items directly. When you genuinely need the position as well, enumerate() gives you the index and the item together.","range() manufactures the numbers to count over. range(n) runs from 0 up to but not including n, range(start, stop) lets you choose the beginning, and a third argument sets the step, which can be negative to count down. The stop value is always excluded — that is the detail that trips people up: range(1, 5) is 1, 2, 3, 4.","A while loop repeats as long as its condition stays true, and nothing changes that condition unless you write code that does. Forget to move toward the exit and the loop runs forever. break leaves a loop immediately; continue skips the rest of the current pass and jumps to the next."],
+  practice:[{code:"total = 0\nfor i in range(1, 5):\n    total += i\nprint(total)",out:"10",why:"range(1, 5) is 1, 2, 3, 4; their sum is 10."},{code:"for i in range(3):\n    if i == 1:\n        continue\n    print(i)",out:"0\n2",why:"continue skips the print when i is 1, leaving 0 and 2."},{code:"n = 5\nresult = 1\nwhile n > 1:\n    result *= n\n    n -= 1\nprint(result)",out:"120",why:"The loop multiplies 5*4*3*2 = 120, a factorial."}]
  },
  "lists":{
   i:"A list is an ordered, changeable collection. You can append to it, index into it, and slice it. Unlike a string, you can modify a list in place — which also means two names can point at the same list and both see a change.",
@@ -231,7 +249,9 @@ python:{
      ["nums[1:]","Everything from index 1 onward."]],
   w:["nums.sort() returns None. Writing nums = nums.sort() throws the list away.",
      "b = a does not copy the list — both names share it. Use a[:] or list(a) for a copy.",
-     "append() adds one item; extend() or + adds each item of another list."]
+     "append() adds one item; extend() or + adds each item of another list."],
+  read:["A list is an ordered, mutable collection: you can append, insert, remove, and reorder it in place. That in-place editing is powerful, but it has a consequence — a list is handled by reference. When you write b = a, both names point at the same list, so a change made through b is visible through a.","To get a genuine copy you have to ask for one, with a[:] or list(a). This is the mechanism behind one of the most common beginner surprises, where a list seems to change on its own because two names were quietly sharing it.","Some operations return a new list and some change the list in place, and confusing them loses data. sorted(nums) returns a new sorted list and leaves nums alone; nums.sort() reorders nums in place and returns None. Writing nums = nums.sort() therefore throws the list away and leaves you holding None."],
+  practice:[{code:"nums = [1, 2, 3]\nnums.append(4)\nnums.insert(0, 0)\nprint(nums)\nprint(nums[-1])",out:"[0, 1, 2, 3, 4]\n4",why:"insert(0, 0) puts 0 at the front; append added 4 at the end; [-1] is the last item."},{code:"a = [1, 2, 3]\nb = a\nb.append(4)\nprint(a)",out:"[1, 2, 3, 4]",why:"b = a shares one list, so appending through b shows up in a."},{code:"nums = [3, 1, 2]\nprint(sorted(nums))\nprint(nums)",out:"[1, 2, 3]\n[3, 1, 2]",why:"sorted() returns a new list; nums itself is unchanged."}]
  },
  "dicts":{
   i:"A dictionary maps keys to values. You look things up by key, not by position, and lookup stays fast no matter how big the dict gets. Keys are unique — assigning to an existing key overwrites it.",
@@ -244,7 +264,9 @@ python:{
      ["d.keys()","The keys; d.values() gives the values."]],
   w:["d[\"z\"] raises KeyError when the key is absent. Use d.get(key, default) when it might be.",
      "in checks keys, not values.",
-     "Counting things, the first sighting of a key has nothing to add to. counts[k] = counts.get(k, 0) + 1 handles it."]
+     "Counting things, the first sighting of a key has nothing to add to. counts[k] = counts.get(k, 0) + 1 handles it."],
+  read:["A dictionary stores pairs, mapping each key to a value, and looks values up by key rather than by position. That lookup stays fast however large the dict grows, which is why a dict is the natural tool whenever you need to associate one thing with another — a name with an age, a word with its count.","Reading a key that is not there raises KeyError. When a key might be missing, d.get(key, default) returns your default instead of raising, and it is the clean way to write the common counting pattern: counts[k] = counts.get(k, 0) + 1 starts a new key at zero and increments one that already exists.","Membership and iteration work on keys by default: \"a\" in d tests the keys, not the values, and looping for k in d gives you the keys. Since Python 3.7 a dict also keeps insertion order, so printing one shows the pairs in the order you added them."],
+  practice:[{code:"d = {\"a\": 1, \"b\": 2}\nd[\"c\"] = 3\nprint(d)\nprint(d.get(\"z\", 0))",out:"{'a': 1, 'b': 2, 'c': 3}\n0",why:"A new key is added in order; get() returns the default 0 for a missing key."},{code:"counts = {}\nfor ch in \"banana\":\n    counts[ch] = counts.get(ch, 0) + 1\nprint(counts)",out:"{'b': 1, 'a': 3, 'n': 2}",why:"get(ch, 0) + 1 counts each letter; the dict keeps first-seen order."},{code:"d = {\"x\": 1, \"y\": 2}\nprint(list(d.keys()))\nprint(\"x\" in d)",out:"['x', 'y']\nTrue",why:"keys() gives the keys; in tests membership among the keys."}]
  },
  "functions":{
   i:"A function packages a piece of logic under a name so you can call it repeatedly. It takes arguments, does work, and returns a value. If you write no return statement, it returns None.",
@@ -256,7 +278,9 @@ python:{
      ["x = add(1, 2)","Stores the returned value."]],
   w:["A function with no return statement returns None. print() shows a value; return hands it back — they are not the same.",
      "Do not use a mutable default like def f(x=[]) — the one list is reused across calls.",
-     "Arguments match by position unless you name them: add(b=3, a=2) works by name."]
+     "Arguments match by position unless you name them: add(b=3, a=2) works by name."],
+  read:["A function gives a piece of logic a name so you can run it again with different inputs. It takes arguments, does its work, and returns a value with return. A function with no return statement still returns something — None — which is why printing inside a function is not the same as returning: printing shows a value on screen, while returning hands it back to the caller to use.","Parameters can have defaults, written def greet(name=\"there\"), so a caller may leave them out. Arguments are matched by position unless you name them, and a *args parameter gathers any extra positional arguments into a tuple, letting one function take a variable number of inputs.","How a function treats an argument depends on whether it is mutable. Rebinding a parameter inside the function — x = x + 1 — changes only the local name and leaves the caller's variable alone. Mutating a passed-in list or dict, by contrast, is visible to the caller, because both names refer to the same object."],
+  practice:[{code:"def greet(name=\"there\"):\n    return \"hi \" + name\nprint(greet())\nprint(greet(\"ada\"))",out:"hi there\nhi ada",why:"The first call uses the default; the second passes \"ada\"."},{code:"def f(x):\n    x = x + 1\nn = 5\nf(n)\nprint(n)",out:"5",why:"x = x + 1 rebinds only the local name; the caller's n is untouched."},{code:"def add(*nums):\n    return sum(nums)\nprint(add(1, 2, 3, 4))",out:"10",why:"*nums collects the arguments into a tuple that sum() adds up."}]
  },
  "list comprehensions":{
   i:"A list comprehension builds a list in one expression: take each item from a sequence, optionally filter it, and transform it. It replaces the common pattern of making an empty list and appending in a loop.",
@@ -268,7 +292,9 @@ python:{
      ["{k: v for k, v in pairs}","A dict comprehension."]],
   w:["The if goes after the for when filtering. An if/else transform goes before the for: [a if cond else b for x in seq].",
      "A comprehension builds the whole list in memory. For huge data, a generator in round brackets streams instead.",
-     "Nesting more than two fors is unreadable — fall back to a plain loop."]
+     "Nesting more than two fors is unreadable — fall back to a plain loop."],
+  read:["A list comprehension builds a list in a single expression, replacing the familiar loop that makes an empty list and appends to it. Read it left to right as the finished value first, then its source: [x*x for x in range(5)] says \"the square of x, for each x in the range\".","A trailing if filters the source, keeping only the items that pass: [n for n in nums if n % 2 == 0] gives the even ones. That filtering if goes after the for. It is a different thing from an if/else that chooses the value itself, which goes before the for: [\"even\" if n % 2 == 0 else \"odd\" for n in nums].","Comprehensions are for building a collection from a transformation, and they read best when short. Once the logic grows past a filter and a simple expression — nested conditions, several fors, side effects — a plain loop is clearer, and clarity is worth more than fitting everything on one line."],
+  practice:[{code:"print([x * x for x in range(5)])",out:"[0, 1, 4, 9, 16]",why:"Each x in range(5) is squared into the new list."},{code:"nums = [1, 2, 3, 4, 5, 6]\nprint([n for n in nums if n % 2 == 0])",out:"[2, 4, 6]",why:"The trailing if keeps only the even numbers."},{code:"print([\"even\" if n % 2 == 0 else \"odd\" for n in range(4)])",out:"['even', 'odd', 'even', 'odd']",why:"The if/else before the for chooses each value; it does not filter."}]
  },
  "file I/O":{
   i:"Reading and writing files means opening a path in a mode, working with the file object, then closing it. The with statement opens the file and guarantees it is closed even if something fails partway through.",
@@ -281,7 +307,9 @@ python:{
      ["fh.write(\"hi\\n\")","Writes a string; you add the newline yourself."]],
   w:["\"w\" mode erases the file the moment you open it. Use \"a\" to add without losing what is there.",
      "write() does not add a newline — include \\n yourself.",
-     "Without with, an unclosed file may not flush its writes to disk. Prefer with."]
+     "Without with, an unclosed file may not flush its writes to disk. Prefer with."],
+  read:["Working with a file means opening a path in a mode, reading or writing through the object you get back, then closing it. The with statement is the right way to do this: it opens the file and guarantees it is closed when the block ends, even if an error interrupts you partway. Without it, an unclosed file may never flush its writes to disk.","The mode string decides what you can do and what happens to what is already there. \"r\" reads, \"w\" writes but truncates the file to empty the instant you open it, and \"a\" appends to the end without disturbing the existing content. Reaching for \"w\" when you meant \"a\" silently erases the file — a mistake worth watching for.","Once a file is open you can read the whole thing as one string with read(), pull a list of lines with readlines(), or iterate the object directly for one line at a time, which is the memory-friendly choice for large files. Writing is literal: write() puts exactly the string you give it, so you supply your own newlines."],
+  practice:[{code:"with open(\"note.txt\", \"w\") as f:\n    f.write(\"line1\\n\")\n    f.write(\"line2\\n\")\nwith open(\"note.txt\") as f:\n    print(f.read())",out:"line1\nline2",why:"Each write adds a line; read() returns the whole file, which prints as those two lines."},{code:"with open(\"data.txt\", \"w\") as f:\n    f.write(\"a\\nb\\nc\\n\")\nwith open(\"data.txt\") as f:\n    lines = f.readlines()\nprint(len(lines))\nprint(lines[0].strip())",out:"3\na",why:"readlines() splits on newlines into three entries; strip() removes the trailing newline."},{code:"with open(\"log.txt\", \"w\") as f:\n    f.write(\"x\")\nwith open(\"log.txt\", \"a\") as f:\n    f.write(\"y\")\nwith open(\"log.txt\") as f:\n    print(f.read())",out:"xy",why:"\"a\" appends to the existing \"x\" instead of truncating it."}]
  },
  "error handling":{
   i:"When code hits something it cannot handle it raises an exception, which stops the program unless you catch it. try/except lets you attempt risky code and respond to specific failures instead of crashing.",
@@ -294,7 +322,9 @@ python:{
      ["raise ValueError(\"bad\")","Raises one yourself."]],
   w:["A bare except: catches everything, including typos and Ctrl-C. Catch the specific type you expect.",
      "Do not wrap a huge block in one try. Catch around the single line that can fail, so you know what failed.",
-     "Catching an error and doing nothing (pass) hides bugs. At least report it."]
+     "Catching an error and doing nothing (pass) hides bugs. At least report it."],
+  read:["When Python hits something it cannot do — dividing by zero, turning \"oops\" into an int, reading a missing key — it raises an exception, which stops the program unless you catch it. try/except lets you attempt the risky code and take over when a specific failure happens, instead of crashing with a traceback.","Catch the exception type you actually expect: except ValueError handles a bad conversion, and except ValueError as e binds the error object so you can inspect it. A bare except: catches everything, including typos and the interrupt key, which hides bugs rather than handling them — so name the type.","Two more clauses complete the picture. else runs only when the try block raised nothing, and finally runs no matter what — success, failure, even a return — which makes it the place for cleanup that must always happen. Keep the try block small, around the single line that can fail, so you know exactly what you are catching."],
+  practice:[{code:"try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"cannot divide by zero\")",out:"cannot divide by zero",why:"10 / 0 raises ZeroDivisionError, which the except catches."},{code:"def to_int(s):\n    try:\n        return int(s)\n    except ValueError:\n        return -1\nprint(to_int(\"42\"))\nprint(to_int(\"oops\"))",out:"42\n-1",why:"\"42\" converts cleanly; \"oops\" raises ValueError and returns -1."},{code:"try:\n    print(\"start\")\n    raise ValueError(\"bad\")\nexcept ValueError as err:\n    print(\"caught:\", err)\nfinally:\n    print(\"done\")",out:"start\ncaught: bad\ndone",why:"The raise is caught, and finally always runs, so \"done\" prints last."}]
  },
  "classes":{
   i:"A class is a blueprint for objects that bundle data with the functions that act on it. __init__ sets up each new instance, and self is how every method refers to the particular object it was called on.",
@@ -307,7 +337,9 @@ python:{
      ["d.speak()","Calls the method on d."]],
   w:["Every method's first parameter is self. Forget it and calling gives a \"takes 0 positional arguments\" error.",
      "self.name (data on the object) is not the same as a plain variable name inside a method. Assign to self to make it stick.",
-     "__init__ builds the object; it must return None, nothing else."]
+     "__init__ builds the object; it must return None, nothing else."],
+  read:["A class is a blueprint for objects that bundle data together with the functions that act on that data. Calling the class — Dog(\"Rex\") — creates an instance and runs the special __init__ method, where you set up that object's starting state by assigning to self.","self is the object the method was called on, and it is how each method reaches that particular instance's data. Every method takes self as its first parameter, and every attribute you want to keep has to be stored on self; a plain variable inside a method disappears when the method returns. Forgetting self in a method's signature is the most common early error.","Beyond your own methods, a class can define special \"dunder\" methods that hook into Python's built-in behaviour. __repr__ controls how the object prints, so defining it turns an unreadable default like <Dog object at 0x...> into something you actually want to read."],
+  practice:[{code:"class Counter:\n    def __init__(self):\n        self.n = 0\n    def bump(self):\n        self.n += 1\nc = Counter()\nc.bump()\nc.bump()\nprint(c.n)",out:"2",why:"Each bump() increments self.n on the same instance; two calls give 2."},{code:"class Dog:\n    def __init__(self, name):\n        self.name = name\n    def speak(self):\n        return self.name + \" says woof\"\nd = Dog(\"Rex\")\nprint(d.speak())",out:"Rex says woof",why:"speak() reads self.name, set in __init__ to \"Rex\"."},{code:"class Point:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n    def __repr__(self):\n        return f\"Point({self.x}, {self.y})\"\nprint(Point(1, 2))",out:"Point(1, 2)",why:"__repr__ decides how the instance prints."}]
  },
  "iterators & generators":{
   i:"An iterator produces values one at a time on demand. A generator is the easy way to write one: a function that yields values instead of returning once. It pauses at each yield and resumes where it left off, so it never holds the whole sequence at once.",
@@ -320,7 +352,9 @@ python:{
      ["list(count(3))","Forces all values into a list."]],
   w:["A generator is single-use. Once exhausted, looping it again yields nothing — call the function again for a fresh one.",
      "yield makes the whole function a generator; calling it runs none of the body until you iterate.",
-     "next() on an exhausted generator raises StopIteration. A for loop handles that for you."]
+     "next() on an exhausted generator raises StopIteration. A for loop handles that for you."],
+  read:["An iterator is anything that produces values one at a time, on request, rather than all at once. A generator is the easy way to build one: an ordinary-looking function that uses yield instead of return. Calling it does not run the body — it hands you a generator object, paused, ready to produce values when you ask.","Each time you call next() or take another step in a for loop, the function runs up to its next yield, hands that value back, and freezes there until the next request. Because it holds only its current position and not the whole sequence, a generator can represent something huge, or even endless, in almost no memory.","The trade-off is that a generator is single-use. Once it has yielded its last value it is exhausted, and looping it again produces nothing — you call the function again for a fresh one. A generator expression, written with round brackets like (x*2 for x in nums), is the same idea in comprehension form and pairs naturally with sum() or max()."],
+  practice:[{code:"def squares(n):\n    for i in range(n):\n        yield i * i\nprint(list(squares(4)))",out:"[0, 1, 4, 9]",why:"list() drains the generator, collecting each yielded square."},{code:"def count_up(n):\n    for i in range(n):\n        yield i\ng = count_up(3)\nprint(next(g))\nprint(next(g))",out:"0\n1",why:"Each next() advances to the following yield: 0, then 1."},{code:"gen = (x * 2 for x in [1, 2, 3])\nprint(sum(gen))",out:"12",why:"The generator expression feeds its values straight into sum()."}]
  }
 },
 javascript:{
@@ -591,7 +625,7 @@ mermaid:{
 
 /* ============ storage ============ */
 const KEY="practicelog.offline.v1";
-const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[]};
+const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{}};
 const clone=(o)=>JSON.parse(JSON.stringify(o));
 let S;
 try{ S = JSON.parse(localStorage.getItem(KEY)) || clone(blank); }
@@ -814,6 +848,106 @@ async function cacheRuntime(){
   busy=null; askRuntime(); render();
 }
 
+/* ============ highlighting ============ */
+// Highlights are stored as character-offset ranges per prose block, keyed by
+// lang|concept|idx, inside S (one writer: persist()). Selection API is guarded.
+function hlSpans(key, txt){
+  const ranges=(S.highlights&&S.highlights[key])||[];
+  if(!ranges.length) return [txt];
+  const sorted=[...ranges].sort((a,b)=>a[0]-b[0]);
+  const nodes=[]; let pos=0;
+  for(const r of sorted){
+    const a=Math.max(0,Math.min(r[0],txt.length)), b=Math.max(a,Math.min(r[1],txt.length));
+    if(a>pos) nodes.push(txt.slice(pos,a));
+    nodes.push(el("mark",{class:"hl",title:"Tap to remove",onclick:(ev)=>{ev.stopPropagation();removeHighlight(key,r[0],r[1]);}},txt.slice(a,b)));
+    pos=b;
+  }
+  if(pos<txt.length) nodes.push(txt.slice(pos));
+  return nodes;
+}
+function hlEl(tag, cls, concept, idx, txt){
+  const key=S.lang+"|"+concept+"|"+idx;
+  return el(tag,{class:cls,"data-hl":key}, ...hlSpans(key,txt));
+}
+function mergeRanges(rs){
+  const s=[...rs].sort((a,b)=>a[0]-b[0]); const out=[];
+  for(const r of s){ const last=out[out.length-1];
+    if(last&&r[0]<=last[1]) last[1]=Math.max(last[1],r[1]); else out.push([r[0],r[1]]); }
+  return out;
+}
+function removeHighlight(key,a,b){
+  if(!S.highlights||!S.highlights[key]) return;
+  const arr=S.highlights[key].filter(r=>!(r[0]===a&&r[1]===b));
+  if(arr.length) S.highlights[key]=arr; else delete S.highlights[key];
+  persist(); render();
+}
+let hlBtn=null;
+function ensureHlBtn(){
+  if(hlBtn) return hlBtn;
+  hlBtn=el("button",{id:"hlbtn"},"Highlight");
+  hlBtn.addEventListener("mousedown",(e)=>e.preventDefault());
+  hlBtn.addEventListener("click",(e)=>{e.preventDefault();e.stopPropagation();applyHighlight();});
+  document.body.appendChild(hlBtn);
+  return hlBtn;
+}
+function hideHlBtn(){ if(hlBtn) hlBtn.style.display="none"; }
+function selHost(){
+  if(!window.getSelection) return null;
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed||!sel.rangeCount) return null;
+  const range=sel.getRangeAt(0);
+  if(!range.toString().trim()) return null;
+  let node=range.commonAncestorContainer;
+  if(node.nodeType===3) node=node.parentNode;
+  const host=node&&node.closest?node.closest("[data-hl]"):null;
+  if(!host) return null;
+  if(!host.contains(range.startContainer)||!host.contains(range.endContainer)) return null;
+  return {sel,range,host};
+}
+function showHlBtn(){
+  const s=selHost();
+  if(!s){ hideHlBtn(); return; }
+  const b=ensureHlBtn();
+  let rect; try{ rect=s.range.getBoundingClientRect(); }catch(e){ hideHlBtn(); return; }
+  if(!rect||(!rect.width&&!rect.height)){ hideHlBtn(); return; }
+  b.style.display="block";
+  const bw=b.offsetWidth||90, vw=window.innerWidth||360;
+  let left=rect.left+rect.width/2-bw/2;
+  left=Math.max(6,Math.min(left, vw-bw-6));
+  let top=rect.top-b.offsetHeight-8;
+  if(top<6) top=rect.bottom+8;
+  b.style.left=left+"px"; b.style.top=top+"px";
+}
+function applyHighlight(){
+  const s=selHost();
+  if(!s){ hideHlBtn(); return; }
+  const key=s.host.getAttribute("data-hl");
+  const pre=document.createRange();
+  try{ pre.selectNodeContents(s.host); pre.setEnd(s.range.startContainer,s.range.startOffset); }
+  catch(e){ hideHlBtn(); return; }
+  const start=pre.toString().length;
+  const end=start+s.range.toString().length;
+  if(end<=start){ hideHlBtn(); return; }
+  if(!S.highlights) S.highlights={};
+  const arr=S.highlights[key]?[...S.highlights[key]]:[];
+  arr.push([start,end]);
+  S.highlights[key]=mergeRanges(arr);
+  persist();
+  try{ s.sel.removeAllRanges(); }catch(e){}
+  hideHlBtn(); render();
+}
+let hlWired=false;
+function wireHighlighting(){
+  if(hlWired) return; hlWired=true;
+  try{
+    const onUp=()=>setTimeout(showHlBtn,10);
+    document.addEventListener("mouseup",onUp);
+    document.addEventListener("touchend",onUp);
+    document.addEventListener("selectionchange",()=>{ if(!selHost()) hideHlBtn(); });
+    window.addEventListener("scroll",hideHlBtn,true);
+  }catch(e){}
+}
+
 /* ============ render ============ */
 function render(){
   const app=$("#app"); app.innerHTML="";
@@ -887,18 +1021,57 @@ function renderLesson(app){
   const c=el("div",{class:"card",id:"lessoncard"});
   c.append(el("span",{class:"lab"},"Lesson · "+LANGS[S.lang].label),el("h2",{},lesson));
   if(!data){ c.append(el("p",{class:"brief"},"No lesson written for this concept yet.")); app.append(c); return; }
-  c.append(el("p",{class:"brief"},data.i));
+  if(window.getSelection) c.append(el("div",{class:"meta",style:"margin:-4px 0 12px"},"Select any text to highlight it · tap a highlight to remove"));
+
+  // lede
+  c.append(hlEl("p","brief",lesson,"i",data.i));
+
+  // reading
+  if(data.read&&data.read.length){
+    const rd=el("div",{style:"margin-top:18px"});
+    rd.append(el("span",{class:"lab",style:"margin-bottom:10px"},"Reading"));
+    data.read.forEach((para,k)=>rd.append(hlEl("p","read",lesson,"r"+k,para)));
+    c.append(rd);
+  }
+
+  // syntax
   const syn=el("div",{style:"margin-top:16px"});
   syn.append(el("span",{class:"lab"},"Syntax"));
-  data.s.forEach(([code,desc])=>{
+  data.s.forEach(([code,desc],k)=>{
     syn.append(el("pre",{style:"margin-top:12px"},code));
-    syn.append(el("p",{class:"note",style:"margin-top:4px"},desc));
+    syn.append(hlEl("p","note",lesson,"s"+k,desc));
   });
   c.append(syn);
+
+  // common mistakes
   const warn=el("div",{style:"margin-top:16px"});
   warn.append(el("span",{class:"lab"},"Common mistakes"));
-  data.w.forEach(g=>warn.append(el("div",{class:"hint",style:"margin-top:10px"},g)));
+  data.w.forEach((g,k)=>warn.append(hlEl("div","hint",lesson,"w"+k,g)));
   c.append(warn);
+
+  // practice: predict the output
+  if(data.practice&&data.practice.length){
+    const pr=el("div",{style:"margin-top:20px"});
+    pr.append(el("span",{class:"lab"},"Practice · predict the output"));
+    pr.append(el("p",{class:"note",style:"margin-top:4px"},"Read the code, decide what it prints, then reveal the answer. These are warm-ups — the graded exercise comes after."));
+    data.practice.forEach((p)=>{
+      const box=el("div",{class:"prob"});
+      box.append(el("pre",{},p.code));
+      const ans=el("div",{style:"display:none;margin-top:10px"});
+      ans.append(el("span",{class:"lab"},"Output"),el("pre",{class:"teal",style:"margin-top:6px"},p.out));
+      if(p.why) ans.append(el("p",{class:"why"},p.why));
+      const btn=el("button",{class:"ghost",style:"margin-top:10px"},"Reveal output");
+      btn.addEventListener("click",()=>{
+        const shown=ans.style.display!=="none";
+        ans.style.display=shown?"none":"block";
+        btn.textContent=shown?"Reveal output":"Hide output";
+      });
+      box.append(btn,ans);
+      pr.append(box);
+    });
+    c.append(pr);
+  }
+
   c.append(el("button",{class:"primary",onclick:newTask},"Give me an exercise on this"));
   app.append(c);
 }
@@ -974,6 +1147,7 @@ function renderLedger(app,solid,shaky){
 
 window.addEventListener("online",render);
 window.addEventListener("offline",render);
+wireHighlighting();
 window.addEventListener("error",function(e){
   const a=document.getElementById("app");
   if(a && !a.children.length){
