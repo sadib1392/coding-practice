@@ -30,11 +30,12 @@ runtime dependencies, no analytics, no sync.
 
 ```
 index.html              the entire app: markup, CSS, JS, lessons, exercises
-book/ch01.js            book chapter data (one file per chapter, plain script)
+book/ch01.js …ch24.js   book chapter data (one file per chapter, plain script)
 sw.js                   service worker: shell precache + Pyodide runtime cache
 manifest.webmanifest    PWA manifest
 icon-*.png, apple-touch-icon.png
-tests/                  jsdom smoke suites + content verification harnesses
+tests/                  jsdom smoke suites, shape contract check, and one
+                        self-checking chN_verify.py per chapter
 .github/workflows/deploy-pages.yml   auto-deploy to GitHub Pages
 ```
 
@@ -55,17 +56,26 @@ Everything below is merged to `main` and deployed:
   block; tap a highlight to remove. Survives reload.
 - **Book course** (BOOK tab): chapter reader following the curriculum of
   *Automate the Boring Stuff with Python* (3rd ed.) by Al Sweigart, with
-  **original lesson text** (see "Book content policy" below). Chapter 1
-  (Python Basics) is complete: 7 sections, 10 reveal-answer questions, 4
-  graded exercises. Chapter 2 (if-else and Flow Control) is complete: 8
-  sections, 10 questions, 4 graded exercises, all mapped to the
-  `conditionals` ladder concept. Per-section mark-as-read, progress meters,
+  **original lesson text** (see "Book content policy" below). **ALL 24
+  chapters of the 3e are complete** (ch01–ch24): each has 7–9 sections,
+  exactly 10 reveal-answer questions, and exactly 4 graded exercises mapped
+  to `LADDER.python` concepts. Per-section mark-as-read, progress meters,
   and a "pick up where you left off" card on the practice view.
 - **3e chapter map differs from older editions** (verified against the live
-  3e TOC): ch2 is booleans/comparisons/if-elif-else only; ch3 Loops, ch4
-  Functions, ch5 Debugging, ch6 Lists, ch7 Dictionaries, ch8 Strings.
-  Truthiness is NOT in 3e ch2, so the book chapter leaves it out (the app's
-  `conditionals` lesson still covers it).
+  3e TOC): ch2 is if-else only (truthiness moved to ch3), ch3 Loops, ch4
+  Functions, ch5 Debugging, ch6 Lists, ch7 Dictionaries, ch8 Strings, ch9
+  Regex, ch10 Files, ch11 Organizing Files, ch12 CLI Programs, ch13 Web
+  Scraping, ch14 Excel, ch15 Google Sheets, ch16 SQLite, ch17 PDF/Word,
+  ch18 CSV/JSON/XML, ch19 Time/Scheduling, ch20 Email/Texts/Push, ch21
+  Graphs/Images, ch22 OCR, ch23 Keyboard/Mouse, ch24 TTS/Speech.
+- **Third-party-library chapters (13–15, 17, 19–24) follow a strict
+  honesty policy**: the library workflow is taught with an in-chapter
+  disclosure note (desktop Python only — cannot run in this app), library
+  calls whose output could not be honestly captured are shown output-free
+  (never fabricated), outputs that ARE shown were captured from real runs
+  in scratch venvs (bs4, openpyxl, pypdf/python-docx, Pillow/Matplotlib),
+  and every graded exercise is stdlib-only so it runs in Pyodide. ch16
+  (sqlite3) and ch18 (csv/json/xml) are stdlib and fully runnable in-app.
 - **Chapters are NOT gated** — any chapter can be started at any time. The
   owner has been offered locked progression and hasn't asked for it.
 - Nav is three tabs: PRACTICE / BOOK / LEDGER, plus language tabs.
@@ -119,9 +129,12 @@ window.BOOK.chapters.chNN = {
 Exercise `c` maps to a `LADDER.python` concept so passing also advances the
 ladder. `logSession` and `drainQueue` both credit `S.book.ex[chId]` on pass.
 
-**To add a chapter**: create `book/chNN.js` (copy ch01's shape), add a
-`<script src>` tag in index.html before the main script, append the id to
-`BOOK_ORDER`, add the file to `APP_FILES` in sw.js, bump `SHELL`.
+All 24 chapters exist, so there is nothing left to add. **To edit a
+chapter**: change `book/chNN.js`, keep every shown output execution-true
+(update `tests/chN_verify.py` and run it), run `node tests/shape_check.mjs
+chNN` and `node tests/smoke3.mjs`, and bump `SHELL`. If a chapter were ever
+added or removed: `<script src>` tag in index.html before the main script,
+id in `BOOK_ORDER`, file in `APP_FILES` in sw.js, bump `SHELL`.
 
 ## Book content policy (important)
 
@@ -169,16 +182,21 @@ No framework; jsdom harnesses in `tests/`. Setup: `npm install jsdom`
 ```bash
 node tests/smoke.mjs    # core: renders, lesson shows, JS drill PASS 5/5, wrong answer MISMATCH
 node tests/smoke2.mjs   # lessons: reading/practice sections, reveal toggle, highlight round-trip
-node tests/smoke3.mjs   # book: reader, highlight, mark-read, resume, queue credit, ch02 (42 checks)
-python3 tests/ch1_verify.py       # re-verify chapter 1 outputs
-python3 tests/practice_verify.py  # re-verify lesson practice outputs
-python3 tests/ch2_verify.py       # re-verify chapter 2 outputs (self-checking, exits 1 on drift)
+node tests/smoke3.mjs   # book: deep flows + auto-checks EVERY wired chapter's render counts
+node tests/shape_check.mjs        # data contract for all book/ch*.js (counts, concepts, register)
+python3 tests/practice_verify.py  # re-verify lesson practice outputs (prints for eyeballing)
+python3 tests/ch1_verify.py       # chapter 1 outputs (print-style, the original pattern)
+for n in $(seq 2 24); do python3 "tests/ch${n}_verify.py" > /dev/null || echo "ch$n FAIL"; done
 ```
 
-All three smoke suites must pass before pushing. Always test the failing case
-too — a grader that passes everything is worse than no grader. Note: jsdom
-skips external `<script src>`; smoke3 evals `book/ch01.js` in `beforeParse` to
-replicate real script order.
+ch2–ch24 verify scripts are self-checking (exit 1 on drift). Checks that
+need a third-party lib (bs4, openpyxl, pypdf/python-docx, Pillow/Matplotlib)
+skip gracefully with a printed skip line when the lib is absent — the
+battery is green on a stdlib-only machine. All suites must pass before
+pushing. Always test the failing case too — a grader that passes everything
+is worse than no grader. Note: jsdom skips external `<script src>`; smoke3
+reads every `book/ch*.js` and evals them in `beforeParse` to replicate real
+script order, so new chapters need no smoke3 edits.
 
 ## Deploy
 
@@ -198,12 +216,23 @@ Python for offline" on wifi.
   code is the person running it. Never feed it code from any other source.
 - JS runner waits a fixed 700 ms for async output; keep drill delays < 500 ms.
 
+### Pyodide runtime facts (verified by real testing during the book build)
+
+- `shelve` does not import in Pyodide 0.26.4 (`No module named 'dbm'`).
+- `FileNotFoundError` reports `[Errno 44]` in Pyodide vs `[Errno 2]` locally
+  (WASI errno); ch10 discloses this in prose.
+- `zipfile` `compress_size` differs across zlib builds — never assert exact
+  compressed sizes.
+- The Pyodide filesystem persists across submissions within one session:
+  `shutil.move(file, existing_folder)` raises `shutil.Error` on a rerun, so
+  book exercises use full-destination-path moves and idempotent 'w' writes.
+- `subprocess`, threading, network, clipboard, and GUI libraries are absent
+  or non-functional in the app; chapters that teach them disclose it.
+
 ## Roadmap (owner's priorities)
 
-1. **Book chapters 3+** (next: Chapter 3, Loops — while/for/range in the 3e),
-   same shape as ch01/ch02, outputs verified by execution. This is the owner's
-   main ongoing ask — they want the whole ATBS curriculum over time. Prefer
-   ch2_verify.py's self-checking pattern for new verify scripts.
+1. ~~Book chapters~~ **DONE 2026-07-23: all 24 3e chapters are built,**
+   execution-verified, and wired in. Future book work is edits, not additions.
 2. Extend `read`/`practice` lesson sections to JavaScript concepts.
 3. More Python BANK drills (2-3 per concept; `while` loops and string
    formatting underrepresented).
