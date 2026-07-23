@@ -97,9 +97,7 @@
   .lvlbar > i{display:block;height:100%;background:var(--teal);border-radius:3px;transition:width .5s ease}
   /* ---- chapter path ---- */
   .path{position:relative;margin:0 0 10px;padding:4px 0}
-  .path .rail{position:absolute;left:50%;top:0;bottom:0;width:4px;margin-left:-2px;
-    background:repeating-linear-gradient(var(--rule) 0 8px, transparent 8px 16px);z-index:0}
-  .step{position:relative;z-index:1;display:flex;align-items:center;gap:12px;margin:0 0 14px;min-height:74px}
+  .step{position:relative;z-index:1;display:flex;align-items:center;gap:14px;margin:0 0 14px;min-height:74px}
   .step.right{flex-direction:row-reverse}
   .knob{width:74px;height:74px;border-radius:50%;flex:0 0 74px;border:3px solid var(--rule);
     background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -111,7 +109,9 @@
   .knob.done .cn{color:#D6EFE9}
   .knob.now{border-color:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--gold)}
   .knob.part{border-color:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--rule)}
-  .knob .crown{position:absolute;top:-9px;right:-6px;font-size:15px}
+  .knob .crown{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:14px;
+    color:var(--gold);background:var(--card);border:1px solid var(--rule);border-radius:50%;
+    width:24px;height:24px;line-height:22px;text-align:center}
   .stepinfo{flex:1;min-width:0}
   .stepinfo .t{font-size:15.5px;font-weight:500;line-height:1.3}
   .stepinfo .m{font-size:12.5px;color:var(--soft);margin-top:3px}
@@ -191,6 +191,11 @@
 <script src="book/ch22.js"></script>
 <script src="book/ch23.js"></script>
 <script src="book/ch24.js"></script>
+<script src="book/r01.js"></script>
+<script src="book/r02.js"></script>
+<script src="book/r03.js"></script>
+<script src="book/r04.js"></script>
+<script src="book/r06.js"></script>
 <script>
 /* ============ data ============ */
 const LANGS = {
@@ -204,7 +209,9 @@ const LADDER = {
     "list comprehensions","file I/O","error handling","classes","iterators & generators"],
   javascript:["let/const & types","template literals","arrays","objects","functions & arrow fns",
     "map/filter/reduce","destructuring","promises","async/await","closures"],
-  r:["vectors","data types","data frames","indexing","apply family","functions"],
+  r:["vectors","data types","data frames","indexing","functions","apply family",
+    "tibbles & pipes","dplyr verbs","grouping & summaries","tidy data","joins",
+    "ggplot2 basics","strings & regex","factors & dates","iteration"],
   mermaid:["flowchart syntax","node shapes","edge types","sequence diagrams","state diagrams"],
 };
 const BANK = {
@@ -1690,7 +1697,6 @@ function renderBook(app){
   const wrap=el("div",{class:"card"});
   wrap.append(el("span",{class:"lab"},"Your path"));
   const path=el("div",{class:"path"});
-  path.append(el("div",{class:"rail"}));
   loaded.forEach((id,i)=>{
     const ch=chs[id];
     const r=chRead(id), total=ch.sections.length;
