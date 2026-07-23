@@ -2,3 +2,7 @@ node_modules/
 package.json
 package-lock.json
 .DS_Store
+rscratch*.mjs
+scratch_*.mjs
+*-probe.mjs
+harness-test.mjs

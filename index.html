@@ -84,8 +84,75 @@
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
   .why{font-family:var(--serif);font-size:15px;line-height:1.6;margin:8px 0 0;color:var(--soft)}
 
+  /* ---- game chrome ---- */
+  .stats{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:0 0 16px;
+    background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:12px 14px}
+  .stat{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:500;line-height:1}
+  .stat .n{font-variant-numeric:tabular-nums}
+  .stat.dim{color:var(--soft);font-weight:400}
+  .flame{color:var(--gold)} .gem{color:var(--teal)} .heart{color:var(--sig)}
+  .hollow{color:var(--rule)}
+  .ringwrap{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .lvlbar{height:6px;background:var(--deep);border-radius:3px;overflow:hidden;flex:1;min-width:70px}
+  .lvlbar > i{display:block;height:100%;background:var(--teal);border-radius:3px;transition:width .5s ease}
+  /* ---- chapter path ---- */
+  .path{position:relative;margin:0 0 10px;padding:4px 0}
+  .step{position:relative;z-index:1;display:flex;align-items:center;gap:14px;margin:0 0 14px;min-height:74px}
+  .step.right{flex-direction:row-reverse}
+  .knob{width:74px;height:74px;border-radius:50%;flex:0 0 74px;border:3px solid var(--rule);
+    background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-weight:600;font-size:19px;color:var(--soft);cursor:pointer;position:relative;
+    box-shadow:0 3px 0 var(--rule);transition:transform .12s ease}
+  .knob:active{transform:translateY(3px);box-shadow:0 0 0 var(--rule)}
+  .knob .cn{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--soft);margin-top:-2px}
+  .knob.done{background:var(--teal);border-color:var(--teal);color:#fff;box-shadow:0 3px 0 #0d5548}
+  .knob.done .cn{color:#D6EFE9}
+  .knob.now{border-color:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--gold)}
+  .knob.part{border-color:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--rule)}
+  .knob .crown{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:14px;
+    color:var(--gold);background:var(--card);border:1px solid var(--rule);border-radius:50%;
+    width:24px;height:24px;line-height:22px;text-align:center}
+  .stepinfo{flex:1;min-width:0}
+  .stepinfo .t{font-size:15.5px;font-weight:500;line-height:1.3}
+  .stepinfo .m{font-size:12.5px;color:var(--soft);margin-top:3px}
+  .pulse{animation:pulse 1.9s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 3px 0 var(--gold)}50%{box-shadow:0 3px 0 var(--gold),0 0 0 9px rgba(156,106,8,.13)}}
+  /* ---- quests, badges ---- */
+  .quest{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule)}
+  .quest:last-child{border-bottom:0}
+  .qbar{height:7px;background:var(--deep);border-radius:4px;overflow:hidden;flex:1}
+  .qbar > i{display:block;height:100%;background:var(--gold);border-radius:4px;transition:width .5s ease}
+  .qdone .qbar > i{background:var(--teal)}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .badge{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;font-size:12.5px;
+    min-width:104px;background:var(--deep);color:var(--soft)}
+  .badge.on{background:var(--card);border-color:var(--teal);color:var(--ink)}
+  .badge b{display:block;font-size:13px;font-weight:500}
+  .wk{display:flex;align-items:flex-end;gap:6px;height:64px;margin-top:12px}
+  .wk div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+  .wk i{display:block;width:100%;background:var(--teal);border-radius:3px 3px 0 0;min-height:2px}
+  .wk span{font-size:10px;color:var(--soft)}
+  /* ---- toasts + celebration ---- */
+  #toasts{position:fixed;left:0;right:0;top:calc(8px + env(safe-area-inset-top));z-index:70;
+    display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;padding:0 12px}
+  .toast{background:var(--ink);color:#fff;border-radius:999px;padding:9px 16px;font-size:13.5px;
+    font-weight:500;box-shadow:0 3px 14px rgba(20,25,22,.26);max-width:100%}
+  .toast.badge-t{background:var(--gold)} .toast.level-t{background:var(--teal)}
+  #party{position:fixed;inset:0;z-index:80;background:var(--paper);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:28px}
+  #party h2{font-size:27px;margin:14px 0 4px}
+  #party .xpbig{font-size:44px;font-weight:600;color:var(--gold);font-variant-numeric:tabular-nums}
+  #confetti{position:fixed;inset:0;z-index:79;pointer-events:none}
+  @media (prefers-reduced-motion:reduce){ .pulse{animation:none} }
+
   /* Re-assert the light palette if the container or OS forces dark mode */
   @media (prefers-color-scheme:dark){
+    .stats,.knob{background:#FFFFFF !important}
+    .knob.done{background:#137565 !important;color:#fff !important}
+    .badge{background:#F4F5F2 !important} .badge.on{background:#FFFFFF !important;color:#2E3330 !important}
+    #party{background:#FBFAF8 !important}
+    .toast{background:#2E3330 !important;color:#FFFFFF !important}
+    .toast.badge-t{background:#9C6A08 !important} .toast.level-t{background:#137565 !important}
     html,body{color-scheme:light only;background:#FBFAF8 !important;color:#2E3330 !important}
     .card{background:#FFFFFF !important;color:#2E3330 !important}
     pre,textarea{background:#F4F5F2 !important;color:#2E3330 !important}
@@ -124,12 +191,41 @@
 <script src="book/ch22.js"></script>
 <script src="book/ch23.js"></script>
 <script src="book/ch24.js"></script>
+<script src="book/r01.js"></script>
+<script src="book/r02.js"></script>
+<script src="book/r03.js"></script>
+<script src="book/r04.js"></script>
+<script src="book/r05.js"></script>
+<script src="book/r06.js"></script>
+<script src="book/r07.js"></script>
+<script src="book/r08.js"></script>
+<script src="book/r09.js"></script>
+<script src="book/r10.js"></script>
+<script src="book/r11.js"></script>
+<script src="book/r12.js"></script>
+<script src="book/r13.js"></script>
+<script src="book/r14.js"></script>
+<script src="book/r15.js"></script>
+<script src="book/r16.js"></script>
+<script src="book/r17.js"></script>
+<script src="book/r18.js"></script>
+<script src="book/r19.js"></script>
+<script src="book/r20.js"></script>
+<script src="book/r21.js"></script>
+<script src="book/r22.js"></script>
+<script src="book/r23.js"></script>
+<script src="book/r24.js"></script>
+<script src="book/r25.js"></script>
+<script src="book/r26.js"></script>
+<script src="book/r27.js"></script>
+<script src="book/r28.js"></script>
+<script src="book/r29.js"></script>
 <script>
 /* ============ data ============ */
 const LANGS = {
   python:{label:"Python",tag:"PY",star:true,runs:"pyodide"},
   javascript:{label:"JavaScript",tag:"JS",runs:"native"},
-  r:{label:"R",tag:"R",runs:false},
+  r:{label:"R",tag:"R",star:true,runs:"webr"},
   mermaid:{label:"Mermaid",tag:"MMD",runs:false},
 };
 const LADDER = {
@@ -137,7 +233,9 @@ const LADDER = {
     "list comprehensions","file I/O","error handling","classes","iterators & generators"],
   javascript:["let/const & types","template literals","arrays","objects","functions & arrow fns",
     "map/filter/reduce","destructuring","promises","async/await","closures"],
-  r:["vectors","data types","data frames","indexing","apply family","functions"],
+  r:["vectors","data types","data frames","indexing","functions","apply family",
+    "tibbles & pipes","dplyr verbs","grouping & summaries","tidy data","joins",
+    "ggplot2 basics","strings & regex","factors & dates","iteration"],
   mermaid:["flowchart syntax","node shapes","edge types","sequence diagrams","state diagrams"],
 };
 const BANK = {
@@ -180,12 +278,36 @@ javascript:[
  {c:"closures",t:"Private counter",b:"Write counter() returning an object with inc() and value(). Call inc twice, then log value().",o:"2",h:["The count must not be reachable from outside.","A variable declared inside counter() survives in the returned functions.","let n = 0; return { inc: () => n++, value: () => n }"]},
 ],
 r:[
- {c:"vectors",t:"Vector stats",b:"Create a vector of 3, 8, 12, 5, 9 and print its mean and its maximum.",o:null,h:["Both exist as built-ins.","mean() and max() take a vector directly.","v <- c(3,8,12,5,9); mean(v); max(v)"]},
- {c:"data types",t:"Coerce and check",b:"Create c(1, 'a', TRUE) and print its class. Explain in a comment why it is what it is.",o:null,h:["Vectors hold one type only.","R promotes everything to the most permissive type.","class(c(1,'a',TRUE)) returns character"]},
- {c:"data frames",t:"Filter rows",b:"Build a data frame with name (Ana, Bo, Cy) and score (88, 72, 95). Print only rows where score exceeds 80.",o:null,h:["Bracket indexing takes rows before the comma.","df[condition, ] keeps matching rows and all columns.","df[df$score > 80, ]"]},
- {c:"indexing",t:"Every other",b:"Given v <- 1:10, print every second element starting from the first.",o:null,h:["Indexing accepts a vector of positions.","seq() can build the positions you need.","v[seq(1, length(v), by = 2)]"]},
- {c:"apply family",t:"Column means",b:"Given a data frame with a = c(1,2,3) and b = c(4,5,6), print the mean of each column without a loop.",o:null,h:["The apply family walks rows or columns for you.","sapply() over a data frame iterates its columns.","sapply(df, mean)"]},
- {c:"functions",t:"Default argument",b:"Write greet(name, greeting = 'Hello') printing them joined by a space. Call it once with and once without the second argument.",o:null,h:["Defaults go in the signature.","paste() joins with a space by default.","greet <- function(name, greeting = 'Hello') print(paste(greeting, name))"]},
+ {c:"vectors",t:"Vector stats",b:"Store 3, 8, 12, 5, 9 in a vector, then print its mean and its maximum, in that order. Use default printing, so each line carries the [1] prefix.",o:"[1] 7.4\n[1] 12",h:["Both numbers come from built-in functions that take the whole vector at once.","mean() and max() each accept a vector and hand back one value.","Build the vector with c(), then print the two summaries on separate lines."]},
+ {c:"vectors",t:"Recycled addition",b:"Add c(1, 2, 3, 4) to c(10, 20) and print the result. Work out what R does with the shorter vector before you run it.",o:"[1] 11 22 13 24",h:["The two vectors are different lengths and R does not complain.","The shorter vector is recycled from its start until the lengths line up.","Element 3 pairs with 10 a second time, element 4 with 20."]},
+ {c:"data types",t:"Coerce and check",b:"Print the class of c(1, \"a\", TRUE), then the class of c(1, TRUE). Two lines.",o:"[1] \"character\"\n[1] \"numeric\"",h:["A vector holds one type, so R has to pick one.","Coercion runs one way only: logical to numeric to character, never back.","class() takes the vector; call it once for each of the two."]},
+ {c:"data types",t:"Missing values",b:"Given v <- c(4, NA, 8), print the sum, then the sum with missing values dropped, then how many values are missing. Three lines.",o:"[1] NA\n[1] 12\n[1] 1",h:["Arithmetic touching NA answers NA unless you tell it otherwise.","sum() takes na.rm, and is.na() gives a logical vector you can add up.","print(sum(v)), then the same call with na.rm set, then a count of the TRUEs."]},
+ {c:"data frames",t:"Filter rows",b:"Build a data frame with name (Ana, Bo, Cy) and score (88, 72, 95), then print only the rows where score is above 80.",o:"  name score\n1  Ana    88\n3   Cy    95",h:["Bracket indexing on a data frame takes rows before the comma.","df[condition, ] keeps the matching rows and every column.","The condition is a logical vector built from df$score."]},
+ {c:"data frames",t:"Add a total column",b:"Build a data frame with item (pen, book), price (2, 15) and qty (3, 2). Add a column called total holding price times qty, then print the whole frame.",o:"  item price qty total\n1  pen     2   3     6\n2 book    15   2    30",h:["A new column is an assignment to a name that does not exist yet.","df$new <- some vector of the same length creates the column.","The multiplication is element-wise across the two existing columns."]},
+ {c:"indexing",t:"Every other",b:"Given v <- 1:10, print every second element starting from the first.",o:"[1] 1 3 5 7 9",h:["Indexing accepts a whole vector of positions, not just one.","seq() builds 1, 3, 5 and so on when you give it a step.","v[positions] where positions runs from 1 to length(v) by 2."]},
+ {c:"indexing",t:"Drop and test",b:"Given v <- c(5, 12, 7, 20, 3), print the vector without its first element, then print only the elements greater than 6. Two lines.",o:"[1] 12  7 20  3\n[1] 12  7 20",h:["Two different kinds of index: one by position, one by condition.","A negative position excludes; a logical vector selects where it is TRUE.","v[-1] for the first line, and a comparison inside the brackets for the second."]},
+ {c:"functions",t:"Default argument",b:"Write greet(name, greeting = \"Hello\") that prints the greeting and the name joined by a space. Call it with just \"Ada\", then with \"Ada\" and \"Hi\".",o:"[1] \"Hello Ada\"\n[1] \"Hi Ada\"",h:["The default belongs in the signature, not in the body.","paste() joins its arguments with a space by default.","function(name, greeting = \"Hello\") then print the joined string."]},
+ {c:"functions",t:"Rescale to 0 and 1",b:"Write rescale(v) returning the vector shifted and squeezed so its smallest value becomes 0 and its largest becomes 1. Print rescale(c(2, 4, 10)).",o:"[1] 0.00 0.25 1.00",h:["Two numbers describe the range you are squeezing.","Subtract the minimum, then divide by the spread between max and min.","(v - min(v)) / (max(v) - min(v)), returned as the last expression."]},
+ {c:"apply family",t:"Column means",b:"Given a data frame with a = c(1, 2, 3) and b = c(4, 5, 6), print the mean of each column without writing a loop.",o:"a b\n2 5",h:["A data frame is a list of columns, and one of the apply functions walks a list.","sapply() over a data frame iterates the columns and keeps their names.","sapply(df, mean) — print the result."]},
+ {c:"apply family",t:"Square each",b:"Without writing a loop, print the squares of the numbers 1 through 5 as a single numeric vector.",o:"[1]  1  4  9 16 25",h:["You need the simplifying member of the family, not the list one.","sapply() returns a vector when every result is one number.","sapply(1:5, function(x) ...) with the squaring in the body."]},
+ {c:"tibbles & pipes",t:"Build a tibble",b:"Load tibble with suppressPackageStartupMessages(library(tibble)), build a tibble whose x column is 1:3 and whose y column is \"a\", \"b\", \"c\", then print it.",o:"# A tibble: 3 × 2\n      x y\n  <int> <chr>\n1     1 a\n2     2 b\n3     3 c",pkgs:["tibble"],h:["The constructor is named after the package.","tibble(col = values, col = values) takes the columns as named arguments.","Assign the tibble, then print it on its own line."]},
+ {c:"tibbles & pipes",t:"Pipe a chain",b:"Using the native pipe |>, take c(4, 9, 16), pass it through sqrt, then sum what comes out, and print the total. No intermediate variables.",o:"[1] 9",h:["Each step hands its result to the next as a first argument.","The native pipe needs the parentheses: x |> sqrt() and not x |> sqrt.","c(4, 9, 16) |> sqrt() |> ... and print the whole expression."]},
+ {c:"dplyr verbs",t:"Filter and sort",b:"Load dplyr with suppressPackageStartupMessages(library(dplyr)). Build a data frame with name (Ana, Bo, Cy, Dee) and score (88, 72, 95, 81). Keep the rows scoring above 80, sort them from highest to lowest, and print name and score only.",o:"  name score\n1   Cy    95\n2  Ana    88\n3  Dee    81",pkgs:["dplyr"],h:["Three verbs, one after another, each doing one job.","filter() keeps rows, arrange() sorts, select() keeps columns.","Chain them with |>, and wrap the sort column in desc()."]},
+ {c:"dplyr verbs",t:"Mutate a total",b:"Load dplyr with suppressPackageStartupMessages(library(dplyr)). Build a data frame with item (pen, book, mug), price (2, 15, 9) and qty (3, 2, 1). Add a total column of price times qty, sort by total descending, and print the result.",o:"  item price qty total\n1 book    15   2    30\n2  mug     9   1     9\n3  pen     2   3     6",pkgs:["dplyr"],h:["The new column has to exist before you can sort by it.","mutate() adds columns; arrange() reads any column, including a new one.","df |> mutate(total = ...) |> arrange(desc(total))"]},
+ {c:"grouping & summaries",t:"Points per team",b:"Load dplyr with suppressPackageStartupMessages(library(dplyr)). Build a data frame with team (red, blue, red, blue) and pts (3, 5, 7, 1). Print one row per team holding the team's total points, sorted by team name.",o:"# A tibble: 2 × 2\n  team  total\n  <chr> <dbl>\n1 blue      6\n2 red      10",pkgs:["dplyr"],h:["Say which rows belong together before you collapse them.","group_by() marks the groups and summarise() collapses each one to a row.","df |> group_by(team) |> summarise(total = ...) |> arrange(team)"]},
+ {c:"grouping & summaries",t:"Rows per city",b:"Load dplyr with suppressPackageStartupMessages(library(dplyr)). Build a data frame with city (Rome, Oslo, Rome, Rome, Oslo). Print how many rows each city has, sorted by city name.",o:"  city n\n1 Oslo 2\n2 Rome 3",pkgs:["dplyr"],h:["There is a verb that does group-and-tally in one call.","count(df, column) returns the groups with a column named n.","df |> count(city) |> arrange(city)"]},
+ {c:"tidy data",t:"Make it long",b:"Load tidyr with suppressPackageStartupMessages(library(tidyr)). Build a data frame with name (Ana, Bo), q1 (3, 5) and q2 (8, 2). Turn the two quarter columns into one column named quarter and one named sales, then print it.",o:"# A tibble: 4 × 3\n  name  quarter sales\n  <chr> <chr>   <dbl>\n1 Ana   q1          3\n2 Ana   q2          8\n3 Bo    q1          5\n4 Bo    q2          2",pkgs:["tidyr"],h:["The column headings q1 and q2 are data, not variable names.","pivot_longer() moves headings into a column of values.","pivot_longer(df, cols = c(q1, q2), names_to = ..., values_to = ...)"]},
+ {c:"tidy data",t:"Make it wide",b:"Load tidyr with suppressPackageStartupMessages(library(tidyr)). Build a data frame with name (Ana, Ana, Bo, Bo), quarter (q1, q2, q1, q2) and sales (3, 8, 5, 2). Spread it so each quarter is its own column, then print it.",o:"# A tibble: 2 × 3\n  name     q1    q2\n  <chr> <dbl> <dbl>\n1 Ana       3     8\n2 Bo        5     2",pkgs:["tidyr"],h:["This is the reverse of making a table long.","pivot_wider() takes the new column names from one column and the cells from another.","pivot_wider(df, names_from = quarter, values_from = sales)"]},
+ {c:"joins",t:"Inner join",b:"Load dplyr with suppressPackageStartupMessages(library(dplyr)). One data frame has id (1, 2, 3) and name (Ana, Bo, Cy). Another has id (1, 3) and city (Rome, Oslo). Print only the people who appear in both, sorted by id.",o:"  id name city\n1  1  Ana Rome\n2  3   Cy Oslo",pkgs:["dplyr"],h:["Only the matching keys survive this kind of join.","inner_join(a, b, by = \"id\") keeps rows found in both tables.","Pipe the join into arrange(id) before printing."]},
+ {c:"joins",t:"Left join keeps everyone",b:"Load dplyr with suppressPackageStartupMessages(library(dplyr)). One data frame has id (1, 2, 3) and name (Ana, Bo, Cy). Another has id (1, 3) and city (Rome, Oslo). Print every person, with the city left missing where there is no match, sorted by id.",o:"  id name city\n1  1  Ana Rome\n2  2   Bo <NA>\n3  3   Cy Oslo",pkgs:["dplyr"],h:["Every row on one side has to survive, matched or not.","left_join() keeps all rows of the left table and fills the gaps with NA.","left_join(people, places, by = \"id\") then arrange(id)"]},
+ {c:"ggplot2 basics",t:"Inspect the plot",b:"Load ggplot2 with suppressPackageStartupMessages(library(ggplot2)). Build a data frame with w (1, 2, 3, 4) and h (2, 4, 6, 9), then build a scatter plot of h against w with the x axis labelled Width. This app grades text, not pictures, so print the plot's x label with cat, then the number of rows in its data, each on its own line.",o:"Width\n4",pkgs:["ggplot2"],h:["A plot you never draw is still an object you can look inside.","A ggplot object carries its labels in p$labels and its data in p$data.","Assign the plot to p, then cat(p$labels$x) and nrow(p$data) on separate lines."]},
+ {c:"ggplot2 basics",t:"Count the layers",b:"Load ggplot2 with suppressPackageStartupMessages(library(ggplot2)). Build a data frame with w (1, 2, 3, 4) and h (2, 4, 6, 9), then plot the points AND a line through them, titled Growth. Print the title with cat, then the number of layers, each on its own line.",o:"Growth\n2",pkgs:["ggplot2"],h:["Every geom you add is one more layer on the same plot.","p$layers is a list, so its length counts the geoms.","Add geom_point() and geom_line(), then cat the title and the layer count."]},
+ {c:"strings & regex",t:"Which ones match",b:"Given v <- c(\"apple pie\", \"banana\", \"cherry pie\"), print how many elements contain \"pie\", then print those elements themselves. Two lines, base R only.",o:"[1] 2\n[1] \"apple pie\"  \"cherry pie\"",h:["A regex test over a vector gives you one TRUE or FALSE per element.","grepl() returns that logical vector; a logical vector can both be summed and used as an index.","print(sum(grepl(...))) for the count, then v[grepl(...)] for the matches."]},
+ {c:"strings & regex",t:"Clean the labels",b:"Load stringr with suppressPackageStartupMessages(library(stringr)). Given v <- c(\"  Red \", \"BLUE\", \" green\"), print the values trimmed of surrounding spaces and lower-cased, as one character vector.",o:"[1] \"red\"   \"blue\"  \"green\"",pkgs:["stringr"],h:["Two transformations, applied one after the other to the whole vector.","str_trim() removes the surrounding whitespace and str_to_lower() changes case.","Nest the calls, or pipe the vector through both, then print once."]},
+ {c:"factors & dates",t:"Ordered levels",b:"Given the values low, high, med, low, build a factor whose levels run low, med, high in that order. Print the levels, then print the counts per level.",o:"[1] \"low\"  \"med\"  \"high\"\nf\n low  med high\n   2    1    1",h:["Left alone, R sorts the levels alphabetically, which is not the order you want.","factor(x, levels = c(...)) fixes the order; table() counts each level.","Pass the levels explicitly, then print levels(f) and table(f)."]},
+ {c:"factors & dates",t:"Days between",b:"Given the two dates 2024-03-01 and 2024-01-15 as text, convert them to real dates and print how many days apart they are, then print the earlier one formatted as year and month only (YYYY-MM).",o:"Time difference of 46 days\n[1] \"2024-01\"",h:["Text that looks like a date is still text until you convert it.","as.Date() parses ISO text; subtracting two dates gives a difftime.","Convert both, subtract the earlier from the later, then use format() with \"%Y-%m\"."]},
+ {c:"iteration",t:"Double until 100",b:"Start at 1 and keep doubling until the value reaches 100 or more. Print the value it lands on, then the number of doublings it took. Two lines.",o:"[1] 128\n[1] 7",h:["You do not know the number of steps in advance, so a counted loop is the wrong shape.","A while loop repeats as long as its condition holds; keep a counter alongside the value.","while (n < 100) { n <- n * 2; ... } with a second variable counting the passes."]},
+ {c:"iteration",t:"Squares by hand",b:"Given v <- c(2, 5, 9), build a new vector holding each element squared, using a loop rather than a vectorised operation, and print it.",o:"[1]  4 25 81",h:["Growing a vector one element at a time is the slow way; make room first.","numeric(length(v)) allocates the result, and seq_along(v) gives safe positions.","for (i in seq_along(v)) out[i] <- ... then print out."]},
 ],
 mermaid:[
  {c:"flowchart syntax",t:"Login flow",b:"Write a top-down flowchart: Start goes to 'Enter password', branching to 'Access granted' if correct and back to 'Enter password' if wrong.",o:null,h:["Direction is declared on the first line.","Decisions use curly braces; edge labels sit inside pipes.","flowchart TD, then A[Start] --> B{Correct?} and B -->|Yes| C[...]"]},
@@ -518,7 +640,9 @@ r:{
      ["seq(0, 1, by = 0.25)","0 0.25 0.5 0.75 1."]],
   w:["A vector holds one type. c(1, \"a\") coerces every element to character.",
      "Operating on two vectors of different lengths recycles the shorter one, often silently — a common cause of wrong answers.",
-     "R indexing starts at 1, not 0."]
+     "R indexing starts at 1, not 0."],
+  read:["R has no separate idea of a single value. When you write x <- 5 you have made a numeric vector of length one, which is why R answers with [1] 5 — that [1] is the position of the first element printed on the line, and on a long vector you will see [12] or [25] start the later lines. Once you accept that everything is a vector, most of R's behaviour stops looking odd.","Because the arithmetic is vectorised, you apply an operation to the whole vector and R walks the elements for you. v * 2 doubles every element, v + w adds two vectors position by position, and sum(v) collapses a vector down to one number. Writing a loop to do the same work is not wrong, it is just longer, slower, and harder to read.","When an operation gets two vectors of different lengths, R recycles the shorter one from its start until the lengths match. That rule is what makes v * 2 work at all — the 2 is recycled across every element. It is also the rule that bites: if the longer length is an exact multiple of the shorter, R recycles without a word, and you get a full vector of confidently wrong numbers."],
+  practice:[{code:"v <- c(2, 4, 6)\nv * 10\nsum(v)",out:"[1] 20 40 60\n[1] 12",why:"Arithmetic is element-wise, so every element is multiplied; sum() collapses the vector to a single value."},{code:"c(1, 2, 3, 4) + c(10, 20)",out:"[1] 11 22 13 24",why:"The shorter vector is recycled to 10 20 10 20 before the addition, and the lengths divide evenly so R stays silent."},{code:"length(seq(0, 10, by = 2))\nrev(1:4)",out:"[1] 6\n[1] 4 3 2 1",why:"seq() includes both ends, so 0 2 4 6 8 10 is six values; rev() reverses the order."}]
  },
  "data types":{
   i:"R's common types are numeric, character, logical, and the factor for categories. A value can be missing, marked NA, and NA is contagious — most operations on it return NA unless you say otherwise.",
@@ -531,7 +655,9 @@ r:{
      ["f <- factor(c(\"a\",\"b\",\"a\"))","A categorical vector."]],
   w:["Logicals are TRUE and FALSE (or T and F), all caps — not Python's True/False.",
      "Any arithmetic involving NA gives NA. Use sum(v, na.rm = TRUE) to skip it.",
-     "A factor prints like text but is stored as integer codes; treating it as a string can surprise you."]
+     "A factor prints like text but is stored as integer codes; treating it as a string can surprise you."],
+  read:["Every element of a vector has to be the same type, so when you mix types in one c() call R does not error — it coerces. The order is fixed: logical becomes numeric, and numeric becomes character, never the other way. That is why c(1, TRUE) is numeric and c(1, \"a\") is character. Coercion is silent, so a single stray quotation mark in a column of numbers turns the whole column into text.","A missing value is written NA, and it is not zero and not an empty string — it is the absence of a value. Because R cannot know what the missing number was, arithmetic that touches it answers NA: sum(c(3, NA, 5)) is NA, and that is the honest answer. Passing na.rm = TRUE tells the function to drop the missing values first. Testing with x == NA never works, because that comparison is itself NA; use is.na(x).","Conversion between types is a deliberate call: as.numeric(), as.character(), as.integer(), as.logical(). They return NA with a warning when the conversion makes no sense, so as.numeric(\"twelve\") is NA rather than an error. as.integer() truncates towards zero instead of rounding, so as.integer(2.9) is 2."],
+  practice:[{code:"class(c(1, TRUE))\nclass(c(1, \"a\"))",out:"[1] \"numeric\"\n[1] \"character\"",why:"TRUE is promoted to 1, so the first stays numeric; one string drags everything to character."},{code:"x <- c(3, NA, 5)\nsum(x)\nsum(x, na.rm = TRUE)",out:"[1] NA\n[1] 8",why:"A sum touching a missing value is unknowable, so it is NA until na.rm drops it."},{code:"as.integer(2.9)\nas.numeric(\"12\") + 1\nis.na(NA)",out:"[1] 2\n[1] 13\n[1] TRUE",why:"as.integer() truncates rather than rounds, as.numeric() parses the text before the addition, and is.na() is the only reliable test for missingness."}]
  },
  "data frames":{
   i:"A data frame is a table: named columns, each a vector, all the same length. It is how R holds rectangular data. Columns can differ in type, but within a column every value is the same type.",
@@ -544,7 +670,9 @@ r:{
      ["df$c <- df$a * 2","Adds a new column."]],
   w:["df$a returns a vector; df[\"a\"] returns a one-column data frame. The bracket difference changes the type.",
      "Old versions of R turned string columns into factors by default. Pass stringsAsFactors = FALSE if you are on one.",
-     "Every column must be the same length; mismatched lengths error or recycle."]
+     "Every column must be the same length; mismatched lengths error or recycle."],
+  read:["A data frame is a list of vectors of equal length, presented as a table. That definition explains its behaviour: the columns are the list elements, so anything that walks a list walks the columns, and the rows are just positions shared across every column. Column types can differ from each other but never within a column.","There are three ways to reach a column and they do not return the same thing. df$score and df[[\"score\"]] both give you the column as a plain vector. df[\"score\"] gives you a data frame with one column still wrapped around it. Reaching for the wrong one is the usual reason a function complains that it was handed a data frame when it wanted numbers.","You add a column by assigning to a name that does not exist yet: df$total <- df$price * df$qty. The right-hand side has to be the same length as the frame, or a length that recycles into it. To look at part of the table, index with [rows, columns] — leave a side empty to take all of it, and note that df[1] is the first column while df[1, ] is the first row."],
+  practice:[{code:"df <- data.frame(name = c(\"Ana\", \"Bo\"), score = c(88, 72))\nnrow(df)\nncol(df)\nnames(df)",out:"[1] 2\n[1] 2\n[1] \"name\"  \"score\"",why:"nrow and ncol report the shape; names() returns the column names as a character vector."},{code:"df <- data.frame(a = 1:3, b = c(10, 20, 30))\ndf$c <- df$a * df$b\ndf",out:"  a  b  c\n1 1 10 10\n2 2 20 40\n3 3 30 90",why:"The new column is computed element-wise and printed with the row numbers down the left."},{code:"df <- data.frame(a = 1:3)\nclass(df$a)\nclass(df[\"a\"])",out:"[1] \"integer\"\n[1] \"data.frame\"",why:"$ unwraps the column to a vector; single brackets keep the data frame around it."}]
  },
  "indexing":{
   i:"You pull pieces out of vectors and data frames with square brackets. For a data frame the form is [rows, columns]: leave one side blank to take all of it. You can index by position, by name, or by a logical test.",
@@ -557,19 +685,9 @@ r:{
      ["df[df$a > 1, ]","Rows where a > 1."]],
   w:["v[-1] means \"drop element 1\", not \"the last element\" as in Python. Negative indices exclude.",
      "In df[rows, cols], the comma matters: df[1] is column 1, df[1, ] is row 1.",
-     "A logical index must be the right length, or it recycles and selects the wrong rows."]
- },
- "apply family":{
-  i:"Instead of writing loops, R applies a function across a structure. sapply and lapply walk a vector or list; apply walks the rows or columns of a matrix or data frame. They collect the results together.",
-  s:[["sapply(1:3, function(x) x^2)","1 4 9, simplified to a vector."],
-     ["lapply(1:3, function(x) x^2)","The same, returned as a list."],
-     ["sapply(df, class)","The class of each column."],
-     ["apply(m, 1, sum)","Row sums of a matrix (margin 1)."],
-     ["apply(m, 2, sum)","Column sums (margin 2)."],
-     ["vapply(v, f, numeric(1))","Like sapply, but you assert the return type."]],
-  w:["apply's second argument is the margin: 1 is rows, 2 is columns. Swapping them computes the wrong axis.",
-     "sapply tries to simplify and sometimes returns a matrix or a list you did not expect. lapply always returns a list.",
-     "These are not faster than a for loop by magic — they are about clarity, not speed."]
+     "A logical index must be the right length, or it recycles and selects the wrong rows."],
+  read:["Square brackets accept four different things, and knowing which one you are handing over explains the result. Positive numbers select those positions. Negative numbers drop them. A logical vector keeps the positions that are TRUE. A character vector selects by name. Positions count from 1, so v[1] is the first element and v[0] returns an empty vector rather than an error.","Selecting by condition is the workhorse. v > 6 does not give you values, it gives you a logical vector the same length as v, and feeding that back in as v[v > 6] keeps the elements where the test held. which(v > 6) turns the same test into the positions instead, which is what you want when you need to know where a value is rather than what it is.","For a data frame the bracket takes two slots separated by a comma: df[rows, columns]. Leave the row slot empty to take every row, or the column slot empty to take every column. The comma carries all the meaning — df[2] asks for the second column, df[2, ] asks for the second row. If a selection reduces the result to a single column, R quietly drops it to a vector unless you pass drop = FALSE."],
+  practice:[{code:"v <- c(10, 20, 30, 40)\nv[2]\nv[-1]\nv[c(TRUE, FALSE, TRUE, FALSE)]",out:"[1] 20\n[1] 20 30 40\n[1] 10 30",why:"Positive positions select, negative positions exclude, and a logical vector keeps the TRUE slots."},{code:"v <- c(4, 15, 8, 23)\nv[v > 10]\nwhich(v > 10)",out:"[1] 15 23\n[1] 2 4",why:"The first returns the values passing the test; which() returns their positions instead."},{code:"df <- data.frame(name = c(\"Ana\", \"Bo\", \"Cy\"), score = c(88, 72, 95))\ndf[2, \"name\"]\ndf[df$score > 80, \"name\"]",out:"[1] \"Bo\"\n[1] \"Ana\" \"Cy\"",why:"Both index [rows, column]; one row is chosen by position, the other by a logical test over the score column."}]
  },
  "functions":{
   i:"You define a function with function(), and the value of its last expression is returned automatically — you rarely write return. Assign it to a name to call it.",
@@ -581,7 +699,166 @@ r:{
      ["return(x)","An explicit early return."]],
   w:["The last evaluated expression is the return value; ending on an assignment returns nothing visible.",
      "Arguments are lazy — not evaluated until used. A default can even refer to another argument.",
-     "Assigning with <- inside a function creates a local copy; it does not change the caller's variable."]
+     "Assigning with <- inside a function creates a local copy; it does not change the caller's variable."],
+  read:["A function in R is a value like any other: function(x) x^2 creates it, and the assignment gives it a name. Because it is a value you can pass it to another function without ceremony, which is what the whole apply family depends on. The body is either a single expression or a braced block, and the value of the last expression evaluated is what comes back.","Arguments can be matched by position or by name, and named arguments can appear in any order, so f(3, y = 2) and f(y = 2, x = 3) call the same thing. A default value goes in the signature and may refer to the other arguments, because R does not evaluate an argument until the body actually uses it. That laziness is why function(x, y = x * 2) works.","Nothing you assign inside a function reaches outside it. A function gets its own environment, and writing v <- something in the body creates a local name even if v exists in the caller. To keep a result you return it and the caller assigns it. Printing instead of returning is the classic beginner swap: a printed value is gone as soon as it hits the screen."],
+  practice:[{code:"f <- function(x, y = 2) x^y\nf(3)\nf(3, 3)",out:"[1] 9\n[1] 27",why:"The default supplies y on the first call; the second call overrides it by position."},{code:"f <- function(x) {\n  y <- x * 2\n  y + 1\n}\nf(3)",out:"[1] 7",why:"The braced body returns the value of its last expression, not the assignment above it."},{code:"f <- function(x, y = x * 2) x + y\nf(3)",out:"[1] 9",why:"Arguments are lazy, so the default for y is not computed until it is needed, by which time x is known."}]
+ },
+ "apply family":{
+  i:"Instead of writing loops, R applies a function across a structure. sapply and lapply walk a vector or list; apply walks the rows or columns of a matrix or data frame. They collect the results together.",
+  s:[["sapply(1:3, function(x) x^2)","1 4 9, simplified to a vector."],
+     ["lapply(1:3, function(x) x^2)","The same, returned as a list."],
+     ["sapply(df, class)","The class of each column."],
+     ["apply(m, 1, sum)","Row sums of a matrix (margin 1)."],
+     ["apply(m, 2, sum)","Column sums (margin 2)."],
+     ["vapply(v, f, numeric(1))","Like sapply, but you assert the return type."]],
+  w:["apply's second argument is the margin: 1 is rows, 2 is columns. Swapping them computes the wrong axis.",
+     "sapply tries to simplify and sometimes returns a matrix or a list you did not expect. lapply always returns a list.",
+     "These are not faster than a for loop by magic — they are about clarity, not speed."],
+  read:["The apply family answers one question: run this function once per element, and hand me the results. lapply is the honest version — it always returns a list with one element per input, whatever the function gave back. sapply is lapply with a convenience step on the end that simplifies the list to a vector or matrix when the shapes allow it.","That simplification is the catch. sapply returns a vector when every result is a single value, a matrix when every result is a vector of the same length, and a list when the results are ragged — so the type you get depends on the data, not on the code you wrote. In a script that matters, vapply is the safer call: you declare the expected shape, such as numeric(1), and it fails loudly when a result does not fit.","Because a data frame is a list of columns, sapply(df, mean) walks the columns and keeps their names, which is the fastest way to summarise a table. apply is the odd one out: it works on a matrix and needs a margin, where 1 means rows and 2 means columns. Passing a data frame to apply forces it into a matrix first, so mixed column types all become character."],
+  practice:[{code:"sapply(1:4, function(x) x^2)",out:"[1]  1  4  9 16",why:"Every result is one number, so sapply simplifies the list down to a numeric vector."},{code:"res <- lapply(1:3, function(x) x * 10)\nclass(res)\nres[[2]]",out:"[1] \"list\"\n[1] 20",why:"lapply never simplifies, so the result is a list and you reach into it with double brackets."},{code:"df <- data.frame(a = c(1, 2, 3), b = c(4, 5, 6))\nsapply(df, mean)",out:"a b\n2 5",why:"A data frame is a list of columns, so sapply walks the columns and keeps their names on the result."}]
+ },
+ "tibbles & pipes":{
+  i:"A tibble is a data frame with the sharp edges filed off: it prints a summary instead of dumping the whole table, and it never silently changes a column's type. The pipe |> takes the value on its left and hands it to the function on its right as the first argument, so a chain of steps reads in the order it happens.",
+  s:[["library(tibble)","Loads the package that provides tibble()."],
+     ["t <- tibble(x = 1:3, y = c(\"a\",\"b\",\"c\"))","Builds a tibble from named column vectors."],
+     ["t","Prints the size, each column's type, and the first rows."],
+     ["as_tibble(df)","Converts an existing data frame."],
+     ["t$x","One column, as a plain vector."],
+     ["c(4, 9, 16) |> sqrt()","The pipe: the vector becomes sqrt's first argument."],
+     ["x |> f() |> g()","Reads left to right, and means the same as g(f(x))."],
+     ["t |> nrow()","Pipes into any function, not only tidyverse ones."]],
+  w:["The native pipe needs the parentheses on the right: x |> sqrt is a syntax error, x |> sqrt() is not.",
+     "The pipe always fills the FIRST argument. When the value belongs elsewhere, name the other arguments and pass _ where it goes.",
+     "A tibble prints ten rows and stops. That is the printing method being polite, not the data being cut short."],
+  read:["A tibble is a data frame — it passes every test for one, and any function that takes a data frame takes a tibble. What changes is the rough edges. Printing shows the dimensions, the type under each column name, and the first ten rows, so typing the name of a large table no longer floods the console. Subsetting with single brackets always returns a tibble rather than quietly collapsing to a vector, so what you get back does not depend on how many columns you happened to keep.","The pipe is the other half of the style. x |> f() evaluates f(x), and chaining several calls turns a nest of parentheses inside out: sum(sqrt(c(4, 9, 16))) becomes c(4, 9, 16) |> sqrt() |> sum(), which reads in the order the work happens. |> is built into R itself, so no package is needed for it. You will also meet %>% from magrittr in older tidyverse code; the two behave the same for everyday chains.","One practical note for this app: attaching a tidyverse package prints a notice about which functions it masks, and that notice becomes part of your output when the grader compares text. Load packages with suppressPackageStartupMessages(library(dplyr)) in these drills so the only thing in your output is what you meant to print."],
+  practice:[{code:"suppressPackageStartupMessages(library(tibble))\ntibble(x = 1:3, y = c(\"a\", \"b\", \"c\"))",out:"# A tibble: 3 × 2\n      x y\n  <int> <chr>\n1     1 a\n2     2 b\n3     3 c",why:"A tibble prints its dimensions and the type of each column above the rows."},{code:"c(4, 9, 16) |> sqrt() |> sum()",out:"[1] 9",why:"The pipe feeds each result into the next call as its first argument, so this is sum(sqrt(c(4, 9, 16)))."},{code:"suppressPackageStartupMessages(library(tibble))\nt <- tibble(x = 1:3, y = c(2, 4, 6))\nclass(t[, \"x\"])\nclass(t$x)",out:"[1] \"tbl_df\"     \"tbl\"        \"data.frame\"\n[1] \"integer\"",why:"Single brackets on a tibble always return a tibble; the dollar sign unwraps the column to a vector."}]
+ },
+ "dplyr verbs":{
+  i:"dplyr gives you a handful of verbs that each do exactly one thing to a table: filter() keeps rows, select() keeps columns, mutate() adds columns, arrange() sorts, and rename() renames. Each takes the table as its first argument and returns a new table, which is why they chain.",
+  s:[["suppressPackageStartupMessages(library(dplyr))","Loads dplyr without the attach notice."],
+     ["filter(df, score > 80)","Keeps the rows where the test is TRUE."],
+     ["select(df, name, score)","Keeps those columns, in that order."],
+     ["select(df, -id)","Keeps everything except that column."],
+     ["mutate(df, total = price * qty)","Adds a column computed from the others."],
+     ["arrange(df, score)","Sorts ascending."],
+     ["arrange(df, desc(score))","Sorts descending."],
+     ["df |> filter(score > 80) |> arrange(name)","The verbs chain with the pipe."]],
+  w:["filter() drops the rows where the test is NA as well as the rows where it is FALSE — a missing value is never kept.",
+     "Every verb returns a new table and changes nothing. If you do not assign the result or pipe it onward, the work is gone.",
+     "Attaching dplyr masks stats::filter() and stats::lag(). The notice saying so is a notice, not an error."],
+  read:["The verbs are deliberately small. filter() chooses rows by a condition, select() chooses columns by name, mutate() adds or replaces a column, arrange() reorders rows, and summarise() collapses many rows into one. None of them changes the table you gave them; each returns a new one. That is what makes a pipeline safe to read — nothing behind you has been altered.","Inside a verb you refer to columns by bare name, with no quotation marks and no df$ prefix: filter(df, score > 80), not filter(df, df$score > 80). dplyr evaluates the expression inside the table's own context. It reads well, and it is also why a stray variable with the same name as a column can confuse a pipeline.","arrange() sorts ascending by default and takes desc() to flip a column, and it puts missing values last whichever way you sort. select() accepts negative names to drop columns and helpers like starts_with() to grab families of them. When the result matters, sort before you print: two rows with equal keys keep their original order, so a pipeline that never sorts is only as predictable as the data that went in."],
+  practice:[{code:"suppressPackageStartupMessages(library(dplyr))\ndf <- data.frame(name = c(\"Ana\", \"Bo\", \"Cy\"), score = c(88, 72, 95))\ndf |> filter(score > 80) |> select(name)",out:"  name\n1  Ana\n2   Cy",why:"filter() keeps the two qualifying rows, then select() keeps one column — and the row numbers restart."},{code:"suppressPackageStartupMessages(library(dplyr))\ndf <- data.frame(x = c(1, 2, 3))\ndf |> mutate(double = x * 2) |> arrange(desc(double))",out:"  x double\n1 3      6\n2 2      4\n3 1      2",why:"mutate() adds the column, then arrange(desc()) sorts on it from largest to smallest."},{code:"suppressPackageStartupMessages(library(dplyr))\ndf <- data.frame(x = c(5, NA, 9))\nnrow(filter(df, x > 6))",out:"[1] 1",why:"The NA row tests to NA, which is not TRUE, so filter() drops it along with the row that failed."}]
+ },
+ "grouping & summaries":{
+  i:"group_by() does not change a table, it labels it: every verb that follows works within each group instead of across the whole thing. summarise() then collapses each group to a single row, which is how you get one number per team, per city, per month.",
+  s:[["df |> group_by(team)","Marks the groups; the rows are untouched."],
+     ["df |> group_by(team) |> summarise(total = sum(pts))","One row per team."],
+     ["summarise(df, n = n())","n() counts the rows in the group."],
+     ["summarise(df, avg = mean(pts))","Any summary function works."],
+     ["df |> count(city)","Group and tally in one step, into a column named n."],
+     ["df |> group_by(team) |> mutate(share = pts / sum(pts))","Grouped mutate keeps every row."],
+     ["ungroup(df)","Removes the grouping when you are done."],
+     ["df |> group_by(team) |> summarise(n = n()) |> arrange(team)","Sort before printing."]],
+  w:["summarise() drops every column you did not summarise. If you need a column to survive, group by it or summarise it too.",
+     "Grouping survives the summarise when you grouped by more than one column, so the next verb is still grouped. Call ungroup() or pass .groups = \"drop\".",
+     "mean() of a column holding NA returns NA. Pass na.rm = TRUE when the data has gaps."],
+  read:["Grouping splits a table into pieces without moving any data. group_by(team) attaches the grouping to the table, and the verbs that follow respect it: summarise() produces one row per group, mutate() computes within each group but keeps every row, and filter() tests within each group. The pattern reads as split, apply, combine, and dplyr handles the splitting and combining for you.","summarise() is where rows disappear. Whatever you name inside it becomes a column of the result, and everything you do not name is dropped, because there is no honest single value for a column you did not aggregate. n() is the count of rows in the group, and the usual functions — sum(), mean(), min(), max() — take a column and give back one number.","count() is the shorthand you will reach for constantly: df |> count(city) is group_by(city) followed by summarise(n = n()). Since groups come back in the order the grouping values were encountered, add arrange() before printing whenever the order of the output matters."],
+  practice:[{code:"suppressPackageStartupMessages(library(dplyr))\ndf <- data.frame(team = c(\"red\", \"blue\", \"red\"), pts = c(3, 5, 7))\ndf |> group_by(team) |> summarise(total = sum(pts)) |> arrange(team)",out:"# A tibble: 2 × 2\n  team  total\n  <chr> <dbl>\n1 blue      5\n2 red      10",why:"Each team collapses to one row, and the result comes back as a tibble."},{code:"suppressPackageStartupMessages(library(dplyr))\ndf <- data.frame(city = c(\"Rome\", \"Oslo\", \"Rome\"))\ndf |> count(city) |> arrange(city)",out:"  city n\n1 Oslo 1\n2 Rome 2",why:"count() groups and tallies in one call, naming the tally column n."},{code:"suppressPackageStartupMessages(library(dplyr))\ndf <- data.frame(team = c(\"red\", \"blue\"), pts = c(3, 5))\ndf |> summarise(rows = n(), avg = mean(pts))",out:"  rows avg\n1    2   4",why:"With no grouping, summarise() treats the whole table as one group and returns exactly one row."}]
+ },
+ "tidy data":{
+  i:"Data is tidy when each variable is a column, each observation is a row, and each cell holds one value. Real tables usually break one of those rules, and tidyr's job is to reshape them until they do not: pivot_longer() when column headings are really data, pivot_wider() when one variable is spread down a column.",
+  s:[["suppressPackageStartupMessages(library(tidyr))","Loads tidyr quietly."],
+     ["pivot_longer(df, cols = c(q1, q2), names_to = \"quarter\", values_to = \"sales\")","Headings become a column of values."],
+     ["pivot_wider(df, names_from = quarter, values_from = sales)","The reverse: values become columns."],
+     ["separate_wider_delim(df, code, delim = \"-\", names = c(\"a\", \"b\"))","Splits one column into two on a separator."],
+     ["drop_na(df)","Drops the rows holding any missing value."],
+     ["replace_na(df, list(sales = 0))","Fills the gaps in a named column."],
+     ["unite(df, \"code\", a, b, sep = \"-\")","Glues two columns back into one."]],
+  w:["Long and wide are not right and wrong. Long is what most tidyverse functions expect; wide is often what a person wants to read.",
+     "pivot_wider() gives NA for every combination that had no row. Missing cells in the wide table mean missing rows in the long one.",
+     "The column names in cols = c(q1, q2) are bare, not quoted, but names_to and values_to are given as quoted strings. Mixing that up is the usual error."],
+  read:["Tidy is a shape, not a quality of the numbers. One variable per column, one observation per row, one value per cell. Data arrives untidy for good reasons: a spreadsheet with one column per quarter is easy to read and easy to type into, but it hides the quarter — the variable — inside the column headings, where no function can reach it.","pivot_longer() fixes that case. You name the columns that are really values, say what the headings should be called with names_to, and what the cells should be called with values_to. Four rows across two quarter columns become eight rows with a quarter column beside them. The table gets taller and narrower, and every variable finally has a name you can group by, filter on, or plot.","pivot_wider() runs the other way, taking the names from one column and the cells from another, which is what you want for a table meant to be read by a person or for a matrix-shaped calculation. The two are inverses in principle, but not always in practice: widening a table that had no row for some combination produces NA in that cell, and narrowing it again keeps that NA as a row unless you drop it."],
+  practice:[{code:"suppressPackageStartupMessages(library(tidyr))\ndf <- data.frame(name = c(\"Ana\", \"Bo\"), q1 = c(3, 5), q2 = c(8, 2))\npivot_longer(df, cols = c(q1, q2), names_to = \"quarter\", values_to = \"sales\")",out:"# A tibble: 4 × 3\n  name  quarter sales\n  <chr> <chr>   <dbl>\n1 Ana   q1          3\n2 Ana   q2          8\n3 Bo    q1          5\n4 Bo    q2          2",why:"Two rows across two quarter columns become four rows, with the headings moved into a column of their own."},{code:"suppressPackageStartupMessages(library(tidyr))\ndf <- data.frame(name = c(\"Ana\", \"Ana\", \"Bo\"), quarter = c(\"q1\", \"q2\", \"q1\"), sales = c(3, 8, 5))\npivot_wider(df, names_from = quarter, values_from = sales)",out:"# A tibble: 2 × 3\n  name     q1    q2\n  <chr> <dbl> <dbl>\n1 Ana       3     8\n2 Bo        5    NA",why:"Bo has no q2 row, so the widened table has nothing to put in that cell and fills it with NA."},{code:"suppressPackageStartupMessages(library(tidyr))\ndf <- data.frame(code = c(\"a-1\", \"b-2\"))\nseparate_wider_delim(df, code, delim = \"-\", names = c(\"letter\", \"num\"))",out:"# A tibble: 2 × 2\n  letter num\n  <chr>  <chr>\n1 a      1\n2 b      2",why:"One cell holding two values is split into two columns, and both halves come back as text."}]
+ },
+ "joins":{
+  i:"A join matches rows from two tables on a key column. inner_join() keeps only the rows that match on both sides; left_join() keeps every row of the left table and fills in NA where the right side had nothing. Which one you pick decides how many rows come out.",
+  s:[["suppressPackageStartupMessages(library(dplyr))","dplyr provides the joins."],
+     ["inner_join(a, b, by = \"id\")","Only the ids found in both."],
+     ["left_join(a, b, by = \"id\")","Every row of a, NA where b had no match."],
+     ["right_join(a, b, by = \"id\")","Every row of b instead."],
+     ["full_join(a, b, by = \"id\")","Everything from both sides."],
+     ["anti_join(a, b, by = \"id\")","The rows of a with no match in b."],
+     ["semi_join(a, b, by = \"id\")","The rows of a that do match, with no columns added."],
+     ["left_join(a, b, by = c(\"pid\" = \"id\"))","When the key is named differently on each side."]],
+  w:["If a key appears twice on the right, the left row is duplicated once per match. A join that returns more rows than you started with means a key you thought was unique is not.",
+     "Joining without by = lets dplyr guess from the shared column names and print what it guessed. Say the key explicitly.",
+     "The key columns have to be the same type. Joining a character id to a numeric id errors rather than quietly matching."],
+  read:["Two tables about the same things, joined on the column they have in common: that is the whole idea. The key is usually an id, and every join asks the same question of each row — is there a match on the other side? What differs is what happens when the answer is no.","inner_join() drops the unmatched rows from both sides, so the result can only shrink. left_join() keeps every row of the left table, padding the added columns with NA where nothing matched, which is what you want when the left table is your data and the right is a lookup you are decorating it with. full_join() keeps everything from both. anti_join() and semi_join() add no columns at all — they use the second table purely as a filter, which is the quickest way to answer which of these are missing from that.","The trap is row counts. A join is only one-to-one when the key is unique on the right; if the right table has two rows for the same key, the matching left row is repeated twice, and a table you expected to keep its size has quietly grown. Check nrow() before and after a join you are unsure of, and be explicit with by = so you always know which column the match ran on."],
+  practice:[{code:"suppressPackageStartupMessages(library(dplyr))\na <- data.frame(id = c(1, 2, 3), name = c(\"Ana\", \"Bo\", \"Cy\"))\nb <- data.frame(id = c(1, 3), city = c(\"Rome\", \"Oslo\"))\ninner_join(a, b, by = \"id\") |> arrange(id)",out:"  id name city\n1  1  Ana Rome\n2  3   Cy Oslo",why:"Id 2 has no match on the right, so the inner join drops that row entirely."},{code:"suppressPackageStartupMessages(library(dplyr))\na <- data.frame(id = c(1, 2), name = c(\"Ana\", \"Bo\"))\nb <- data.frame(id = c(1), city = c(\"Rome\"))\nleft_join(a, b, by = \"id\") |> arrange(id)",out:"  id name city\n1  1  Ana Rome\n2  2   Bo <NA>",why:"A left join keeps every row on the left and fills the missing city with NA."},{code:"suppressPackageStartupMessages(library(dplyr))\na <- data.frame(id = c(1, 2), name = c(\"Ana\", \"Bo\"))\nb <- data.frame(id = c(1, 1), tag = c(\"x\", \"y\"))\nnrow(left_join(a, b, by = \"id\"))",out:"[1] 3",why:"The key is duplicated on the right, so the matching left row is repeated once per match and the table grows."}]
+ },
+ "ggplot2 basics":{
+  i:"A ggplot is built in layers: the data, a mapping from columns to visual properties, and one or more geoms that draw something. You add the pieces with +, and nothing is drawn until the object is printed.",
+  s:[["suppressPackageStartupMessages(library(ggplot2))","Loads ggplot2 quietly."],
+     ["ggplot(df, aes(x = w, y = h))","The data and the mapping; nothing is drawn yet."],
+     ["+ geom_point()","Draws the rows as points."],
+     ["+ geom_line()","Another layer on the same mapping."],
+     ["+ geom_col()","Bars whose height is the y column."],
+     ["+ labs(x = \"Width\", title = \"Growth\")","Axis labels and a title."],
+     ["p <- ggplot(...) + geom_point()","A plot is an object you can store."],
+     ["length(p$layers)","How many geoms the object carries."]],
+  w:["Layers are joined with +, not with the pipe. Mixing |> into the middle of a plot is a syntax error.",
+     "aes() is for mapping a column to a property. A fixed colour is not a mapping — colour = \"blue\" goes outside aes(), or you get a legend for a one-value variable.",
+     "This app grades text, so it cannot show you the picture. The drills inspect the plot object instead; the same code draws a chart in RStudio."],
+  read:["The grammar behind ggplot2 separates three decisions that beginners usually mix together: what the data is, which column maps to which visual property, and what shape is drawn. ggplot(df, aes(x = w, y = h)) settles the first two and draws nothing. Adding + geom_point() supplies the third, and only then is there anything to see.","Because the plot is an ordinary R object, you can assign it, add to it later, and look inside it. p$data is the data frame it will draw, p$layers is the list of geoms, and p$labels holds the labels you set. That is what the drills here use: this app captures text, not images, so the plot object is inspected rather than displayed. In RStudio or a notebook, printing the same p draws the chart.","Anything inside aes() is a mapping from a column to a property, and ggplot2 will add a legend to explain it. Anything outside aes() is a fixed setting. geom_point(colour = \"blue\") makes every point blue; aes(colour = \"blue\") invents a variable whose only value is the word blue and gives you a legend saying so. That single distinction accounts for most early confusion with the package."],
+  practice:[{code:"suppressPackageStartupMessages(library(ggplot2))\ndf <- data.frame(w = c(1, 2, 3), h = c(2, 4, 6))\np <- ggplot(df, aes(x = w, y = h)) + geom_point()\nlength(p$layers)\nnrow(p$data)",out:"[1] 1\n[1] 3",why:"One geom means one layer, and the plot object still holds the whole data frame it was given."},{code:"suppressPackageStartupMessages(library(ggplot2))\ndf <- data.frame(w = c(1, 2), h = c(3, 4))\np <- ggplot(df, aes(x = w, y = h)) + geom_point() + geom_line() + labs(title = \"Growth\")\nlength(p$layers)\np$labels$title",out:"[1] 2\n[1] \"Growth\"",why:"Each geom adds a layer, and labs() stores the title on the object rather than drawing it."},{code:"suppressPackageStartupMessages(library(ggplot2))\ndf <- data.frame(w = c(1, 2), h = c(3, 4))\np <- ggplot(df, aes(x = w, y = h))\nlength(p$layers)",out:"[1] 0",why:"A plot with no geom is a legal object with nothing to draw, which is why an empty panel is the symptom of a forgotten layer."}]
+ },
+ "strings & regex":{
+  i:"Text work in R is vectorised like everything else: one call tests, replaces, or trims a whole character vector. Regular expressions describe the pattern you are looking for, and the base functions and stringr's str_ functions do the same jobs with different names.",
+  s:[["nchar(v)","How many characters in each element."],
+     ["toupper(v)","Upper-cases every element."],
+     ["substr(s, 1, 3)","Characters 1 to 3 of each element."],
+     ["grepl(\"pie\", v)","TRUE or FALSE per element: does the pattern occur."],
+     ["sub(\"a\", \"-\", v)","Replaces the FIRST match in each element."],
+     ["gsub(\"a\", \"-\", v)","Replaces EVERY match."],
+     ["strsplit(\"a,b\", \",\")","Splits into a list of pieces."],
+     ["str_detect(v, \"pie\")","stringr's version of grepl, with the vector first."]],
+  w:["sub() replaces one match per element and gsub() replaces all of them. Reaching for sub() when you meant gsub() leaves half the job done.",
+     "A backslash in a regex has to be doubled in an R string: \"\\\\d\" is the pattern for a digit, because the string swallows one backslash before the regex sees it.",
+     "grepl() returns a logical vector while grep() returns positions. They differ by one letter and give completely different things."],
+  read:["Every string function in R takes a vector and returns one, so you never loop over text. nchar() gives a length per element, toupper() a converted element, and a comparison such as grepl(\"pie\", v) gives one TRUE or FALSE per element. Because a logical vector is also a valid index, testing and selecting are one step apart: v[grepl(\"pie\", v)] is every element that matched.","A regular expression is a small language for describing text. A plain word matches itself; ^ anchors to the start and $ to the end; . matches any character; \\\\d is a digit and \\\\s is whitespace; + means one or more of what came before. The doubling of the backslash is an R detail, not a regex one — the string literal consumes one backslash, so the pattern needs two to receive one.","The base functions and stringr do the same work. grepl/sub/gsub/substr map onto str_detect/str_replace/str_replace_all/str_sub, and the stringr versions are more consistent: the string always comes first, the pattern second, and the return type never changes with the input. Either family is fine, but mixing argument orders between them is a reliable way to get a confusing result."],
+  practice:[{code:"v <- c(\"apple\", \"banana\")\nnchar(v)\ntoupper(v)\nsubstr(v, 1, 3)",out:"[1] 5 6\n[1] \"APPLE\"  \"BANANA\"\n[1] \"app\" \"ban\"",why:"Each call runs over the whole vector and returns one result per element."},{code:"s <- \"banana\"\nsub(\"a\", \"-\", s)\ngsub(\"a\", \"-\", s)",out:"[1] \"b-nana\"\n[1] \"b-n-n-\"",why:"sub() stops after the first match; gsub() keeps going to the end of the string."},{code:"v <- c(\"apple pie\", \"banana\", \"cherry pie\")\ngrepl(\"pie\", v)\nv[grepl(\"pie\", v)]",out:"[1]  TRUE FALSE  TRUE\n[1] \"apple pie\"  \"cherry pie\"",why:"grepl() returns one logical per element, and feeding that logical vector back in as an index keeps the TRUE positions."}]
+ },
+ "factors & dates":{
+  i:"A factor stores a categorical variable as integer codes plus a table of levels, which is how R knows that low, med and high have an order that is not alphabetical. A Date is stored as a count of days from 1970-01-01, which is why subtracting two of them gives a number of days.",
+  s:[["f <- factor(c(\"a\", \"b\", \"a\"))","A factor with levels a and b."],
+     ["levels(f)","The levels, in their stored order."],
+     ["factor(x, levels = c(\"low\", \"med\", \"high\"))","Sets the order explicitly."],
+     ["table(f)","Counts the rows per level."],
+     ["as.numeric(as.character(f))","The safe way back to numbers."],
+     ["d <- as.Date(\"2024-03-01\")","Parses ISO text into a Date."],
+     ["d1 - d2","A difftime, printed in days."],
+     ["format(d, \"%Y-%m\")","Formats a date as text."]],
+  w:["as.numeric() on a factor returns the integer CODES, not the labels. as.numeric(factor(c(\"10\",\"20\"))) is 1 2, not 10 20.",
+     "Without an explicit levels argument, the levels are sorted alphabetically, so high comes before low and every ordered chart is wrong.",
+     "as.Date() on a non-ISO string needs a format: as.Date(\"01/03/2024\", format = \"%d/%m/%Y\"). Without it you get NA or the wrong day."],
+  read:["A factor is two things at once: a vector of small integers, and a character vector of levels those integers index into. It prints like text, so the integers stay hidden until they surprise you. The reason to use one is order — a factor with levels set to low, med, high sorts, groups, and plots in that order, while the same values as plain text sort alphabetically into high, low, med.","The classic factor bug is converting one back to a number. as.numeric() hands you the internal codes, so a factor of the labels 10 and 20 becomes 1 and 2. The route back is through the labels: as.numeric(as.character(f)). Modern R no longer turns character columns into factors when you build a data frame, so most factors now exist because you asked for one, which is the right way round.","Dates are a count of days since 1970-01-01 wearing a class that knows how to print itself. That representation makes arithmetic natural: subtracting two Dates gives a difftime measured in days, and adding 7 to a Date moves it a week forward. as.Date() parses ISO text (YYYY-MM-DD) with no help; anything else needs an explicit format string built from codes like %d, %m and %Y. format() runs the same codes in reverse to turn a date back into text."],
+  practice:[{code:"f <- factor(c(\"low\", \"high\", \"med\", \"low\"), levels = c(\"low\", \"med\", \"high\"))\nlevels(f)\ntable(f)",out:"[1] \"low\"  \"med\"  \"high\"\nf\n low  med high\n   2    1    1",why:"The levels keep the order you declared, and table() counts in that order rather than alphabetically."},{code:"f <- factor(c(\"10\", \"20\", \"10\"))\nas.numeric(f)\nas.numeric(as.character(f))",out:"[1] 1 2 1\n[1] 10 20 10",why:"The first converts the internal codes; only the round trip through as.character() recovers the labels."},{code:"d1 <- as.Date(\"2024-03-01\")\nd2 <- as.Date(\"2024-01-15\")\nd1 - d2\nformat(d1, \"%Y-%m\")",out:"Time difference of 46 days\n[1] \"2024-03\"",why:"Subtracting two Dates gives a difftime in days, and format() turns a date back into text with the codes you supply."}]
+ },
+ "iteration":{
+  i:"R has the loops you would expect — for over a sequence, while over a condition, repeat until you break out — but you reach for them less often, because vectorised operations and the apply family already cover most of the cases where another language would loop.",
+  s:[["for (i in 1:3) print(i)","Runs the body once per element."],
+     ["for (x in v) ...","Loops over the values instead of the positions."],
+     ["seq_along(v)","The positions 1..length(v), safe when v is empty."],
+     ["out <- numeric(length(v))","Allocate the result before the loop."],
+     ["out[i] <- v[i]^2","Fill by position rather than growing."],
+     ["while (n < 100) n <- n * 2","Repeats while the condition holds."],
+     ["repeat { ...; if (done) break }","Loops until you break out."],
+     ["next","Skips to the next pass."]],
+  w:["for (i in 1:length(v)) breaks on an empty vector: 1:0 counts DOWN and gives 1 0, so the body runs twice. seq_along(v) gives nothing, which is what you wanted.",
+     "Growing a result with out <- c(out, x) copies the whole vector every pass. Allocate the full length first and fill by position.",
+     "A for loop's variable survives the loop and holds the last value it took. Reusing i afterwards without resetting it is a quiet source of bugs."],
+  read:["The R style is to loop only when the work genuinely depends on the previous step. Squaring every element is not that: v^2 already does it, and sapply covers the cases where the operation is not vectorised. A running balance where each row depends on the last, or a loop that repeats until a condition is met, is the real use for iteration.","When you do write a for loop, loop over positions with seq_along(v) rather than 1:length(v). The two agree on every non-empty vector and disagree exactly when it matters: on an empty vector 1:length(v) is 1:0, which counts down and runs the body twice with meaningless indices, while seq_along() gives an empty sequence and the loop is skipped.","Allocate the result before the loop. out <- numeric(length(v)) makes room once and then out[i] <- ... fills it, whereas out <- c(out, value) builds a new copy of the whole vector on every pass. while and repeat cover the cases where the number of steps is not known in advance — while tests before each pass, repeat runs until an explicit break, and next skips the rest of the current pass in either."],
+  practice:[{code:"v <- c(2, 5, 9)\nout <- numeric(length(v))\nfor (i in seq_along(v)) {\n  out[i] <- v[i] * 10\n}\nout",out:"[1] 20 50 90",why:"The result is allocated first, then filled by position, so nothing is copied as the loop runs."},{code:"n <- 1\nsteps <- 0\nwhile (n < 20) {\n  n <- n * 3\n  steps <- steps + 1\n}\nn\nsteps",out:"[1] 27\n[1] 3",why:"The condition is checked before each pass, so the loop stops the first time n reaches 20 or more."},{code:"x <- c()\nlength(1:length(x))\nlength(seq_along(x))",out:"[1] 2\n[1] 0",why:"1:length(x) becomes 1:0, which counts down through two values; seq_along() returns nothing, which is why it is the safe one."}]
  }
 },
 mermaid:{
@@ -648,17 +925,38 @@ mermaid:{
 };
 
 /* ============ book ============ */
-// Chapter content lives in book/chNN.js files (plain script tags, no build step).
-// Each file registers itself on window.BOOK.chapters; BOOK_ORDER controls sequence.
-const BOOK_META={title:"Automate the Boring Stuff with Python",edition:"3rd edition",author:"Al Sweigart",
-  url:"https://automatetheboringstuff.com/3e/",
-  credit:"Original lessons written for this app, following the book's chapter-by-chapter curriculum. The book itself is free to read online."};
-const BOOK_ORDER=["ch01","ch02","ch03","ch04","ch05","ch06","ch07","ch08","ch09","ch10","ch11","ch12","ch13","ch14","ch15","ch16","ch17","ch18","ch19","ch20","ch21","ch22","ch23","ch24"];
-const bookChapters=()=> (window.BOOK&&window.BOOK.chapters)||{};
+// Chapter content lives in book/*.js files (plain script tags, no build step).
+// Python chapters register on window.BOOK, R chapters on window.BOOK_R.
+// The BOOK tab shows the book belonging to the language tab you are on.
+const BOOKS={
+  python:{
+    meta:{title:"Automate the Boring Stuff with Python",edition:"3rd edition",author:"Al Sweigart",
+      url:"https://automatetheboringstuff.com/3e/",
+      credit:"Original lessons written for this app, following the book's chapter-by-chapter curriculum. The book itself is free to read online."},
+    order:["ch01","ch02","ch03","ch04","ch05","ch06","ch07","ch08","ch09","ch10","ch11","ch12","ch13","ch14","ch15","ch16","ch17","ch18","ch19","ch20","ch21","ch22","ch23","ch24"],
+    chapters:()=> (window.BOOK&&window.BOOK.chapters)||{},
+  },
+  r:{
+    meta:{title:"R for Data Science",edition:"2nd edition",author:"Wickham, Çetinkaya-Rundel, and Grolemund",
+      url:"https://r4ds.hadley.nz/",
+      credit:"Original lessons written for this app, following the book's chapter-by-chapter curriculum. The book itself is free to read online."},
+    order:["r01","r02","r03","r04","r05","r06","r07","r08","r09","r10","r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29"],
+    chapters:()=> (window.BOOK_R&&window.BOOK_R.chapters)||{},
+  },
+};
+const bookLangOf=(chId)=> String(chId||"").charAt(0)==="r" ? "r" : "python";
+const bookFor=(lang)=> BOOKS[lang]||null;
+const curBook=()=> bookFor(S.lang);
+const bookChapters=()=>{ const b=curBook(); return b?b.chapters():{}; };
+// A chapter id may belong to a book other than the one on screen.
+const chapterById=(chId)=>{ const b=bookFor(bookLangOf(chId)); return b?b.chapters()[chId]:null; };
 
 /* ============ storage ============ */
 const KEY="practicelog.offline.v1";
-const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{}}};
+const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{}},
+  game:{xp:0,day:null,todayXp:0,goal:50,hearts:5,heartTs:null,freezes:2,combo:0,bestCombo:0,
+        quests:{day:null,items:[]},badges:{},hist:{},goalDays:0,lastGoalDay:null,
+        opts:{hearts:true,sound:true,motion:true}}};
 const clone=(o)=>JSON.parse(JSON.stringify(o));
 let S;
 try{ S = JSON.parse(localStorage.getItem(KEY)) || clone(blank); }
@@ -666,6 +964,175 @@ catch(e){ S = clone(blank); }
 if(!S || typeof S !== "object") S = clone(blank);
 for(const k in blank) if(S[k]===undefined) S[k]=clone(blank[k]);
 function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ flash("Progress could not be saved — storage is full or blocked."); } }
+
+/* ============ game ============ */
+// Progress mechanics: XP, levels, a daily goal, hearts, quests and badges.
+// Every mutation here routes through persist() — still one writer, one key.
+const XP={section:4,exercise:12,repeat:4,drill:10,lesson:6,chapter:40,quest:20,goal:15};
+const HEART_MAX=5, HEART_MS=20*60*1000;   // one heart back every 20 minutes
+const need=(l)=>100+(l-1)*50;             // XP to climb out of level l
+function levelInfo(xp){
+  let l=1,acc=0;
+  while(xp>=acc+need(l)){ acc+=need(l); l++; if(l>200) break; }
+  return {level:l,into:xp-acc,span:need(l),base:acc};
+}
+const QUEST_POOL=[
+  {id:"xp",   label:(n)=>`Earn ${n} XP`,               need:()=>40},
+  {id:"ex",   label:(n)=>`Pass ${n} graded exercises`, need:()=>3},
+  {id:"read", label:(n)=>`Read ${n} book sections`,    need:()=>4},
+  {id:"combo",label:(n)=>`Get ${n} correct in a row`,  need:()=>3},
+  {id:"mins", label:(n)=>`Practise for ${n} minutes`,  need:()=>10},
+];
+const BADGES=[
+  {id:"first",   name:"First blood",   d:"Pass your first graded exercise."},
+  {id:"ten",     name:"Ten down",      d:"Pass 10 graded exercises."},
+  {id:"fifty",   name:"Half century",  d:"Pass 50 graded exercises."},
+  {id:"century", name:"Centurion",     d:"Pass 100 graded exercises."},
+  {id:"streak3", name:"Three days",    d:"Reach a 3-day streak."},
+  {id:"streak7", name:"A full week",   d:"Reach a 7-day streak."},
+  {id:"streak30",name:"A month",       d:"Reach a 30-day streak."},
+  {id:"lvl5",    name:"Level five",    d:"Reach level 5."},
+  {id:"lvl10",   name:"Level ten",     d:"Reach level 10."},
+  {id:"combo10", name:"On a roll",     d:"Get 10 correct in a row."},
+  {id:"chapter", name:"Chapter closed",d:"Finish every section and exercise in a chapter."},
+  {id:"polyglot",name:"Polyglot",      d:"Pass an exercise in three different languages."},
+  {id:"goal7",   name:"Seven goals",   d:"Hit your daily goal on 7 days."},
+];
+let fx=[];          // transient toasts: {kind,text}
+let party=null;     // full-screen celebration, or null
+
+function ensureGame(){
+  if(!S.game||typeof S.game!=="object") S.game=clone(blank.game);
+  for(const k in blank.game) if(S.game[k]===undefined) S.game[k]=clone(blank.game[k]);
+  if(!S.game.opts) S.game.opts=clone(blank.game.opts);
+  for(const k in blank.game.opts) if(S.game.opts[k]===undefined) S.game.opts[k]=blank.game.opts[k];
+  const d=today();
+  if(S.game.day!==d){ S.game.day=d; S.game.todayXp=0; S.game.combo=0; }
+  rollQuests(d);
+  regenHearts();
+}
+// Quests are picked from the date, so a reload never reshuffles the day's work.
+function rollQuests(d){
+  if(S.game.quests&&S.game.quests.day===d&&(S.game.quests.items||[]).length) return;
+  let seed=0; for(const ch of d) seed=(seed*31+ch.charCodeAt(0))&0xffff;
+  const pool=[...QUEST_POOL], items=[];
+  for(let i=0;i<3&&pool.length;i++){
+    const pick=pool.splice(seed%pool.length,1)[0];
+    seed=(seed*7+13)&0xffff;
+    const n=pick.need();
+    items.push({id:pick.id,label:pick.label(n),need:n,have:0,done:false});
+  }
+  S.game.quests={day:d,items};
+}
+function regenHearts(){
+  if(!S.game.opts.hearts){ S.game.hearts=HEART_MAX; return; }
+  if(S.game.hearts>=HEART_MAX){ S.game.heartTs=null; return; }
+  if(!S.game.heartTs){ S.game.heartTs=Date.now(); return; }
+  const gained=Math.floor((Date.now()-S.game.heartTs)/HEART_MS);
+  if(gained>0){
+    S.game.hearts=Math.min(HEART_MAX,S.game.hearts+gained);
+    S.game.heartTs=S.game.hearts>=HEART_MAX?null:S.game.heartTs+gained*HEART_MS;
+  }
+}
+const heartsLeft=()=>{ ensureGame(); return S.game.opts.hearts?S.game.hearts:HEART_MAX; };
+function heartETA(){
+  if(!S.game.heartTs||S.game.hearts>=HEART_MAX) return "";
+  const ms=Math.max(0,S.game.heartTs+HEART_MS-Date.now());
+  const m=Math.ceil(ms/60000);
+  return m<=1?"under a minute":`${m} min`;
+}
+function loseHeart(){
+  ensureGame();
+  if(!S.game.opts.hearts) return;
+  S.game.hearts=Math.max(0,S.game.hearts-1);
+  if(!S.game.heartTs) S.game.heartTs=Date.now();
+  persist();
+}
+function bumpQuest(id,n){
+  ensureGame();
+  let changed=false;
+  for(const q of (S.game.quests.items||[])){
+    if(q.id!==id||q.done) continue;
+    q.have=id==="combo"?Math.max(q.have,n):q.have+n;
+    if(q.have>=q.need){ q.done=true; changed=true;
+      S.game.xp+=XP.quest; S.game.todayXp+=XP.quest;
+      toast("quest",`Quest done: ${q.label} +${XP.quest} XP`); }
+  }
+  if(changed) persist();
+}
+function awardXP(n,reason){
+  ensureGame();
+  const before=levelInfo(S.game.xp).level;
+  S.game.xp+=n; S.game.todayXp+=n;
+  const d=today();
+  S.game.hist[d]=(S.game.hist[d]||0)+n;
+  bumpQuest("xp",n);
+  const after=levelInfo(S.game.xp).level;
+  if(after>before){ toast("level",`Level ${after}`); sfx("level"); }
+  // Daily goal, counted once per day.
+  if(S.game.todayXp>=S.game.goal&&S.game.lastGoalDay!==d){
+    S.game.lastGoalDay=d; S.game.goalDays=(S.game.goalDays||0)+1;
+    S.game.xp+=XP.goal; S.game.hist[d]=(S.game.hist[d]||0)+XP.goal;
+    toast("goal",`Daily goal met +${XP.goal} XP`); sfx("goal");
+  }
+  if(reason) lastXpReason=reason;
+  checkBadges();
+  persist();
+}
+let lastXpReason=null;
+const exercisesPassed=()=>Object.values((S.book&&S.book.ex)||{}).reduce((a,v)=>a+v.length,0);
+function badgeEarned(id){
+  if(S.game.badges[id]) return;
+  S.game.badges[id]=today();
+  const b=BADGES.find(x=>x.id===id);
+  toast("badge",`Badge: ${b?b.name:id}`); sfx("badge");
+}
+function checkBadges(){
+  const n=exercisesPassed(), lv=levelInfo(S.game.xp).level, st=S.streak.count||0;
+  if(n>=1) badgeEarned("first");
+  if(n>=10) badgeEarned("ten");
+  if(n>=50) badgeEarned("fifty");
+  if(n>=100) badgeEarned("century");
+  if(st>=3) badgeEarned("streak3");
+  if(st>=7) badgeEarned("streak7");
+  if(st>=30) badgeEarned("streak30");
+  if(lv>=5) badgeEarned("lvl5");
+  if(lv>=10) badgeEarned("lvl10");
+  if((S.game.bestCombo||0)>=10) badgeEarned("combo10");
+  if((S.game.goalDays||0)>=7) badgeEarned("goal7");
+  const langs=new Set((S.sessions||[]).filter(s=>s.score>=4).map(s=>s.lang));
+  if(langs.size>=3) badgeEarned("polyglot");
+}
+function chapterDone(chId){
+  const ch=chapterById(chId); if(!ch) return false;
+  const r=chRead(chId), readN=Object.keys(r).filter(k=>r[k]).length;
+  return readN>=ch.sections.length&&bookExDone(chId).length>=ch.exercises.length;
+}
+function toast(kind,text){ fx.push({kind,text}); if(fx.length>4) fx.shift(); }
+
+/* Sound is synthesised — no audio files, nothing to download, works offline. */
+let actx=null;
+function sfx(kind){
+  if(!S.game||!S.game.opts||!S.game.opts.sound) return;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    if(!actx) actx=new AC();
+    if(actx.state==="suspended"&&actx.resume) actx.resume();
+    const notes={right:[660,880],wrong:[220,165],level:[523,659,784],badge:[784,1047],
+                 goal:[659,784,1047],done:[523,659,784,1047]}[kind]||[440];
+    notes.forEach((f,i)=>{
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.type=kind==="wrong"?"sawtooth":"sine"; o.frequency.value=f;
+      const t=actx.currentTime+i*0.09;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.16,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.24);
+    });
+  }catch(e){}
+}
+function buzz(ms){ try{ if(navigator.vibrate&&S.game.opts.sound) navigator.vibrate(ms); }catch(e){} }
 
 /* ============ helpers ============ */
 const $=(s)=>document.querySelector(s);
@@ -715,6 +1182,48 @@ async function runJS(code){
     await new Promise(r=>setTimeout(r,700));
     return {ok:true,output:out.join("\n")};
   }catch(e){ return {ok:false,output:out.join("\n"),error:String(e.message||e)}; }
+}
+
+/* R runs on WebR (R compiled to WASM). It needs no cross-origin isolation, so
+   it works on GitHub Pages exactly as it does locally — verified, not assumed. */
+let webR=null, webRTried=false;
+const WEBR_BASE="https://webr.r-wasm.org/latest/";
+const rInstalled=new Set();
+async function bootR(){
+  if(webR) return webR;
+  try{
+    const mod=await import(WEBR_BASE+"webr.mjs");
+    const w=new mod.WebR({interactive:false});
+    await w.init();
+    webR=w; return webR;
+  }catch(e){
+    webRTried=true;
+    throw new Error(online()?"R runtime unreachable":"no connection");
+  }
+}
+async function ensureRPkgs(pkgs){
+  const want=(pkgs||[]).filter(p=>!rInstalled.has(p));
+  if(!want.length) return;
+  const w=await bootR();
+  await w.installPackages(want,true);
+  want.forEach(p=>rInstalled.add(p));
+}
+async function runR(code,pkgs){
+  const w=await bootR();
+  if(pkgs&&pkgs.length) await ensureRPkgs(pkgs);
+  let shelter=null;
+  try{
+    shelter=await new w.Shelter();
+    // captureConditions:false keeps the transcript console-faithful: an R error
+    // arrives as the "Error: ..." line R itself prints instead of a JS throw.
+    const cap=await shelter.captureR(code,{withAutoprint:true,captureConditions:false});
+    const lines=cap.output.filter(o=>o.type==="stdout"||o.type==="stderr");
+    const out=lines.map(o=>o.data).join("\n");
+    const bad=lines.find(o=>o.type==="stderr"&&/^Error\b/.test(o.data));
+    return bad?{ok:false,output:out,error:bad.data}:{ok:true,output:out};
+  }catch(e){
+    return {ok:false,output:"",error:String((e&&e.message)||e)};
+  }finally{ if(shelter){ try{shelter.purge();}catch(e){} } }
 }
 
 /* ============ static checks ============ */
@@ -797,6 +1306,12 @@ function newTask(){
 async function submit(){
   const code=$("#code").value;
   if(!code.trim()||!task) return;
+  ensureGame();
+  // Hearts gate graded attempts only. Reading and lessons are never blocked.
+  if(heartsLeft()<=0){
+    banner=`Out of hearts. One comes back in ${heartETA()} — keep reading in the meantime, or switch hearts off in the ledger.`;
+    sfx("wrong"); render(); return;
+  }
   stopTimer(); busy="Running your code…"; banner=null; render();
   const kind=LANGS[S.lang].runs;
   exec=null;
@@ -809,25 +1324,62 @@ async function submit(){
       banner=`Python could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
     }
   }
+  else if(kind==="webr"){
+    busy = webR?"Running your code…":(online()?"Booting R — one-time download":"Checking for the R runtime…"); render();
+    try{ exec=await runR(code,task.pkgs); }
+    catch(e){
+      S.queue.push({date:today(),lang:S.lang,concept:task.c,title:task.t,code,expected:task.o,secs,book:task.book||null,pkgs:task.pkgs||null}); persist();
+      banner=`R could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
+    }
+  }
   grade=gradeIt(S.lang,code,exec,task);
   logSession(grade);
   busy=null; render();
   setTimeout(()=>{const n=$("#gradecard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
 }
 function logSession(g){
+  ensureGame();
   const mins=Math.max(1,Math.round(secs/60)), d=today();
   const gap=S.streak.last?dayGap(S.streak.last,d):null;
+  const prevStreak=S.streak.count;
   S.streak={count:gap===0?S.streak.count:gap===1?S.streak.count+1:1,last:d};
+  if(S.streak.count>prevStreak&&S.streak.count>1) toast("streak",`${S.streak.count}-day streak`);
   S.sessions.unshift({date:d,lang:S.lang,mins,topic:task.c,score:g.scores.correctness,verdict:g.verdict});
   const solid=S.solid[S.lang]||[], shaky=S.shaky[S.lang]||[];
   const pass=g.mastered&&g.scores.correctness>=4;
   S.solid[S.lang]=pass?[...new Set([...solid,task.c])]:solid;
   S.shaky[S.lang]=pass?shaky.filter(c=>c!==task.c):[...new Set([...shaky,task.c])];
+
+  let firstTime=true, finishedChapter=false;
   if(task.book&&pass){
     ensureBook();
     const arr=S.book.ex[task.book]||[];
-    if(!arr.includes(task.t)) arr.push(task.t);
+    firstTime=!arr.includes(task.t);
+    if(firstTime) arr.push(task.t);
     S.book.ex[task.book]=arr;
+    finishedChapter=firstTime&&chapterDone(task.book);
+  }
+
+  if(pass){
+    S.game.combo=(S.game.combo||0)+1;
+    S.game.bestCombo=Math.max(S.game.bestCombo||0,S.game.combo);
+    bumpQuest("ex",1); bumpQuest("combo",S.game.combo); bumpQuest("mins",mins);
+    const gained=task.book?(firstTime?XP.exercise:XP.repeat):XP.drill;
+    const bonus=S.game.combo>=3?Math.min(10,S.game.combo):0;
+    awardXP(gained+bonus,"exercise");
+    sfx("right"); buzz(18);
+    if(finishedChapter){
+      const ch=chapterById(task.book);
+      awardXP(XP.chapter,"chapter");
+      badgeEarned("chapter");
+      party={title:"Chapter complete",sub:ch?`${ch.n}. ${ch.title}`:"",xp:gained+bonus+XP.chapter,
+             lines:[`${ch?ch.exercises.length:0} exercises passed`,`Streak: ${S.streak.count} days`]};
+      sfx("done");
+    }
+  }else{
+    S.game.combo=0;
+    loseHeart();
+    sfx("wrong"); buzz([12,40,12]);
   }
   persist();
 }
@@ -836,25 +1388,27 @@ async function drainQueue(){
   busy="Grading queued submissions…"; render();
   const still=[];
   for(const q of S.queue){
-    if(q.lang!=="python"){ still.push(q); continue; }
+    const kind=(LANGS[q.lang]||{}).runs;
+    if(kind!=="pyodide"&&kind!=="webr"){ still.push(q); continue; }
     try{
-      const ex=await runPython(q.code);
-      const g=gradeIt("python",q.code,ex,{o:q.expected});
-      const solid=S.solid.python||[], shaky=S.shaky.python||[];
+      const ex = kind==="webr" ? await runR(q.code,q.pkgs) : await runPython(q.code);
+      const g=gradeIt(q.lang,q.code,ex,{o:q.expected});
+      const solid=S.solid[q.lang]||[], shaky=S.shaky[q.lang]||[];
       const pass=g.mastered;
-      S.sessions.unshift({date:q.date,lang:"python",mins:Math.max(1,Math.round(q.secs/60)),topic:q.concept,score:g.scores.correctness,verdict:"(queued) "+g.verdict});
-      S.solid.python=pass?[...new Set([...solid,q.concept])]:solid;
-      S.shaky.python=pass?shaky.filter(c=>c!==q.concept):[...new Set([...shaky,q.concept])];
+      S.sessions.unshift({date:q.date,lang:q.lang,mins:Math.max(1,Math.round(q.secs/60)),topic:q.concept,score:g.scores.correctness,verdict:"(queued) "+g.verdict});
+      S.solid[q.lang]=pass?[...new Set([...solid,q.concept])]:solid;
+      S.shaky[q.lang]=pass?shaky.filter(c=>c!==q.concept):[...new Set([...shaky,q.concept])];
       if(q.book&&pass){
         ensureBook();
         const arr=S.book.ex[q.book]||[];
         if(!arr.includes(q.title)) arr.push(q.title);
         S.book.ex[q.book]=arr;
+        awardXP(XP.exercise,"Queued exercise");
       }
     }catch(e){ still.push(q); }
   }
   S.queue=still; persist();
-  busy=null; banner=still.length?`${still.length} still pending — Python runtime is still unreachable.`:"Queue cleared. Results are in the ledger.";
+  busy=null; banner=still.length?`${still.length} still pending — the runtime is still unreachable.`:"Queue cleared. Results are in the ledger.";
   render();
 }
 /* ============ book actions ============ */
@@ -863,7 +1417,7 @@ function ensureBook(){ if(!S.book||typeof S.book!=="object") S.book={last:null,r
 function chRead(chId){ return (S.book&&S.book.read&&S.book.read[chId])||{}; }
 function bookExDone(chId){ return (S.book&&S.book.ex&&S.book.ex[chId])||[]; }
 function firstUnread(chId){
-  const ch=bookChapters()[chId]; if(!ch) return 0;
+  const ch=chapterById(chId); if(!ch) return 0;
   const r=chRead(chId);
   for(let i=0;i<ch.sections.length;i++) if(!r[i]) return i;
   return ch.sections.length-1;
@@ -878,15 +1432,23 @@ function openBook(chId,sec){
 function markRead(chId,i){
   ensureBook();
   if(!S.book.read[chId]) S.book.read[chId]={};
+  const fresh=!S.book.read[chId][i];
   S.book.read[chId][i]=true;
-  const ch=bookChapters()[chId];
+  const ch=chapterById(chId);
   S.book.last={ch:chId,sec:Math.min(i+1,(ch?ch.sections.length:1)-1)};
+  if(fresh){ ensureGame(); bumpQuest("read",1); awardXP(XP.section,"section"); sfx("right"); buzz(10);
+    if(chapterDone(chId)){ awardXP(XP.chapter,"chapter"); badgeEarned("chapter");
+      party={title:"Chapter complete",sub:ch?`${ch.n}. ${ch.title}`:"",xp:XP.section+XP.chapter,
+             lines:["Every section read","Every exercise passed"]}; sfx("done"); } }
   persist(); render();
 }
 function startBookExercise(chId,i){
-  const ch=bookChapters()[chId]; if(!ch||!ch.exercises[i]) return;
-  if(S.lang!=="python"){ S.lang="python"; persist(); }
+  const ch=chapterById(chId); if(!ch||!ch.exercises[i]) return;
+  const lang=bookLangOf(chId);
+  if(S.lang!==lang){ S.lang=lang; persist(); }
   task=clone(ch.exercises[i]); task.book=chId;
+  // R exercises declare the packages WebR must install before grading.
+  if(ch.pkgs&&ch.pkgs.length) task.pkgs=clone(ch.pkgs);
   lesson=null; hintTier=0; exec=null; grade=null; banner=null; secs=0; view="practice";
   startTimer(); render();
   setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
@@ -925,6 +1487,16 @@ async function cacheRuntime(){
     await runPython("print('ready')");
     banner="Python runtime cached. It will now work with no signal.";
   }catch(e){ banner="Could not cache the runtime: "+e.message; }
+  busy=null; askRuntime(); render();
+}
+async function cacheR(){
+  if(!online()){ banner="Connect to wifi first — this downloads the R runtime."; render(); return; }
+  busy="Downloading R runtime…"; banner=null; render();
+  try{
+    await bootR();
+    await runR("cat('ready')");
+    banner="R runtime cached. It will now work with no signal.";
+  }catch(e){ banner="Could not cache R: "+e.message; }
   busy=null; askRuntime(); render();
 }
 
@@ -1032,14 +1604,16 @@ function wireHighlighting(){
 
 /* ============ render ============ */
 function render(){
+  ensureGame();
   const app=$("#app"); app.innerHTML="";
   const solid=S.solid[S.lang]||[], shaky=S.shaky[S.lang]||[];
   const totalMins=S.sessions.reduce((a,s)=>a+s.mins,0);
 
   app.append(el("header",{},
     el("h1",{},"Practice Log"),
-    el("div",{class:"meta"},`${S.streak.count} DAY STREAK · ${totalMins} MIN · ${online()?"ONLINE":"OFFLINE"}`)
+    el("div",{class:"meta"},`${totalMins} MIN · ${online()?"ONLINE":"OFFLINE"}`)
   ));
+  renderStats(app);
 
   const nav=el("nav",{});
   for(const[k,v]of Object.entries(LANGS))
@@ -1058,7 +1632,7 @@ function render(){
   else if(view==="book"){ renderBook(app); }
   else{
     // continue-the-book card
-    const lastB=S.book&&S.book.last, lastCh=lastB&&bookChapters()[lastB.ch];
+    const lastB=S.book&&S.book.last, lastCh=lastB&&chapterById(lastB.ch);
     if(lastCh){
       const r=chRead(lastB.ch), readN=Object.keys(r).filter(k=>r[k]).length;
       app.append(el("div",{class:"card"},
@@ -1084,7 +1658,7 @@ function render(){
       el("span",{class:"lab"},"Next milestone"),
       el("div",{style:"font-size:18px;font-weight:400;margin-top:6px"},nc),
       el("div",{class:"meta",style:"margin-top:4px"},
-        `${solid.length} / ${LADDER[S.lang].length} cleared · ${runs==="native"?"graded by running your code":runs==="pyodide"?"graded by running your code (needs runtime)":"static checks only"}`));
+        `${solid.length} / ${LADDER[S.lang].length} cleared · ${runs==="native"?"graded by running your code":(runs==="pyodide"||runs==="webr")?"graded by running your code (needs runtime)":"static checks only"}`));
     if(LESSONS[S.lang]&&LESSONS[S.lang][nc])
       mile.append(el("button",{class:"ghost",style:"margin-top:14px",onclick:teach},"Teach me this"));
     mile.append(el("button",{class:"primary",onclick:newTask},task?"Next exercise":"Give me an exercise"));
@@ -1099,15 +1673,93 @@ function render(){
   const foot=el("footer",{});
   const ready = cachedFiles>0 || !!pyodide;
   foot.append(el("div",{},
-    ready ? "Python runtime is cached — it runs with no signal. JavaScript always has."
-          : "JavaScript runs fully offline. Python needs its runtime cached once while connected."));
+    ready ? "Python and R runtimes are cached once downloaded — they run with no signal. JavaScript always has."
+          : "JavaScript runs fully offline. Python and R each need their runtime cached once while connected."));
   const acts=el("div",{style:"display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"});
   if(!ready) acts.append(el("button",{class:"ghost",onclick:cacheRuntime},"Cache Python for offline (~12 MB)"));
+  if(!webR) acts.append(el("button",{class:"ghost",onclick:cacheR},"Cache R for offline"));
   acts.append(el("button",{class:"ghost",onclick:exportData},"Export progress"));
   foot.append(acts);
   if(!standalone()) foot.append(el("div",{style:"margin-top:14px"},
     "Not installed yet. iOS: Share \u2192 Add to Home Screen. Android: menu \u2192 Install app."));
   app.append(foot);
+  drawToasts(); drawParty();
+}
+
+/* The always-visible scoreboard: streak, XP, level, hearts, daily goal. */
+function renderStats(app){
+  const g=S.game, li=levelInfo(g.xp);
+  const bar=el("div",{class:"stats"});
+  bar.append(el("div",{class:"stat",title:"Day streak"},
+    el("span",{class:"flame"},"◆"), el("span",{class:"n"},String(S.streak.count||0))));
+  bar.append(el("div",{class:"stat",title:"Total XP"},
+    el("span",{class:"gem"},"✦"), el("span",{class:"n"},String(g.xp))));
+  const hearts=el("div",{class:"stat",title:g.opts.hearts?(heartsLeft()<HEART_MAX?("Next heart in "+heartETA()):"Hearts full"):"Hearts are off"});
+  if(g.opts.hearts){
+    for(let i=0;i<HEART_MAX;i++)
+      hearts.append(el("span",{class:i<heartsLeft()?"heart":"hollow"},i<heartsLeft()?"♥":"♡"));
+  }else hearts.append(el("span",{class:"stat dim"},"∞ practice"));
+  bar.append(hearts);
+  const goalPct=Math.min(100,Math.round(g.todayXp/Math.max(1,g.goal)*100));
+  bar.append(el("div",{class:"ringwrap"},
+    el("span",{class:"stat dim"},`L${li.level}`),
+    el("span",{class:"lvlbar",style:"width:64px"},el("i",{style:`width:${Math.round(li.into/li.span*100)}%`})),
+    el("span",{class:"stat dim",title:"Today's goal"},`${g.todayXp}/${g.goal}`),
+    el("span",{class:"lvlbar",style:"width:52px"},el("i",{style:`width:${goalPct}%;background:${goalPct>=100?"var(--teal)":"var(--gold)"}`}))));
+  app.append(bar);
+}
+
+function drawToasts(){
+  let host=$("#toasts");
+  if(!host){ host=el("div",{id:"toasts"}); document.body.appendChild(host); }
+  host.innerHTML="";
+  if(!fx.length) return;
+  fx.forEach(t=>host.append(el("div",{class:"toast "+(t.kind==="badge"?"badge-t":t.kind==="level"?"level-t":"")},t.text)));
+  const mine=fx.slice();
+  setTimeout(()=>{ fx=fx.filter(t=>!mine.includes(t)); const h=$("#toasts"); if(h) h.innerHTML=""; },2600);
+}
+
+function drawParty(){
+  const old=$("#party"); if(old) old.remove();
+  const oldC=$("#confetti"); if(oldC) oldC.remove();
+  if(!party) return;
+  const p=party;
+  const box=el("div",{id:"party"});
+  box.append(el("div",{style:"font-size:52px"},"✦"));
+  box.append(el("h2",{},p.title));
+  if(p.sub) box.append(el("p",{class:"note",style:"margin:0 0 8px"},p.sub));
+  box.append(el("div",{class:"xpbig"},"+"+p.xp+" XP"));
+  (p.lines||[]).forEach(l=>box.append(el("p",{class:"note",style:"margin:2px 0"},l)));
+  box.append(el("button",{class:"primary",style:"max-width:280px;margin-top:22px",
+    onclick:()=>{party=null;render();}},"Keep going"));
+  document.body.appendChild(box);
+  confetti();
+}
+
+/* Canvas confetti — no library, no assets. Skipped when motion is reduced. */
+function confetti(){
+  let reduced=false;
+  try{ if(typeof window.matchMedia==="function") reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  if(reduced||!S.game.opts.motion) return;
+  const cv=el("canvas",{id:"confetti"});
+  document.body.appendChild(cv);
+  const w=cv.width=window.innerWidth||360, h=cv.height=window.innerHeight||640;
+  const ctx=cv.getContext&&cv.getContext("2d"); if(!ctx){ cv.remove(); return; }
+  const cols=["#137565","#9C6A08","#B03428","#2E3330"];
+  const bits=[];
+  for(let i=0;i<90;i++) bits.push({x:Math.random()*w,y:-20-Math.random()*h*0.5,
+    vx:(Math.random()-0.5)*2.2,vy:2+Math.random()*3.4,s:4+Math.random()*6,
+    c:cols[i%cols.length],r:Math.random()*Math.PI,vr:(Math.random()-0.5)*0.25});
+  let frames=0;
+  (function step(){
+    frames++;
+    ctx.clearRect(0,0,w,h);
+    bits.forEach(b=>{ b.x+=b.vx; b.y+=b.vy; b.r+=b.vr;
+      ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.r);
+      ctx.fillStyle=b.c; ctx.fillRect(-b.s/2,-b.s/2,b.s,b.s*0.6); ctx.restore(); });
+    if(frames<210&&document.getElementById("confetti")) requestAnimationFrame(step);
+    else cv.remove();
+  })();
 }
 
 function renderLesson(app){
@@ -1171,7 +1823,7 @@ function renderLesson(app){
 }
 function renderTask(app){
   const c=el("div",{class:"card",id:"taskcard"});
-  const chOfTask=task.book&&bookChapters()[task.book];
+  const chOfTask=task.book&&chapterById(task.book);
   c.append(el("span",{class:"lab"},chOfTask?`Book exercise · Chapter ${chOfTask.n} · ${task.c}`:task.c),el("h2",{},task.t),el("p",{class:"brief"},task.b));
   c.append(el("div",{style:"margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)"},
     el("span",{class:"lab"},task.o!=null?"Expected output · checked automatically":"Expected result · not auto-checkable"),
@@ -1224,38 +1876,54 @@ function renderBook(app){
   const chs=bookChapters();
   if(bookCh&&chs[bookCh]){ renderChapter(app,bookCh,chs[bookCh]); return; }
 
-  const head=el("div",{class:"card"});
-  head.append(el("span",{class:"lab"},"The book"),
-    el("h2",{},BOOK_META.title),
-    el("p",{class:"note"},`${BOOK_META.author} · ${BOOK_META.edition}. ${BOOK_META.credit}`),
-    el("div",{style:"margin-top:10px"},el("a",{href:BOOK_META.url,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:14px"},"Read the original online →")));
-  app.append(head);
+  const bk=curBook();
+  if(!bk){ app.append(el("div",{class:"card"},el("p",{class:"note"},"No book for this language yet."))); return; }
+  const META=bk.meta, ORDER=bk.order;
 
-  const any=BOOK_ORDER.some(id=>chs[id]);
+  const any=ORDER.some(id=>chs[id]);
   if(!any){ app.append(el("div",{class:"card"},el("p",{class:"note"},"No chapters are loaded. Chapter files live in the book/ folder and register themselves on load."))); return; }
 
-  BOOK_ORDER.forEach(id=>{
-    const ch=chs[id]; if(!ch) return;
+  const loaded=ORDER.filter(id=>chs[id]);
+  const doneCount=loaded.filter(id=>chapterDone(id)).length;
+  const head=el("div",{class:"card"});
+  head.append(el("span",{class:"lab"},"The book · "+LANGS[S.lang].label),
+    el("h2",{},META.title),
+    el("p",{class:"note"},`${META.author} · ${META.edition}. ${META.credit}`),
+    el("div",{class:"meta",style:"margin-top:10px"},`${doneCount} / ${loaded.length} chapters complete`),
+    el("div",{class:"bar",style:"margin-top:6px"},el("i",{style:`width:${Math.round(doneCount/loaded.length*100)}%;background:var(--teal)`})),
+    el("div",{style:"margin-top:10px"},el("a",{href:META.url,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:14px"},"Read the original online →")));
+  app.append(head);
+
+  // The path. Chapters stay unlocked (the owner asked for that) — progression is
+  // shown rather than enforced, and the next unfinished chapter pulses.
+  const nextId=loaded.find(id=>!chapterDone(id));
+  const wrap=el("div",{class:"card"});
+  wrap.append(el("span",{class:"lab"},"Your path"));
+  const path=el("div",{class:"path"});
+  loaded.forEach((id,i)=>{
+    const ch=chs[id];
     const r=chRead(id), total=ch.sections.length;
     const readN=Object.keys(r).filter(k=>r[k]).length;
     const exN=bookExDone(id).length, exT=ch.exercises.length;
-    const done=readN>=total&&exN>=exT;
-    const c=el("div",{class:"card"});
-    c.append(el("div",{class:"row"},
-      el("span",{class:"lab"},"Chapter "+ch.n),
-      el("span",{class:done?"teal":"meta",style:"font-size:11px;letter-spacing:.08em"},done?"COMPLETE":(readN||exN)?"IN PROGRESS":"UNREAD")));
-    c.append(el("h2",{style:"margin:6px 0"},ch.title));
-    c.append(el("p",{class:"note"},ch.blurb));
-    c.append(el("div",{class:"meta",style:"margin-top:8px"},`${readN} / ${total} sections read · ${exN} / ${exT} exercises passed`));
-    c.append(el("button",{class:"primary",onclick:()=>openBook(id)},readN===0?"Start chapter":"Continue chapter"));
-    app.append(c);
+    const done=chapterDone(id), started=readN>0||exN>0, isNext=id===nextId;
+    const cls="knob "+(done?"done":isNext?"now pulse":started?"part":"");
+    const knob=el("button",{class:cls,onclick:()=>openBook(id),"aria-label":`Chapter ${ch.n}: ${ch.title}`},
+      el("span",{},done?"✓":String(ch.n)),
+      el("span",{class:"cn"},done?"DONE":`${readN}/${total}`));
+    if(done) knob.append(el("span",{class:"crown"},"♛"));
+    const info=el("div",{class:"stepinfo"},
+      el("div",{class:"t"},ch.title),
+      el("div",{class:"m"},done?"Complete · tap to revisit":`${readN}/${total} sections · ${exN}/${exT} exercises`));
+    path.append(el("div",{class:"step"+(i%2?" right":"")},knob,info));
   });
+  wrap.append(path);
+  app.append(wrap);
 }
 
 function renderChapter(app,chId,ch){
   const c=el("div",{class:"card",id:"bookcard"});
   c.append(el("button",{class:"ghost",style:"margin-bottom:16px",onclick:()=>{bookCh=null;render();}},"← All chapters"));
-  c.append(el("span",{class:"lab"},"Chapter "+ch.n+" · "+BOOK_META.title),el("h2",{},ch.title));
+  c.append(el("span",{class:"lab"},"Chapter "+ch.n+" · "+((bookFor(bookLangOf(chId))||{meta:{}}).meta.title||"")),el("h2",{},ch.title));
   if(window.getSelection) c.append(el("div",{class:"meta",style:"margin:-2px 0 2px"},"Select any text to highlight it · tap a highlight to remove"));
   c.append(el("div",{style:"margin:8px 0 2px"},el("a",{href:ch.src,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:13px"},"Read the original chapter →")));
 
@@ -1318,6 +1986,71 @@ function renderChapter(app,chId,ch){
 }
 
 function renderLedger(app,solid,shaky){
+  const g=S.game, li=levelInfo(g.xp);
+  // Level + daily goal
+  const top=el("div",{class:"card"});
+  top.append(el("div",{class:"row"},el("span",{class:"lab"},"Level "+li.level),
+    el("span",{class:"meta"},`${li.into} / ${li.span} XP to level ${li.level+1}`)));
+  top.append(el("div",{class:"bar",style:"margin-top:8px"},el("i",{style:`width:${Math.round(li.into/li.span*100)}%;background:var(--teal)`})));
+  top.append(el("div",{class:"row",style:"margin-top:14px"},el("span",{class:"lab"},"Today"),
+    el("span",{class:"meta"},`${g.todayXp} / ${g.goal} XP`)));
+  top.append(el("div",{class:"bar",style:"margin-top:6px"},el("i",{style:`width:${Math.min(100,Math.round(g.todayXp/Math.max(1,g.goal)*100))}%`})));
+  const goalRow=el("div",{style:"display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"});
+  [20,50,100].forEach(v=>goalRow.append(el("button",{class:"ghost",style:g.goal===v?"border-color:var(--teal);color:var(--teal)":"",
+    onclick:()=>{S.game.goal=v;persist();render();}},v+" XP/day")));
+  top.append(goalRow);
+  app.append(top);
+
+  // Daily quests
+  const q=el("div",{class:"card"},el("span",{class:"lab"},"Daily quests"));
+  (g.quests.items||[]).forEach(item=>{
+    const pct=Math.min(100,Math.round(item.have/item.need*100));
+    q.append(el("div",{class:"quest"+(item.done?" qdone":"")},
+      el("span",{style:"width:15px"},item.done?"✓":"·"),
+      el("span",{style:"flex:1;font-size:14px"},item.label),
+      el("span",{class:"qbar",style:"max-width:74px"},el("i",{style:`width:${pct}%`})),
+      el("span",{class:"meta",style:"width:44px;text-align:right"},`${Math.min(item.have,item.need)}/${item.need}`)));
+  });
+  q.append(el("p",{class:"note",style:"margin-top:8px"},"Quests reset each day. Finishing one is worth "+XP.quest+" XP."));
+  app.append(q);
+
+  // Weekly XP — your own history, not a leaderboard against strangers.
+  const wkCard=el("div",{class:"card"},el("span",{class:"lab"},"Last 7 days"));
+  const days=[]; for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*864e5).toISOString().slice(0,10); days.push([d,(g.hist||{})[d]||0]); }
+  const peak=Math.max(10,...days.map(d=>d[1]));
+  const wk=el("div",{class:"wk"});
+  days.forEach(([d,v])=>wk.append(el("div",{title:`${d}: ${v} XP`},
+    el("i",{style:`height:${Math.round(v/peak*100)}%;background:${v>=g.goal?"var(--teal)":"var(--gold)"}`}),
+    el("span",{},d.slice(8)))));
+  wkCard.append(wk);
+  wkCard.append(el("p",{class:"note",style:"margin-top:8px"},`Best streak ${Math.max(S.streak.count||0,0)} days · best run of correct answers ${g.bestCombo||0}.`));
+  app.append(wkCard);
+
+  // Badges
+  const bd=el("div",{class:"card"},el("span",{class:"lab"},`Badges · ${Object.keys(g.badges||{}).length} / ${BADGES.length}`));
+  const list=el("div",{class:"badges"});
+  BADGES.forEach(b=>{
+    const on=!!g.badges[b.id];
+    list.append(el("div",{class:"badge"+(on?" on":""),title:b.d},el("b",{},on?b.name:"Locked"),on?b.d:b.d));
+  });
+  bd.append(list);
+  app.append(bd);
+
+  // Settings
+  const st=el("div",{class:"card"},el("span",{class:"lab"},"Settings"));
+  const row=(label,key,note)=>{
+    const on=!!g.opts[key];
+    st.append(el("div",{class:"row",style:"margin-top:10px"},
+      el("span",{style:"font-size:14.5px"},label),
+      el("button",{class:"ghost",style:on?"border-color:var(--teal);color:var(--teal)":"",
+        onclick:()=>{S.game.opts[key]=!on; if(key==="hearts"&&!S.game.opts[key]) S.game.hearts=HEART_MAX; persist(); render();}},on?"On":"Off")));
+    if(note) st.append(el("p",{class:"note",style:"margin:4px 0 0"},note));
+  };
+  row("Hearts","hearts","Wrong answers cost a heart. Off means unlimited attempts — reading is never blocked either way.");
+  row("Sound and vibration","sound");
+  row("Celebration animation","motion");
+  app.append(st);
+
   const lad=el("div",{class:"card"},el("span",{class:"lab"},LANGS[S.lang].label+" ladder"));
   LADDER[S.lang].forEach(c=>{
     const done=solid.includes(c),weak=shaky.includes(c);

@@ -1,5 +1,5 @@
 /* Practice Log service worker */
-const SHELL = "shell-v5";
+const SHELL = "shell-v7";
 const RUNTIME = "pyodide-v1";
 
 const APP_FILES = [
@@ -34,6 +34,35 @@ const APP_FILES = [
   "./book/ch22.js",
   "./book/ch23.js",
   "./book/ch24.js",
+  "./book/r01.js",
+  "./book/r02.js",
+  "./book/r03.js",
+  "./book/r04.js",
+  "./book/r05.js",
+  "./book/r06.js",
+  "./book/r07.js",
+  "./book/r08.js",
+  "./book/r09.js",
+  "./book/r10.js",
+  "./book/r11.js",
+  "./book/r12.js",
+  "./book/r13.js",
+  "./book/r14.js",
+  "./book/r15.js",
+  "./book/r16.js",
+  "./book/r17.js",
+  "./book/r18.js",
+  "./book/r19.js",
+  "./book/r20.js",
+  "./book/r21.js",
+  "./book/r22.js",
+  "./book/r23.js",
+  "./book/r24.js",
+  "./book/r25.js",
+  "./book/r26.js",
+  "./book/r27.js",
+  "./book/r28.js",
+  "./book/r29.js",
 ];
 
 self.addEventListener("install", (e) => {
@@ -54,16 +83,19 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-const isPyodide = (url) =>
-  url.includes("pyodide") || url.endsWith(".wasm") || url.endsWith(".zip") || url.endsWith(".data");
+// Language runtimes: Pyodide (Python) and WebR (R). Both are large, immutable
+// downloads, so they live in their own cache and are kept forever.
+const isRuntime = (url) =>
+  url.includes("pyodide") || url.includes("webr.r-wasm.org") ||
+  url.endsWith(".wasm") || url.endsWith(".zip") || url.endsWith(".data");
 
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = req.url;
 
-  // Python runtime: cache-first and keep forever. This is what makes Python work underground.
-  if (isPyodide(url)) {
+  // Runtimes: cache-first and keep forever. This is what makes Python and R work underground.
+  if (isRuntime(url)) {
     e.respondWith(
       caches.open(RUNTIME).then(async (cache) => {
         const hit = await cache.match(req);

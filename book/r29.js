@@ -1,0 +1,158 @@
+/* Practice Log book — R Chapter 29: Quarto formats.
+   Original lesson text following the chapter-by-chapter curriculum of
+   "R for Data Science" (2nd ed.) by Hadley Wickham, Mine Cetinkaya-Rundel,
+   and Garrett Grolemund. Read the original chapter free at the src link below.
+   Every shown output was captured by executing the code in WebR, not written from memory. */
+window.BOOK_R = window.BOOK_R || { chapters: {} };
+window.BOOK_R.chapters.r29 = {
+n: 29,
+title: "Quarto formats",
+src: "https://r4ds.hadley.nz/quarto-formats.html",
+blurb: "One .qmd, many outputs — html, pdf, Word, slides, dashboards, websites and books — plus parameters and self-contained files.",
+pkgs: [],
+sections: [
+{ t: "One document, many outputs",
+  body: [
+  ["p","The document from the previous chapter is finished, and now somebody wants it as a pdf. Nothing about the prose or the chunks has to change. The output format is a setting, written on one line of the YAML header, and the rest of the file is format-agnostic by design."],
+  ["note","As in chapter 28, nothing on this page renders inside this app. Choosing a format is a line in a YAML header; turning that line into an html file, a pdf, or a deck of slides is Quarto's job as a command line program on a desktop, and a browser tab has no terminal and no Quarto. So every YAML header, .qmd fragment, and quarto command below stands with nothing under it — inventing a rendered result, a file size, or a description of a screenshot would be a lie. What runs here is the part that is text and arithmetic: reading a format block out of a header, listing the files a render leaves beside your document, splitting a document into slides at its headings, and computing what a parameterised report would say for every value of its parameter. Those are the pieces you get wrong first, and they are checkable."],
+  ["code","---\ntitle: \"Allotment yields\"\nformat: html\n---"],
+  ["p","Changing html to pdf on that line changes the output of every future render. To produce a different format once, without touching the file, the --to flag overrides the header for that run. That is how you send a colleague a Word copy of a document that is normally a web page."],
+  ["code","$ quarto render report.qmd\n$ quarto render report.qmd --to pdf\n$ quarto render report.qmd --to docx"],
+  ["p","Each format name maps to a file extension, and several names share one. revealjs and html both produce an html file; beamer and pdf both produce a pdf. Writing that mapping down as a function is the quickest way to fix which is which, and switch() is the R construct for a lookup with a fallback."],
+  ["code","extension_for <- function(fmt) {\n  switch(fmt,\n    html = \".html\",\n    revealjs = \".html\",\n    dashboard = \".html\",\n    pdf = \".pdf\",\n    beamer = \".pdf\",\n    docx = \".docx\",\n    pptx = \".pptx\",\n    \"unknown\")\n}\n\nsapply(sort(c(\"pdf\", \"revealjs\", \"docx\", \"beamer\", \"typst\")), extension_for)"],
+  ["code","   beamer      docx       pdf  revealjs     typst \n   \".pdf\"   \".docx\"    \".pdf\"   \".html\" \"unknown\""],
+  ["note","The last entry is the fallback, and it fires for any name switch() was not given — typst above is a real Quarto format that this small table simply does not know about. A lookup with no fallback returns NULL invisibly for an unmatched name, which means a typo produces no error and no output, and you go looking for the bug in the wrong place."]
+]},
+{ t: "Output options",
+  body: [
+  ["p","A format name on its own takes the defaults. To change them, the format becomes a key with its own block of settings indented underneath. Several formats can be listed at once, each with its own block, and a render then produces one output file per format."],
+  ["code","---\ntitle: \"Allotment yields\"\nformat:\n  html:\n    toc: true\n    code-fold: true\n  pdf:\n    documentclass: article\n  docx: default\n---"],
+  ["p","Read the indentation carefully, because it carries all the meaning. Two spaces in is a format name. Four spaces in is an option belonging to the format above it. The word default after a colon means take this format with no changes, which is how you list a format that needs no options alongside ones that do."],
+  ["p","Pulling the format names out is a question about the two-space level only. The pattern below asks for exactly two spaces followed by a letter, so the four-space option lines cannot match it."],
+  ["code","hdr <- c(\n  'title: \"Allotment yields\"',\n  \"format:\",\n  \"  html:\",\n  \"    toc: true\",\n  \"    code-fold: true\",\n  \"  pdf:\",\n  \"    documentclass: article\",\n  \"  docx: default\"\n)\n\nstart <- which(hdr == \"format:\")\nrest <- hdr[(start + 1):length(hdr)]\nformats <- sub(\"^  ([a-z]+):.*$\", \"\\\\1\", grep(\"^  [a-z]\", rest, value = TRUE))\n\nsort(formats)"],
+  ["code","[1] \"docx\" \"html\" \"pdf\""],
+  ["p","Attaching each option to its owner takes one pass down the file, remembering the last format name seen. That is the whole of YAML's nesting rule expressed as a loop, and it is worth writing once because it makes the indentation stop feeling arbitrary."],
+  ["code","current <- NA_character_\nowner <- character(length(hdr))\nfor (i in seq_along(hdr)) {\n  if (grepl(\"^  [a-z]\", hdr[i])) current <- sub(\"^  ([a-z]+):.*$\", \"\\\\1\", hdr[i])\n  owner[i] <- current\n}\nsubs <- grepl(\"^    \", hdr)\nopts <- data.frame(format = owner[subs], option = sub(\"^ +\", \"\", hdr[subs]))\n\nopts[order(opts$format, opts$option), ]"],
+  ["code","  format                 option\n2   html        code-fold: true\n1   html              toc: true\n3    pdf documentclass: article"],
+  ["note","Options are format-specific, and an option written under the wrong format is not a small mistake. code-fold hides code behind a toggle the reader clicks, which only a web page can do, so it means nothing under pdf. documentclass is a LaTeX setting and means nothing under html. Moving an option up a level by accident, so it sits under format: rather than under html:, is the version of this you will actually commit."]
+]},
+{ t: "Documents: html, pdf, and Word",
+  body: [
+  ["p","html is the default and the most capable of the three. It has no pages, so nothing is ever cut in half by a page break; it can fold code behind a toggle, carry a floating table of contents, and hold interactive charts. It is also the only one of the three that a reader opens without owning any particular software."],
+  ["p","pdf is for print and for submission, where fixed pagination is the point rather than a limitation. Producing one needs a LaTeX installation, and Quarto will install a small self-contained one for you. Once that is done the pdf format works like any other."],
+  ["code","$ quarto install tinytex\n$ quarto render report.qmd --to pdf"],
+  ["p","docx is for the collaborator who wants to leave tracked comments in Word, which is a real requirement no amount of arguing removes. Styles come from a reference document: render once, restyle that output in Word, then point reference-doc at it and every future render picks up the fonts, headings, and spacing you set."],
+  ["code","---\ntitle: \"Allotment yields\"\nformat:\n  docx:\n    reference-doc: house-style.docx\n---"],
+  ["p","Since the header is text, a script can write one. That matters the moment you have a folder of documents that should all be rendered the same way, or a report that gets built for a different format depending on who asked."],
+  ["code","yaml_header <- function(title, fmt) {\n  c(\"---\",\n    paste0('title: \"', title, '\"'),\n    paste0(\"format: \", fmt),\n    \"---\")\n}\n\nh <- yaml_header(\"Allotment yields\", \"pdf\")\n\nlength(h)\nh[2]\nh[3]\nyaml_header(\"Allotment yields\", \"docx\")[3]"],
+  ["code","[1] 4\n[1] \"title: \\\"Allotment yields\\\"\"\n[1] \"format: pdf\"\n[1] \"format: docx\""],
+  ["note","A document that renders to html and fails to pdf is usually not a Quarto problem. pdf goes through LaTeX, which is stricter about characters, image formats, and table widths, so a wide table that merely looks cramped in a browser can overflow the page or stop the render outright. Render to the format you are going to deliver, early, rather than discovering this the day it is due."]
+]},
+{ t: "Self-contained output",
+  body: [
+  ["p","An html render usually produces more than one thing. Beside report.html sits a folder named report_files, holding the stylesheets, the JavaScript, and every plot image the document drew. The html file points at them by relative path, so emailing the html alone delivers a page with no styling and no figures — the single most common way a Quarto document arrives broken."],
+  ["p","embed-resources fixes it by inlining every one of those assets into the html file itself. The result is one file that works anywhere, at the cost of being considerably larger than the page alone."],
+  ["code","---\ntitle: \"Allotment yields\"\nformat:\n  html:\n    embed-resources: true\n---"],
+  ["p","The vector below is a written-by-hand stand-in for that listing, not a capture of a real render — nothing here renders. What it is good for is the check: given a list of paths, which of them are the sidecar files that have to travel with the document."],
+  ["code","left_behind <- c(\"report.html\",\n                 \"report_files/libs/quarto-html/quarto.js\",\n                 \"report_files/libs/bootstrap/bootstrap.min.css\",\n                 \"report_files/figure-html/fig-yield-1.png\")\n\nlength(left_behind)\nsum(startsWith(left_behind, \"report_files/\"))\nsort(basename(left_behind[startsWith(left_behind, \"report_files/\")]))"],
+  ["code","[1] 4\n[1] 3\n[1] \"bootstrap.min.css\" \"fig-yield-1.png\"   \"quarto.js\""],
+  ["p","pdf and docx do not have this problem, because both formats embed their images and their styling by construction. It is specific to html, and to the html-based formats built on it, which includes slides and dashboards."],
+  ["note","Turning embed-resources on breaks anything that has to be fetched while the page is open rather than baked in when it is built. Fonts and libraries loaded from the internet at view time are the usual casualties. For a report you are handing to somebody, that is the trade you want; for a page you are hosting yourself, leave it off and ship the folder."]
+]},
+{ t: "Presentations",
+  body: [
+  ["p","Slides are a format, not a different kind of document. revealjs produces html slides, beamer produces pdf slides through LaTeX, and pptx produces a PowerPoint file. The prose and the chunks are the same ones you already wrote; what changes is that the output is paginated by heading rather than flowing continuously."],
+  ["code","---\ntitle: \"Allotment 2026\"\nformat: revealjs\n---\n\n## Beds\n\nFour beds this year.\n\n## Yields\n\n```{r}\n#| echo: false\nbarplot(beds)\n```\n\n## Next steps\n\n- order seed\n- repair the north fence"],
+  ["p","A level-two heading starts a new slide, and a level-one heading starts a section with a title slide of its own. A line of three hyphens forces a break where you want one without adding a heading. Bullet lists can be revealed one at a time, and text after a chunk marked as speaker notes shows only on the presenter screen."],
+  ["p","Counting the slides in a deck is therefore counting the level-two headings, which is a job for the same pattern work as the previous chapter."],
+  ["code","deck <- c(\"# Allotment 2026\", \"\", \"## Beds\", \"\", \"Four beds this year.\", \"\",\n          \"## Yields\", \"\", \"Mean 3.9 kg.\", \"\", \"## Next steps\", \"\", \"Order seed.\")\n\nheads <- grep(\"^## \", deck, value = TRUE)\ntitles <- sub(\"^## \", \"\", heads)\n\nlength(titles)\nsort(titles)"],
+  ["code","[1] 3\n[1] \"Beds\"       \"Next steps\" \"Yields\""],
+  ["p","How much sits on each slide is the question worth asking before you present, and a running total over the heading lines groups the document into slides. Group zero is whatever came before the first level-two heading."],
+  ["code","slide <- cumsum(startsWith(deck, \"## \"))\nsizes <- sapply(split(deck, slide), length)\n\nsizes"],
+  ["code","0 1 2 3 \n2 4 4 3"],
+  ["note","Slides do not scroll and they do not warn you. Content taller than the slide is simply cut off at the bottom in revealjs and runs off the page in beamer, with no message during the render. A chunk that prints forty rows of a data frame will lose thirty of them. Check the count per slide, or check the rendered deck, before you stand up with it."]
+]},
+{ t: "Dashboards, websites, and books",
+  body: [
+  ["p","format: dashboard rearranges the same content into a grid of cards rather than a flowing page. Level-one headings become pages, level-two headings become rows, and each chunk becomes a card inside the row it sits in. Nothing about the chunks changes; the layout comes from the heading structure you already have."],
+  ["code","---\ntitle: \"Allotment dashboard\"\nformat: dashboard\n---\n\n## Row\n\n```{r}\n#| title: Yield per bed\nbarplot(beds)\n```\n\n```{r}\n#| title: Totals\nsummary(beds)\n```"],
+  ["p","Dashboards are where interactivity usually turns up, and there are two kinds with very different requirements. Widgets built on JavaScript are computed once at render time and then live inside the html file, so a zoomable map or a chart with tooltips still works from a file on a colleague's desktop. Shiny is the other kind: it keeps an R process running behind the page and re-runs code as the reader clicks. That gives you far more, and it means the document has to be hosted on a server rather than emailed, because a file on its own has no R to talk to."],
+  ["p","Websites and books are not formats but projects: a folder of several .qmd files with a _quarto.yml at its root that names them and puts them in order. Rendering the project renders every document in it and builds the navigation between them. quarto publish pushes the result to a hosting service."],
+  ["code","project:\n  type: book\n\nbook:\n  title: \"Allotment notes\"\n  chapters:\n    - index.qmd\n    - beds.qmd\n    - yields.qmd"],
+  ["p","That list is the table of contents, and reading it back out is the same indentation work as before: the chapter entries are the lines at four spaces beginning with a hyphen."],
+  ["code","project <- c(\"project:\",\n             \"  type: book\",\n             \"\",\n             \"book:\",\n             '  title: \"Allotment notes\"',\n             \"  chapters:\",\n             \"    - index.qmd\",\n             \"    - beds.qmd\",\n             \"    - yields.qmd\")\n\nchapters <- sub(\"^    - \", \"\", grep(\"^    - \", project, value = TRUE))\n\nlength(chapters)\nsort(chapters)"],
+  ["code","[1] 3\n[1] \"beds.qmd\"   \"index.qmd\"  \"yields.qmd\""],
+  ["p","Beyond these there are formats for journal submission with a publisher's own layout, ePub for e-readers, and Typst as a faster alternative to LaTeX for pdf. They all consume the same .qmd. That is the whole argument for the format: the analysis is written once, and the delivery is a line in a header."],
+  ["note","A project changes what the render command means. Running quarto render inside a project folder renders the entire project, not the file you happen to have open, which is slow and occasionally surprising. Name the file explicitly when you want just one, and expect a document that renders alone to still fail in the project if the project's own settings conflict with the document's."]
+]},
+{ t: "Parameters",
+  body: [
+  ["p","One analysis and twelve regions is not twelve documents. Declare the varying value as a parameter in the header, write the document in terms of it, and render it once per value. The params block lists the names and their defaults."],
+  ["code","---\ntitle: \"Allotment yields\"\nformat: html\nparams:\n  bed: north\n---\n\n```{r}\n#| label: filter\nrows <- yields[yields$bed == params$bed, ]\n```\n\nThe `r params$bed` bed has `r nrow(rows)` years of records."],
+  ["p","Inside the document, params is an ordinary named list, so params$bed is the value. Rendering with no arguments uses the default; the -P flag overrides one parameter for one render, and the output filename has to be set as well or each render overwrites the last."],
+  ["code","$ quarto render report.qmd -P bed:south\n$ quarto render report.qmd -P bed:east --output east.html"],
+  ["p","The half of that which runs here is the half that matters. A parameterised report is a function of its parameters, so writing it as one shows exactly what each render would produce, and it is testable without rendering anything."],
+  ["code","yields <- data.frame(\n  bed = c(\"north\", \"north\", \"south\", \"south\", \"east\", \"east\"),\n  year = c(2025, 2026, 2025, 2026, 2025, 2026),\n  kg = c(3.1, 3.5, 4.0, 4.2, 2.6, 2.8)\n)\n\nreport <- function(params) {\n  rows <- yields[yields$bed == params$bed, ]\n  rows <- rows[order(rows$year), ]\n  paste0(params$bed, \": \", nrow(rows), \" years, best \", max(rows$kg), \" kg\")\n}\n\nwriteLines(report(list(bed = \"north\")))"],
+  ["code","north: 2 years, best 3.5 kg"],
+  ["p","Twelve regions is then a loop. On a desktop the body of the loop would call quarto's render function with a params list and an output filename; here it calls the report function directly, and the values it prints are the values those renders would contain."],
+  ["code","for (b in sort(unique(yields$bed))) {\n  writeLines(report(list(bed = b)))\n}"],
+  ["code","east: 2 years, best 2.8 kg\nnorth: 2 years, best 3.5 kg\nsouth: 2 years, best 4.2 kg"],
+  ["note","A parameter that matches nothing is the failure to plan for. Pass a bed name that is not in the data and the filter returns zero rows, max() of an empty vector warns and returns negative infinity, and the report renders successfully with nonsense in it. A parameterised document should check its parameter against the data and stop, because a render that fails loudly is worth more than twelve reports nobody reads closely."]
+]},
+{ t: "Summary",
+  body: [
+  ["p","The output format is a line in the YAML header. Bare names take the defaults; a format written as a key with an indented block underneath takes options, and several formats can be listed at once. --to overrides the header for a single render. html is the default and the most capable, pdf goes through LaTeX and gives fixed pages, docx exists for collaborators who comment in Word and takes its styles from a reference document. embed-resources inlines the sidecar files into one portable html file."],
+  ["p","The same .qmd becomes slides with revealjs, beamer, or pptx, paginated at the level-two headings; a grid of cards with dashboard; or one document among many in a project, ordered by a _quarto.yml, which is how websites and books are built. Widgets survive in a plain html file because they are computed at render time; Shiny needs a hosted R process. Parameters declared in the header arrive in the document as the params list, are overridden with -P, and turn one analysis into a report per value."],
+  ["p","This is the last chapter of the book. Taken together the twenty-nine of them cover a full working cycle: import data and make it tidy, transform it with dplyr, visualise it with ggplot2, handle the awkward types — strings, factors, dates, missing values — write functions and iterate over them instead of copying code, and finally publish the result as a document that rebuilds itself from the data."],
+  ["p","What to do next is not more reading. Open the practice tab and work the R concept ladder — vectors, data types, data frames, indexing, apply family, functions, tibbles and pipes, ggplot2 basics, dplyr verbs, grouping and summaries, tidy data, joins, strings and regex, factors and dates, iteration — until the ones marked shaky stop being shaky. Then go back through the chapter list and find the chapters whose four exercises you have not cleared; an unfinished chapter is a concept you read about and never made run. After that, the only thing left is your own data."]
+]}
+],
+questions: [
+{ q:"Where is a document's output format set, and how do you produce a different format once without editing the file?",
+  a:"On the format line of the YAML header. The --to flag on the render command overrides it for that run, so quarto render report.qmd --to docx produces a Word file from a document whose header says html." },
+{ q:"What is the difference between format: html and a format: block with html: indented under it?",
+  a:"The bare name takes the format's defaults. Writing it as a key with an indented block underneath lets you set that format's options — toc, code-fold, embed-resources — two spaces in for the format name and four for each of its options. Several formats can be listed at once, each with its own block, and default means take this one unchanged." },
+{ q:"Why does code-fold do nothing in a pdf, and documentclass do nothing in html?",
+  a:"Options belong to formats. code-fold hides code behind a toggle the reader clicks, which only a web page can do. documentclass is a LaTeX setting, and html never goes near LaTeX. An option under the wrong format is either ignored or an error, and neither tells you what you meant." },
+{ q:"What does a pdf render need that an html render does not?",
+  a:"A LaTeX installation. quarto install tinytex installs a small self-contained one. It also means pdf is stricter: wide tables, unusual characters, and image formats that a browser shrugs at can overflow the page or stop the render." },
+{ q:"What is a reference document, and which format uses one?",
+  a:"A .docx file whose styles a Word render copies. You render once, restyle that output in Word, then point reference-doc at it, and every later render picks up those fonts, headings, and spacing. It is the docx format's answer to a stylesheet." },
+{ q:"An html render produced report.html and a report_files folder. What happens if you email only the html, and what is the fix?",
+  a:"The page arrives with no styling and no figures, because the html points at the folder by relative path. Setting embed-resources: true under html inlines every stylesheet, script, and image into the file itself, giving one larger file that works anywhere." },
+{ q:"Which formats produce slides, and what decides where one slide ends and the next begins?",
+  a:"revealjs for html slides, beamer for pdf slides through LaTeX, and pptx for PowerPoint. A level-two heading starts a new slide and a level-one heading starts a section with its own title slide; a line of three hyphens forces a break without a heading." },
+{ q:"You render a deck and half of a table is missing from one slide. What happened?",
+  a:"The slide overflowed. Slides do not scroll and the render does not warn, so content taller than the slide is cut off in revealjs and runs off the page in beamer. Split the content across more headings, or show fewer rows." },
+{ q:"What is the difference between an htmlwidget and a Shiny document, in terms of where the result can live?",
+  a:"A widget is computed once at render time and lives inside the html file, so it still works from a file on somebody's desktop. Shiny keeps an R process running behind the page and re-runs code as the reader interacts, so the document has to be hosted on a server — a file on its own has no R to talk to." },
+{ q:"You have one analysis and twelve regions. What is the Quarto shape for that, and what is the trap?",
+  a:"Declare region in a params block in the header, write the document in terms of params$region, and render once per value with -P region:name and a distinct --output filename. The trap is a parameter value that matches no data: the filter returns zero rows and the document renders successfully with nonsense in it, so check the parameter against the data and stop." }
+],
+exercises: [
+{ c:"strings & regex", t:"Formats in the header", book:"r29",
+  b:"A YAML header has been read into a character vector. Build it with hdr <- c('title: \"Soil tests\"', \"format:\", \"  html:\", \"    toc: true\", \"  pdf:\", \"    documentclass: article\", \"  docx: default\") and print the format names in alphabetical order. A format name sits at exactly two spaces of indentation; its options sit at four and must not appear in your answer.",
+  o:"[1] \"docx\" \"html\" \"pdf\"",
+  h:["Two spaces then a letter is a format; four spaces then a letter is an option belonging to the format above it.",
+     "grep() with value = TRUE keeps only the lines at the two-space level if the pattern anchors two spaces and a letter at the start. sub() with a capture group then keeps just the name from each line.",
+     "The search pattern is a start-of-line anchor, two spaces, and a lower-case letter class. For the name, capture one or more letters in round brackets before the colon and replace the whole line with the backreference. Wrap the result in sort()."]},
+{ c:"strings & regex", t:"Slides from headings", book:"r29",
+  b:"Build deck <- c(\"# Soil report\", \"\", \"## Samples\", \"\", \"Three plots tested.\", \"\", \"## Results\", \"\", \"Mean pH 6.3.\", \"\", \"## Next steps\", \"\", \"Retest in spring.\"). A level-two heading starts a new slide. Print the number of slides on the first line, then the slide titles in alphabetical order with the heading marker removed.",
+  o:"[1] 3\n[1] \"Next steps\" \"Results\"    \"Samples\"",
+  h:["A slide begins at a line starting with two hash marks and a space. The single-hash line is a section title, not a slide of its own.",
+     "grep() with value = TRUE collects the heading lines, length() counts them, and sub() removes the marker from the front of each.",
+     "Anchor two hashes and a space at the start of the line, use that same pattern for the search and for the removal, print the length first, then sort() the stripped titles."]},
+{ c:"functions", t:"One report per parameter", book:"r29",
+  b:"Build tests <- data.frame(plot = c(\"north\", \"north\", \"south\", \"south\", \"east\", \"east\"), ph = c(6.1, 6.8, 5.9, 6.2, 6.4, 6.0)). Write a function report(params) that takes a list with one element named plot, keeps the rows of tests for that plot, and returns the single line: the plot name, a colon and a space, the number of readings, the words \" readings, highest \", and the highest ph for that plot. Call it once for each plot name in alphabetical order and print each returned line with writeLines. For east the line reads: east: 2 readings, highest 6.4",
+  o:"east: 2 readings, highest 6.4\nnorth: 2 readings, highest 6.8\nsouth: 2 readings, highest 6.2",
+  h:["A parameterised report is a function of its parameters. The parameter arrives as a list, so the value is params$plot.",
+     "Subset the data frame with a logical test on the plot column, then build the line with paste0, which glues text and numbers with no separator. nrow() gives the count and max() the highest reading.",
+     "Define report <- function(params) whose body subsets tests, then returns paste0 of the name, a colon and space, the row count, the fixed words, and the maximum. Then loop over sort(unique(tests$plot)) calling writeLines on the result."]},
+{ c:"vectors", t:"What a render leaves behind", book:"r29",
+  b:"An html render left these paths behind: build them as left <- c(\"soil.html\", \"soil_files/libs/bootstrap/bootstrap.min.css\", \"soil_files/figure-html/fig-ph-1.png\", \"soil_files/libs/quarto-html/quarto.js\"). Print how many of them sit inside the soil_files folder, then the file names of those ones — without their folders — in alphabetical order.",
+  o:"[1] 3\n[1] \"bootstrap.min.css\" \"fig-ph-1.png\"      \"quarto.js\"",
+  h:["The sidecar files are the ones whose path begins with the folder name; the document itself does not.",
+     "startsWith() gives a logical vector you can both sum and use as a subscript. basename() strips the directories off a path.",
+     "First line: sum() of startsWith() against the folder prefix. Second line: subset the vector with the same startsWith() call, pass it to basename(), and wrap the whole thing in sort()."]}
+]
+};

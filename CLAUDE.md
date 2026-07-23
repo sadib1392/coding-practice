@@ -16,12 +16,16 @@ deployed automatically by `.github/workflows/deploy-pages.yml` on every push to
 Three things distinguish it from a flashcard app:
 
 1. **Correctness is decided by executing the code**, not by opinion. Python
-   runs on Pyodide (WASM, CDN-loaded on demand), JavaScript runs in the browser
-   engine. Output is diffed (via `norm()`) against an exact expected string.
+   runs on Pyodide, R runs on WebR, JavaScript runs in the browser engine — all
+   WASM/native, CDN-loaded on demand. Output is diffed (via `norm()`) against an
+   exact expected string.
 2. **It works offline.** Service worker precaches the shell; a button caches
    the ~12 MB Pyodide runtime permanently.
 3. **Teaching comes before drilling.** Concept lessons with readings and
    warm-up problems, plus a chapter-by-chapter book course.
+4. **Progress is gamified.** XP, levels, a daily goal, streaks, hearts, daily
+   quests, badges, and a Duolingo-style chapter path. The rewards hang off real
+   verified work — passing an exercise means the code ran and matched.
 
 Non-goals, deliberately: no accounts, no backend, no build step, no npm
 runtime dependencies, no analytics, no sync.
@@ -29,13 +33,15 @@ runtime dependencies, no analytics, no sync.
 ## Files
 
 ```
-index.html              the entire app: markup, CSS, JS, lessons, exercises
-book/ch01.js …ch24.js   book chapter data (one file per chapter, plain script)
-sw.js                   service worker: shell precache + Pyodide runtime cache
+index.html              the entire app: markup, CSS, JS, lessons, exercises, game
+book/ch01.js …ch24.js   Python book chapters (Automate the Boring Stuff, 3e)
+book/r01.js …r29.js     R book chapters (R for Data Science, 2e)
+sw.js                   service worker: shell precache + Pyodide/WebR runtime cache
 manifest.webmanifest    PWA manifest
 icon-*.png, apple-touch-icon.png
-tests/                  jsdom smoke suites, shape contract check, and one
-                        self-checking chN_verify.py per chapter
+tests/                  jsdom smoke suites, shape contract check, one self-checking
+                        chN_verify.py per Python chapter, one rchN_verify.mjs per R
+                        chapter, and rverify.mjs (the shared WebR harness)
 .github/workflows/deploy-pages.yml   auto-deploy to GitHub Pages
 ```
 
@@ -47,20 +53,27 @@ Everything below is merged to `main` and deployed:
   `LESSONS`, graded drills, streaks, ledger, offline queue for Python.
 - **Lessons** for all 33 ladder concepts (12 py / 10 js / 6 r / 5 mermaid):
   intro `i`, syntax pairs `s`, gotchas `w`.
-- **Extended Python lessons**: every Python concept also has `read`
-  (multi-paragraph prose) and `practice` (3 predict-the-output problems each,
-  36 total). JS/R/Mermaid don't have these yet — the shape is optional and
-  backward compatible. **Extending read/practice to JS is a natural next task.**
+- **Extended lessons**: every Python concept (12) and every R concept (15) has
+  `read` (multi-paragraph prose) and `practice` (3 predict-the-output problems).
+  JS/Mermaid don't have these yet — the shape is optional and backward
+  compatible. **Extending read/practice to JS is a natural next task.**
+- **R ladder is 15 concepts** covering base R and the tidyverse, with 2 BANK
+  drills each (30). Every R drill carries a real expected output captured from
+  WebR — they were all `o:null` before R could execute.
 - **Text highlighting**: select prose in lessons or book → floating Highlight
   button → saved as character-offset ranges in `S.highlights`, keyed per prose
   block; tap a highlight to remove. Survives reload.
-- **Book course** (BOOK tab): chapter reader following the curriculum of
-  *Automate the Boring Stuff with Python* (3rd ed.) by Al Sweigart, with
-  **original lesson text** (see "Book content policy" below). **ALL 24
-  chapters of the 3e are complete** (ch01–ch24): each has 7–9 sections,
-  exactly 10 reveal-answer questions, and exactly 4 graded exercises mapped
-  to `LADDER.python` concepts. Per-section mark-as-read, progress meters,
-  and a "pick up where you left off" card on the practice view.
+- **Two book courses** (BOOK tab shows the book for the current language tab):
+  - **Python** — *Automate the Boring Stuff with Python* (3e), Al Sweigart.
+    **All 24 chapters complete** (ch01–ch24).
+  - **R** — *R for Data Science* (2e), Wickham/Çetinkaya-Rundel/Grolemund.
+    **All 29 chapters complete** (r01–r29).
+  Both use **original lesson text** (see "Book content policy"). Every chapter
+  has 6–9 sections, exactly 10 reveal-answer questions, and exactly 4 graded
+  exercises mapped to that language's ladder concepts. R chapters may carry a
+  `pkgs` array naming the WebR packages their exercises need. Per-section
+  mark-as-read, progress meters, a "pick up where you left off" card, and a
+  chapter path with crowns.
 - **3e chapter map differs from older editions** (verified against the live
   3e TOC): ch2 is if-else only (truthiness moved to ch3), ch3 Loops, ch4
   Functions, ch5 Debugging, ch6 Lists, ch7 Dictionaries, ch8 Strings, ch9
@@ -100,6 +113,21 @@ Everything below is merged to `main` and deployed:
 | highlighting | `hlSpans`, `hlElK`/`hlEl`, `applyHighlight`, `wireHighlighting` |
 | render | `render`, `renderBook`, `renderChapter`, `renderLesson`, `renderTask`, `renderRun`, `renderGrade`, `renderLedger` |
 
+### Game mechanics (index.html, `/* ============ game ============ */`)
+
+| Piece | Behaviour |
+|---|---|
+| XP | `XP` table: section 4, exercise 12 (repeat 4), drill 10, chapter 40, quest 20, goal 15. Combo adds up to +10. |
+| Levels | `levelInfo(xp)`; level *l* costs `100+(l-1)*50`, so the curve widens. |
+| Daily goal | `S.game.goal` (20/50/100, set in the ledger). Met once per day, pays a bonus. |
+| Hearts | 5 max, one back every 20 min. A **failed graded attempt** costs one; at zero, grading is blocked but **reading is never blocked**. Fully switchable off in the ledger. |
+| Quests | 3 per day, chosen from a hash of the date so a reload never reshuffles them. |
+| Badges | 13 in `BADGES`, checked after every award. |
+| Feedback | `sfx()` synthesises tones with WebAudio (no audio files), `buzz()` vibrates, `toast()` queues a pill, `party` drives the full-screen celebration, `confetti()` is canvas-drawn. All guarded; confetti also respects `prefers-reduced-motion`. |
+
+The chapter path shows progression but **does not gate** chapters — the owner
+asked for that explicitly. The next unfinished chapter pulses instead.
+
 ### State shape (`S`, single localStorage key)
 
 ```js
@@ -109,9 +137,14 @@ S = {
   queue[],                          // Python submissions awaiting a runtime
                                     // entries carry book:chId|null for credit
   highlights{ key: [[start,end],...] },  // key: "python|loops|r0" or "book|ch01|s2|b1"
-  book{ last:{ch,sec}|null, read:{ch01:{0:true,...}}, ex:{ch01:["Exercise title",...]} }
+  book{ last:{ch,sec}|null, read:{ch01:{0:true,...}}, ex:{ch01:["Exercise title",...]} },
+  game{ xp, day, todayXp, goal, hearts, heartTs, freezes, combo, bestCombo,
+        quests:{day,items[]}, badges:{id:date}, hist:{date:xp}, goalDays,
+        lastGoalDay, opts:{hearts,sound,motion} }
 }
 ```
+`ensureGame()` backfills and rolls the day over; every game mutation still
+routes through `persist()`.
 `blank` defines defaults; a top-level backfill loop migrates old stored states.
 
 ### Book chapter data shape (`book/chNN.js`)
@@ -136,13 +169,66 @@ chNN` and `node tests/smoke3.mjs`, and bump `SHELL`. If a chapter were ever
 added or removed: `<script src>` tag in index.html before the main script,
 id in `BOOK_ORDER`, file in `APP_FILES` in sw.js, bump `SHELL`.
 
+### R execution (WebR)
+
+`bootR()` dynamically imports `https://webr.r-wasm.org/latest/webr.mjs`;
+`runR(code, pkgs)` installs any missing packages then runs through `captureR`
+with **`captureConditions:false`**, which is deliberate: an R error then lands
+in the transcript as the `Error: ...` line R itself prints (matching a real
+console) instead of throwing, and `runR` flags it by spotting that line.
+
+Verified facts, not assumptions:
+- WebR needs **no cross-origin isolation**, so it works on GitHub Pages. Tested
+  with `crossOriginIsolated === false`.
+- WebR's R is **4.6.0** — local R on this machine is 4.3.2 with different
+  package versions, so **never capture chapter output from local R**. Use
+  `tests/rverify.mjs`, which drives the same WebR from Node.
+- ggplot2 there is **4.x / S7-based**: `p$labels$x` is NULL until draw time;
+  use `get_labs(p)$x`. `length(p$layers)`, `class(p$layers[[1]]$geom)[1]` and
+  `nrow(p$data)` are reliable. Printing a plot object emits **no text**, so no
+  exercise may end on a bare plot object.
+- `geom_histogram`'s geom class is `GeomBar`; `binwidth` lives in `stat_params`.
+- ggplot2 4.x does not pull in tibble — list `"tibble"` in `pkgs` if you use it.
+- `library(dplyr)` prints an attach banner, and `runR` installs a chapter's
+  `pkgs` but does **not** attach them, so exercises call `library()` themselves
+  and use `suppressMessages()` when the graded transcript should hold only the
+  learner's own output.
+- dplyr there is 1.2.1, whose regroup message differs from the familiar 1.1.x
+  wording. `getwd()` is `/home/web_user`; relative-path file I/O works; the
+  global env and filesystem persist between runs, so blocks needing a clean
+  slate start with `rm(list = ls())` and file writes are idempotent.
+- **Errors print as `Error: <message>`** — WebR drops the `Error in <call> :`
+  prefix desktop R shows, and rlang's multi-line bullets do not survive
+  `captureConditions:false`. To teach the full message, catch it and print
+  `conditionMessage(e)` (or `conditionMessage(e$parent)` for purrr/dplyr).
+  `traceback()` returns `No traceback available`. Warnings print *before* the
+  value here, and carry their call even though errors do not.
+- Printing a ggplot emits no text **unless drawing raises a warning**, in which
+  case the warning is the entire output.
+
+**Package availability in WebR, probed rather than assumed.** Installs: dplyr,
+tidyr, tibble, ggplot2, stringr, forcats, lubridate, purrr, readr, readxl,
+writexl, DBI, RSQLite, dbplyr, duckdb, jsonlite, rvest, xml2, nanoparquet,
+googlesheets4, styler, lintr. **Does not install: `arrow`** — note that
+`installPackages(['arrow'])` returns *without throwing* and the package is
+simply absent afterwards, so check `packageVersion()` rather than trusting the
+call. googlesheets4 installs but needs network plus browser OAuth, so it stays
+output-free. Chapters 22 (arrow) and 24's network fetches are the only
+library workflows taught output-free; everything else runs for real.
+
 ## Book content policy (important)
 
-The remote build environment could not reach automatetheboringstuff.com
-(network policy 403). Local sessions CAN reach it (checked 2026-07-23): the
-3e pages state no Creative Commons license, so the situation is unchanged —
-the 3e's terms are unknown and no text may be copied. The site remains
-useful read-only for verifying the 3e's chapter/section structure.
+**Both books are original prose. Neither may be copied.**
+
+- *Automate the Boring Stuff* (3e): the pages state no Creative Commons
+  license, so its terms are unknown and no text may be copied. The site is
+  reachable from local sessions and useful read-only for chapter structure.
+- *R for Data Science* (2e): licensed **CC BY-NC-ND 3.0** (verified on the
+  site, 2026-07-23). **ND means NoDerivatives** — a close paraphrase is a
+  derivative work, so the same rule applies with the license now confirmed
+  rather than merely unknown. Curriculum structure (a list of topics) is not
+  copyrightable; the words are.
+
 **All chapter text is original prose written for this app**,
 following the book's chapter-by-chapter curriculum, credited to Al Sweigart
 and linked to each original chapter. If the owner wants verbatim book text
@@ -183,7 +269,9 @@ No framework; jsdom harnesses in `tests/`. Setup: `npm install jsdom`
 node tests/smoke.mjs    # core: renders, lesson shows, JS drill PASS 5/5, wrong answer MISMATCH
 node tests/smoke2.mjs   # lessons: reading/practice sections, reveal toggle, highlight round-trip
 node tests/smoke3.mjs   # book: deep flows + auto-checks EVERY wired chapter's render counts
+node tests/smoke4.mjs   # game: XP, hearts, quests, badges, levels, celebration
 node tests/shape_check.mjs        # data contract for all book/ch*.js (counts, concepts, register)
+for n in $(seq 1 29); do [ -f "tests/rch${n}_verify.mjs" ] && (node "tests/rch${n}_verify.mjs" >/dev/null || echo "r$n FAIL"); done
 python3 tests/practice_verify.py  # re-verify lesson practice outputs (prints for eyeballing)
 python3 tests/ch1_verify.py       # chapter 1 outputs (print-style, the original pattern)
 for n in $(seq 2 24); do python3 "tests/ch${n}_verify.py" > /dev/null || echo "ch$n FAIL"; done
@@ -207,8 +295,8 @@ Python for offline" on wifi.
 
 ## Known limitations — do not "fix" silently
 
-- R and Mermaid never execute; correctness capped at 3/5 (disclosed in
-  footer). WebR (webr.r-wasm.org) is the highest-value technical addition.
+- Mermaid never executes; correctness capped at 3/5 (disclosed in footer).
+  R **does** execute now, via WebR.
 - Pyodide cache is evictable (iOS ~7 weeks unused); the cache button
   reappearing is intended.
 - Progress is device-local; "Export progress" is the backup.
@@ -231,10 +319,16 @@ Python for offline" on wifi.
 
 ## Roadmap (owner's priorities)
 
-1. ~~Book chapters~~ **DONE 2026-07-23: all 24 3e chapters are built,**
-   execution-verified, and wired in. Future book work is edits, not additions.
-2. Extend `read`/`practice` lesson sections to JavaScript concepts.
-3. More Python BANK drills (2-3 per concept; `while` loops and string
+1. ~~Python book chapters~~ **DONE: all 24 3e chapters.**
+2. ~~WebR execution for R~~ **DONE: R runs and is graded by execution.**
+3. ~~R book~~ **DONE: all 29 r4ds 2e chapters,** plus the 15-concept R ladder
+   with lessons and drills. Future book work is edits, not additions.
+4. Extend `read`/`practice` lesson sections to JavaScript concepts — the last
+   language without them.
+5. More Python BANK drills (2-3 per concept; `while` loops and string
    formatting underrepresented).
-4. WebR execution for R (same shape as `bootPython`).
-5. Offered but not requested: locked chapter progression.
+6. Gamification follow-ups the owner has NOT asked for, so do not add
+   unprompted: locked chapter progression (the path deliberately does not gate),
+   streak-freeze spending UI, and any leaderboard (there is no backend, and a
+   fabricated one would be dishonest — the weekly chart is the owner's own
+   history on purpose).

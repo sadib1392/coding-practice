@@ -46,10 +46,15 @@ setTimeout(async () => {
   check(t.includes('Automate the Boring Stuff'), 'book view shows book title');
   check(t.includes('Al Sweigart'), 'attribution to the author present');
   check(t.includes('Python Basics'), 'chapter 1 listed');
-  check(t.includes('0 / 7 sections read'), 'chapter progress meter at 0/7');
+  check(t.includes('0/7 sections'), 'chapter progress shown on the path');
 
-  // --- open chapter ---
-  clickIn(d, 'Start chapter');
+  // --- open chapter (path knobs are labelled "Chapter N: Title") ---
+  const knob = (doc, n) => {
+    const b = [...doc.querySelectorAll('.knob')].find(b => (b.getAttribute('aria-label') || '').startsWith(`Chapter ${n}:`));
+    if (!b) throw new Error('no path knob for chapter ' + n);
+    b.click(); return b;
+  };
+  knob(d, 1);
   const card = d.querySelector('#bookcard');
   check(!!card, 'chapter view renders');
   check(card.querySelectorAll('[id^="bsec"]').length === 7, 'all 7 sections render');
@@ -123,6 +128,7 @@ setTimeout(async () => {
   check(t2.includes('pick up where you left off'), 'continue card shown on practice view after reload');
   check(t2.includes('Chapter 1: Python Basics'), 'continue card names the chapter');
   check(t2.includes('1 / 7 sections read'), 'continue card shows saved progress');
+  check(t2.includes('XP') || t2.includes('L1'), 'gamified stats bar renders');
   clickIn(d2, 'Continue reading');
   await wait(80);
   check(!!d2.querySelector('#bookcard'), 'continue button reopens the chapter');
@@ -133,16 +139,16 @@ setTimeout(async () => {
   // --- every chapter in BOOK_ORDER: listed, opens, renders declared counts ---
   const dom3 = makeDom(null);
   const w3 = dom3.window, d3 = w3.document;
-  const ORDER = JSON.parse(w3.eval('JSON.stringify(BOOK_ORDER)'));
+  const ORDER = JSON.parse(w3.eval('JSON.stringify(BOOKS.python.order)'));
   const META = JSON.parse(w3.eval(
-    'JSON.stringify(Object.fromEntries(Object.entries(bookChapters()).map(' +
+    'JSON.stringify(Object.fromEntries(Object.entries(BOOKS.python.chapters()).map(' +
     '([id,c])=>[id,{n:c.n,t:c.title,s:c.sections.length,q:c.questions.length,x:c.exercises.length}])))'));
   check(ORDER.every(id => META[id]), `every BOOK_ORDER id has a loaded chapter file (${ORDER.length} wired)`);
   clickIn(d3, 'BOOK');
   for (let i = 0; i < ORDER.length; i++) {
     const m = META[ORDER[i]];
-    const open = [...d3.querySelectorAll('button')].filter(b => /Start chapter|Continue chapter/.test(b.textContent));
-    if (open.length !== ORDER.length) { check(false, `chapter list shows ${open.length} chapters, want ${ORDER.length}`); break; }
+    const open = [...d3.querySelectorAll('.knob')];
+    if (open.length !== ORDER.length) { check(false, `path shows ${open.length} chapters, want ${ORDER.length}`); break; }
     open[i].click();
     const card = d3.querySelector('#bookcard');
     const secs = card ? card.querySelectorAll('[id^="bsec"]').length : 0;
@@ -154,8 +160,7 @@ setTimeout(async () => {
   }
 
   // --- second chapter deep flow: exercise opens, queue tags, drain credits ---
-  const open2 = [...d3.querySelectorAll('button')].filter(b => /Start chapter|Continue chapter/.test(b.textContent));
-  open2[1].click();
+  knob(d3, 2);
   const ex3btns = [...d3.querySelectorAll('#bookcard button')].filter(b => b.textContent.includes('Start exercise'));
   ex3btns[0].click();
   await wait(20);
