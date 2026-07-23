@@ -40,6 +40,8 @@ const APP_FILES = [
   "./book/r04.js",
   "./book/r05.js",
   "./book/r06.js",
+  "./book/r07.js",
+  "./book/r08.js",
 ];
 
 self.addEventListener("install", (e) => {
