@@ -61,7 +61,7 @@ sections: [
 { t: "Summary",
   body: [
   ["p","Expressions are values and operators, and they evaluate to a single value. Values have types — integer, float, string — and the type decides what an operator does, including refusing combinations that make no sense. Variables store one value at a time under a name you choose. Programs are instructions run in order, and print(), input(), len(), str(), int(), and float() are enough to write one that talks back."],
-  ["p","Work the practice questions from memory before revealing the answers, then clear the graded exercises below. The next chapter is flow control — making programs decide and repeat."]
+  ["p","Work the practice questions from memory before revealing the answers, then clear the graded exercises below. The next chapter is if-else and flow control — making programs decide."]
 ]}
 ],
 questions: [

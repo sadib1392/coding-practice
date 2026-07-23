@@ -3,6 +3,7 @@ import fs from 'fs';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const ch01 = fs.readFileSync(new URL('../book/ch01.js', import.meta.url), 'utf8');
+const ch02 = fs.readFileSync(new URL('../book/ch02.js', import.meta.url), 'utf8');
 const KEY = 'practicelog.offline.v1';
 
 function makeDom(seedJSON) {
@@ -11,10 +12,11 @@ function makeDom(seedJSON) {
     url: 'https://sadib1392.github.io/coding-practice/',
     beforeParse(win) {
       if (seedJSON) { try { win.localStorage.setItem(KEY, seedJSON); } catch (e) {} }
-      // The real page loads book/ch01.js via a script tag BEFORE the inline
-      // script; jsdom-from-string skips external scripts, so replicate the
-      // order by evaluating it pre-parse.
+      // The real page loads the book/chNN.js files via script tags BEFORE the
+      // inline script; jsdom-from-string skips external scripts, so replicate
+      // the order by evaluating them pre-parse.
       win.eval(ch01);
+      win.eval(ch02);
     },
   });
   const w = dom.window;
@@ -126,6 +128,37 @@ setTimeout(async () => {
   check(!!d2.querySelector('#bookcard mark.hl'), 'book highlight restored after reload');
   const list2 = d2.querySelector('#app').textContent;
   check(list2.includes('Read ✓'), 'read state restored after reload');
+
+  // --- chapter 2: list, reader, exercise flow ---
+  const dom3 = makeDom(null);
+  const w3 = dom3.window, d3 = w3.document;
+  clickIn(d3, 'BOOK');
+  const t3 = d3.querySelector('#app').textContent;
+  check(t3.includes('if-else and Flow Control'), 'chapter 2 listed on the book view');
+  check(t3.includes('0 / 8 sections read'), 'chapter 2 progress meter at 0/8');
+  const starts = [...d3.querySelectorAll('button')].filter(b => b.textContent.includes('Start chapter'));
+  check(starts.length === 2, 'both chapters offer Start chapter');
+  starts[1].click();
+  const card3 = d3.querySelector('#bookcard');
+  check(!!card3 && card3.textContent.includes('if-else and Flow Control'), 'chapter 2 reader opens');
+  check(card3.querySelectorAll('[id^="bsec"]').length === 8, 'all 8 ch02 sections render');
+  check([...card3.querySelectorAll('button')].filter(b => b.textContent.includes('Reveal answer')).length === 10, 'all 10 ch02 questions have reveal buttons');
+  const ex3btns = [...card3.querySelectorAll('button')].filter(b => b.textContent.includes('Start exercise'));
+  check(ex3btns.length === 4, 'all 4 ch02 exercises listed');
+  ex3btns[0].click();
+  await wait(20);
+  check(d3.querySelector('#app').textContent.includes('Book exercise · Chapter 2 · conditionals'), 'ch02 exercise opens labeled with chapter and concept');
+  w3.loadPyodide = () => Promise.reject(new Error('blocked'));
+  d3.querySelector('#code').value = 'a = 17\nb = 20\nprint(a > b)\nprint(a != b)\nprint(a + 3 == b)';
+  clickIn(d3, 'Run and grade');
+  await wait(300);
+  const st6 = JSON.parse(w3.localStorage.getItem(KEY));
+  check(st6.queue.length === 1 && st6.queue[0].book === 'ch02', 'ch02 offline submission queued with its book tag');
+  w3.eval('runPython = async (code) => ({ok: true, output: "False\\nTrue\\nTrue"})');
+  clickIn(d3, 'Grade queued');
+  await wait(200);
+  const st7 = JSON.parse(w3.localStorage.getItem(KEY));
+  check(st7.book.ex.ch02 && st7.book.ex.ch02.includes('Three questions, three answers'), 'drained pass credits the ch02 exercise');
 
   console.log(fails === 0 ? '\nSMOKE3: ALL PASS' : `\nSMOKE3: ${fails} FAILURE(S)`);
   process.exit(fails === 0 ? 0 : 1);

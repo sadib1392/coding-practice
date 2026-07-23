@@ -57,12 +57,19 @@ Everything below is merged to `main` and deployed:
   *Automate the Boring Stuff with Python* (3rd ed.) by Al Sweigart, with
   **original lesson text** (see "Book content policy" below). Chapter 1
   (Python Basics) is complete: 7 sections, 10 reveal-answer questions, 4
-  graded exercises. Per-section mark-as-read, progress meters, and a
-  "pick up where you left off" card on the practice view.
+  graded exercises. Chapter 2 (if-else and Flow Control) is complete: 8
+  sections, 10 questions, 4 graded exercises, all mapped to the
+  `conditionals` ladder concept. Per-section mark-as-read, progress meters,
+  and a "pick up where you left off" card on the practice view.
+- **3e chapter map differs from older editions** (verified against the live
+  3e TOC): ch2 is booleans/comparisons/if-elif-else only; ch3 Loops, ch4
+  Functions, ch5 Debugging, ch6 Lists, ch7 Dictionaries, ch8 Strings.
+  Truthiness is NOT in 3e ch2, so the book chapter leaves it out (the app's
+  `conditionals` lesson still covers it).
 - **Chapters are NOT gated** — any chapter can be started at any time. The
   owner has been offered locked progression and hasn't asked for it.
 - Nav is three tabs: PRACTICE / BOOK / LEDGER, plus language tabs.
-- Service worker `SHELL` is at `shell-v4`.
+- Service worker `SHELL` is at `shell-v5`.
 
 ## Architecture (index.html, one script block, in order)
 
@@ -119,8 +126,11 @@ ladder. `logSession` and `drainQueue` both credit `S.book.ex[chId]` on pass.
 ## Book content policy (important)
 
 The remote build environment could not reach automatetheboringstuff.com
-(network policy 403), so the book's license could not be verified and no text
-was copied. **All chapter text is original prose written for this app**,
+(network policy 403). Local sessions CAN reach it (checked 2026-07-23): the
+3e pages state no Creative Commons license, so the situation is unchanged —
+the 3e's terms are unknown and no text may be copied. The site remains
+useful read-only for verifying the 3e's chapter/section structure.
+**All chapter text is original prose written for this app**,
 following the book's chapter-by-chapter curriculum, credited to Al Sweigart
 and linked to each original chapter. If the owner wants verbatim book text
 embedded, first verify the 3e license terms on the site (earlier editions were
@@ -159,9 +169,10 @@ No framework; jsdom harnesses in `tests/`. Setup: `npm install jsdom`
 ```bash
 node tests/smoke.mjs    # core: renders, lesson shows, JS drill PASS 5/5, wrong answer MISMATCH
 node tests/smoke2.mjs   # lessons: reading/practice sections, reveal toggle, highlight round-trip
-node tests/smoke3.mjs   # book: reader, highlight, mark-read, resume, queue credit (32 checks)
+node tests/smoke3.mjs   # book: reader, highlight, mark-read, resume, queue credit, ch02 (42 checks)
 python3 tests/ch1_verify.py       # re-verify chapter 1 outputs
 python3 tests/practice_verify.py  # re-verify lesson practice outputs
+python3 tests/ch2_verify.py       # re-verify chapter 2 outputs (self-checking, exits 1 on drift)
 ```
 
 All three smoke suites must pass before pushing. Always test the failing case
@@ -189,9 +200,10 @@ Python for offline" on wifi.
 
 ## Roadmap (owner's priorities)
 
-1. **Book chapters 2+** (next: Flow Control), same shape as ch01, outputs
-   verified by execution. This is the owner's main ongoing ask — they want the
-   whole ATBS curriculum over time.
+1. **Book chapters 3+** (next: Chapter 3, Loops — while/for/range in the 3e),
+   same shape as ch01/ch02, outputs verified by execution. This is the owner's
+   main ongoing ask — they want the whole ATBS curriculum over time. Prefer
+   ch2_verify.py's self-checking pattern for new verify scripts.
 2. Extend `read`/`practice` lesson sections to JavaScript concepts.
 3. More Python BANK drills (2-3 per concept; `while` loops and string
    formatting underrepresented).

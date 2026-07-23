@@ -1,5 +1,5 @@
 /* Practice Log service worker */
-const SHELL = "shell-v4";
+const SHELL = "shell-v5";
 const RUNTIME = "pyodide-v1";
 
 const APP_FILES = [
@@ -11,6 +11,7 @@ const APP_FILES = [
   "./icon-maskable-512.png",
   "./apple-touch-icon.png",
   "./book/ch01.js",
+  "./book/ch02.js",
 ];
 
 self.addEventListener("install", (e) => {
