@@ -84,8 +84,75 @@
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
   .why{font-family:var(--serif);font-size:15px;line-height:1.6;margin:8px 0 0;color:var(--soft)}
 
+  /* ---- game chrome ---- */
+  .stats{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:0 0 16px;
+    background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:12px 14px}
+  .stat{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:500;line-height:1}
+  .stat .n{font-variant-numeric:tabular-nums}
+  .stat.dim{color:var(--soft);font-weight:400}
+  .flame{color:var(--gold)} .gem{color:var(--teal)} .heart{color:var(--sig)}
+  .hollow{color:var(--rule)}
+  .ringwrap{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .lvlbar{height:6px;background:var(--deep);border-radius:3px;overflow:hidden;flex:1;min-width:70px}
+  .lvlbar > i{display:block;height:100%;background:var(--teal);border-radius:3px;transition:width .5s ease}
+  /* ---- chapter path ---- */
+  .path{position:relative;margin:0 0 10px;padding:4px 0}
+  .path .rail{position:absolute;left:50%;top:0;bottom:0;width:4px;margin-left:-2px;
+    background:repeating-linear-gradient(var(--rule) 0 8px, transparent 8px 16px);z-index:0}
+  .step{position:relative;z-index:1;display:flex;align-items:center;gap:12px;margin:0 0 14px;min-height:74px}
+  .step.right{flex-direction:row-reverse}
+  .knob{width:74px;height:74px;border-radius:50%;flex:0 0 74px;border:3px solid var(--rule);
+    background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-weight:600;font-size:19px;color:var(--soft);cursor:pointer;position:relative;
+    box-shadow:0 3px 0 var(--rule);transition:transform .12s ease}
+  .knob:active{transform:translateY(3px);box-shadow:0 0 0 var(--rule)}
+  .knob .cn{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--soft);margin-top:-2px}
+  .knob.done{background:var(--teal);border-color:var(--teal);color:#fff;box-shadow:0 3px 0 #0d5548}
+  .knob.done .cn{color:#D6EFE9}
+  .knob.now{border-color:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--gold)}
+  .knob.part{border-color:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--rule)}
+  .knob .crown{position:absolute;top:-9px;right:-6px;font-size:15px}
+  .stepinfo{flex:1;min-width:0}
+  .stepinfo .t{font-size:15.5px;font-weight:500;line-height:1.3}
+  .stepinfo .m{font-size:12.5px;color:var(--soft);margin-top:3px}
+  .pulse{animation:pulse 1.9s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 3px 0 var(--gold)}50%{box-shadow:0 3px 0 var(--gold),0 0 0 9px rgba(156,106,8,.13)}}
+  /* ---- quests, badges ---- */
+  .quest{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule)}
+  .quest:last-child{border-bottom:0}
+  .qbar{height:7px;background:var(--deep);border-radius:4px;overflow:hidden;flex:1}
+  .qbar > i{display:block;height:100%;background:var(--gold);border-radius:4px;transition:width .5s ease}
+  .qdone .qbar > i{background:var(--teal)}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .badge{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;font-size:12.5px;
+    min-width:104px;background:var(--deep);color:var(--soft)}
+  .badge.on{background:var(--card);border-color:var(--teal);color:var(--ink)}
+  .badge b{display:block;font-size:13px;font-weight:500}
+  .wk{display:flex;align-items:flex-end;gap:6px;height:64px;margin-top:12px}
+  .wk div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+  .wk i{display:block;width:100%;background:var(--teal);border-radius:3px 3px 0 0;min-height:2px}
+  .wk span{font-size:10px;color:var(--soft)}
+  /* ---- toasts + celebration ---- */
+  #toasts{position:fixed;left:0;right:0;top:calc(8px + env(safe-area-inset-top));z-index:70;
+    display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;padding:0 12px}
+  .toast{background:var(--ink);color:#fff;border-radius:999px;padding:9px 16px;font-size:13.5px;
+    font-weight:500;box-shadow:0 3px 14px rgba(20,25,22,.26);max-width:100%}
+  .toast.badge-t{background:var(--gold)} .toast.level-t{background:var(--teal)}
+  #party{position:fixed;inset:0;z-index:80;background:var(--paper);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:28px}
+  #party h2{font-size:27px;margin:14px 0 4px}
+  #party .xpbig{font-size:44px;font-weight:600;color:var(--gold);font-variant-numeric:tabular-nums}
+  #confetti{position:fixed;inset:0;z-index:79;pointer-events:none}
+  @media (prefers-reduced-motion:reduce){ .pulse{animation:none} }
+
   /* Re-assert the light palette if the container or OS forces dark mode */
   @media (prefers-color-scheme:dark){
+    .stats,.knob{background:#FFFFFF !important}
+    .knob.done{background:#137565 !important;color:#fff !important}
+    .badge{background:#F4F5F2 !important} .badge.on{background:#FFFFFF !important;color:#2E3330 !important}
+    #party{background:#FBFAF8 !important}
+    .toast{background:#2E3330 !important;color:#FFFFFF !important}
+    .toast.badge-t{background:#9C6A08 !important} .toast.level-t{background:#137565 !important}
     html,body{color-scheme:light only;background:#FBFAF8 !important;color:#2E3330 !important}
     .card{background:#FFFFFF !important;color:#2E3330 !important}
     pre,textarea{background:#F4F5F2 !important;color:#2E3330 !important}
@@ -129,7 +196,7 @@
 const LANGS = {
   python:{label:"Python",tag:"PY",star:true,runs:"pyodide"},
   javascript:{label:"JavaScript",tag:"JS",runs:"native"},
-  r:{label:"R",tag:"R",runs:false},
+  r:{label:"R",tag:"R",star:true,runs:"webr"},
   mermaid:{label:"Mermaid",tag:"MMD",runs:false},
 };
 const LADDER = {
@@ -648,17 +715,38 @@ mermaid:{
 };
 
 /* ============ book ============ */
-// Chapter content lives in book/chNN.js files (plain script tags, no build step).
-// Each file registers itself on window.BOOK.chapters; BOOK_ORDER controls sequence.
-const BOOK_META={title:"Automate the Boring Stuff with Python",edition:"3rd edition",author:"Al Sweigart",
-  url:"https://automatetheboringstuff.com/3e/",
-  credit:"Original lessons written for this app, following the book's chapter-by-chapter curriculum. The book itself is free to read online."};
-const BOOK_ORDER=["ch01","ch02","ch03","ch04","ch05","ch06","ch07","ch08","ch09","ch10","ch11","ch12","ch13","ch14","ch15","ch16","ch17","ch18","ch19","ch20","ch21","ch22","ch23","ch24"];
-const bookChapters=()=> (window.BOOK&&window.BOOK.chapters)||{};
+// Chapter content lives in book/*.js files (plain script tags, no build step).
+// Python chapters register on window.BOOK, R chapters on window.BOOK_R.
+// The BOOK tab shows the book belonging to the language tab you are on.
+const BOOKS={
+  python:{
+    meta:{title:"Automate the Boring Stuff with Python",edition:"3rd edition",author:"Al Sweigart",
+      url:"https://automatetheboringstuff.com/3e/",
+      credit:"Original lessons written for this app, following the book's chapter-by-chapter curriculum. The book itself is free to read online."},
+    order:["ch01","ch02","ch03","ch04","ch05","ch06","ch07","ch08","ch09","ch10","ch11","ch12","ch13","ch14","ch15","ch16","ch17","ch18","ch19","ch20","ch21","ch22","ch23","ch24"],
+    chapters:()=> (window.BOOK&&window.BOOK.chapters)||{},
+  },
+  r:{
+    meta:{title:"R for Data Science",edition:"2nd edition",author:"Wickham, Çetinkaya-Rundel, and Grolemund",
+      url:"https://r4ds.hadley.nz/",
+      credit:"Original lessons written for this app, following the book's chapter-by-chapter curriculum. The book itself is free to read online."},
+    order:["r01","r02","r03","r04","r05","r06","r07","r08","r09","r10","r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29"],
+    chapters:()=> (window.BOOK_R&&window.BOOK_R.chapters)||{},
+  },
+};
+const bookLangOf=(chId)=> String(chId||"").charAt(0)==="r" ? "r" : "python";
+const bookFor=(lang)=> BOOKS[lang]||null;
+const curBook=()=> bookFor(S.lang);
+const bookChapters=()=>{ const b=curBook(); return b?b.chapters():{}; };
+// A chapter id may belong to a book other than the one on screen.
+const chapterById=(chId)=>{ const b=bookFor(bookLangOf(chId)); return b?b.chapters()[chId]:null; };
 
 /* ============ storage ============ */
 const KEY="practicelog.offline.v1";
-const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{}}};
+const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{}},
+  game:{xp:0,day:null,todayXp:0,goal:50,hearts:5,heartTs:null,freezes:2,combo:0,bestCombo:0,
+        quests:{day:null,items:[]},badges:{},hist:{},goalDays:0,lastGoalDay:null,
+        opts:{hearts:true,sound:true,motion:true}}};
 const clone=(o)=>JSON.parse(JSON.stringify(o));
 let S;
 try{ S = JSON.parse(localStorage.getItem(KEY)) || clone(blank); }
@@ -666,6 +754,175 @@ catch(e){ S = clone(blank); }
 if(!S || typeof S !== "object") S = clone(blank);
 for(const k in blank) if(S[k]===undefined) S[k]=clone(blank[k]);
 function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ flash("Progress could not be saved — storage is full or blocked."); } }
+
+/* ============ game ============ */
+// Progress mechanics: XP, levels, a daily goal, hearts, quests and badges.
+// Every mutation here routes through persist() — still one writer, one key.
+const XP={section:4,exercise:12,repeat:4,drill:10,lesson:6,chapter:40,quest:20,goal:15};
+const HEART_MAX=5, HEART_MS=20*60*1000;   // one heart back every 20 minutes
+const need=(l)=>100+(l-1)*50;             // XP to climb out of level l
+function levelInfo(xp){
+  let l=1,acc=0;
+  while(xp>=acc+need(l)){ acc+=need(l); l++; if(l>200) break; }
+  return {level:l,into:xp-acc,span:need(l),base:acc};
+}
+const QUEST_POOL=[
+  {id:"xp",   label:(n)=>`Earn ${n} XP`,               need:()=>40},
+  {id:"ex",   label:(n)=>`Pass ${n} graded exercises`, need:()=>3},
+  {id:"read", label:(n)=>`Read ${n} book sections`,    need:()=>4},
+  {id:"combo",label:(n)=>`Get ${n} correct in a row`,  need:()=>3},
+  {id:"mins", label:(n)=>`Practise for ${n} minutes`,  need:()=>10},
+];
+const BADGES=[
+  {id:"first",   name:"First blood",   d:"Pass your first graded exercise."},
+  {id:"ten",     name:"Ten down",      d:"Pass 10 graded exercises."},
+  {id:"fifty",   name:"Half century",  d:"Pass 50 graded exercises."},
+  {id:"century", name:"Centurion",     d:"Pass 100 graded exercises."},
+  {id:"streak3", name:"Three days",    d:"Reach a 3-day streak."},
+  {id:"streak7", name:"A full week",   d:"Reach a 7-day streak."},
+  {id:"streak30",name:"A month",       d:"Reach a 30-day streak."},
+  {id:"lvl5",    name:"Level five",    d:"Reach level 5."},
+  {id:"lvl10",   name:"Level ten",     d:"Reach level 10."},
+  {id:"combo10", name:"On a roll",     d:"Get 10 correct in a row."},
+  {id:"chapter", name:"Chapter closed",d:"Finish every section and exercise in a chapter."},
+  {id:"polyglot",name:"Polyglot",      d:"Pass an exercise in three different languages."},
+  {id:"goal7",   name:"Seven goals",   d:"Hit your daily goal on 7 days."},
+];
+let fx=[];          // transient toasts: {kind,text}
+let party=null;     // full-screen celebration, or null
+
+function ensureGame(){
+  if(!S.game||typeof S.game!=="object") S.game=clone(blank.game);
+  for(const k in blank.game) if(S.game[k]===undefined) S.game[k]=clone(blank.game[k]);
+  if(!S.game.opts) S.game.opts=clone(blank.game.opts);
+  for(const k in blank.game.opts) if(S.game.opts[k]===undefined) S.game.opts[k]=blank.game.opts[k];
+  const d=today();
+  if(S.game.day!==d){ S.game.day=d; S.game.todayXp=0; S.game.combo=0; }
+  rollQuests(d);
+  regenHearts();
+}
+// Quests are picked from the date, so a reload never reshuffles the day's work.
+function rollQuests(d){
+  if(S.game.quests&&S.game.quests.day===d&&(S.game.quests.items||[]).length) return;
+  let seed=0; for(const ch of d) seed=(seed*31+ch.charCodeAt(0))&0xffff;
+  const pool=[...QUEST_POOL], items=[];
+  for(let i=0;i<3&&pool.length;i++){
+    const pick=pool.splice(seed%pool.length,1)[0];
+    seed=(seed*7+13)&0xffff;
+    const n=pick.need();
+    items.push({id:pick.id,label:pick.label(n),need:n,have:0,done:false});
+  }
+  S.game.quests={day:d,items};
+}
+function regenHearts(){
+  if(!S.game.opts.hearts){ S.game.hearts=HEART_MAX; return; }
+  if(S.game.hearts>=HEART_MAX){ S.game.heartTs=null; return; }
+  if(!S.game.heartTs){ S.game.heartTs=Date.now(); return; }
+  const gained=Math.floor((Date.now()-S.game.heartTs)/HEART_MS);
+  if(gained>0){
+    S.game.hearts=Math.min(HEART_MAX,S.game.hearts+gained);
+    S.game.heartTs=S.game.hearts>=HEART_MAX?null:S.game.heartTs+gained*HEART_MS;
+  }
+}
+const heartsLeft=()=>{ ensureGame(); return S.game.opts.hearts?S.game.hearts:HEART_MAX; };
+function heartETA(){
+  if(!S.game.heartTs||S.game.hearts>=HEART_MAX) return "";
+  const ms=Math.max(0,S.game.heartTs+HEART_MS-Date.now());
+  const m=Math.ceil(ms/60000);
+  return m<=1?"under a minute":`${m} min`;
+}
+function loseHeart(){
+  ensureGame();
+  if(!S.game.opts.hearts) return;
+  S.game.hearts=Math.max(0,S.game.hearts-1);
+  if(!S.game.heartTs) S.game.heartTs=Date.now();
+  persist();
+}
+function bumpQuest(id,n){
+  ensureGame();
+  let changed=false;
+  for(const q of (S.game.quests.items||[])){
+    if(q.id!==id||q.done) continue;
+    q.have=id==="combo"?Math.max(q.have,n):q.have+n;
+    if(q.have>=q.need){ q.done=true; changed=true;
+      S.game.xp+=XP.quest; S.game.todayXp+=XP.quest;
+      toast("quest",`Quest done: ${q.label} +${XP.quest} XP`); }
+  }
+  if(changed) persist();
+}
+function awardXP(n,reason){
+  ensureGame();
+  const before=levelInfo(S.game.xp).level;
+  S.game.xp+=n; S.game.todayXp+=n;
+  const d=today();
+  S.game.hist[d]=(S.game.hist[d]||0)+n;
+  bumpQuest("xp",n);
+  const after=levelInfo(S.game.xp).level;
+  if(after>before){ toast("level",`Level ${after}`); sfx("level"); }
+  // Daily goal, counted once per day.
+  if(S.game.todayXp>=S.game.goal&&S.game.lastGoalDay!==d){
+    S.game.lastGoalDay=d; S.game.goalDays=(S.game.goalDays||0)+1;
+    S.game.xp+=XP.goal; S.game.hist[d]=(S.game.hist[d]||0)+XP.goal;
+    toast("goal",`Daily goal met +${XP.goal} XP`); sfx("goal");
+  }
+  if(reason) lastXpReason=reason;
+  checkBadges();
+  persist();
+}
+let lastXpReason=null;
+const exercisesPassed=()=>Object.values((S.book&&S.book.ex)||{}).reduce((a,v)=>a+v.length,0);
+function badgeEarned(id){
+  if(S.game.badges[id]) return;
+  S.game.badges[id]=today();
+  const b=BADGES.find(x=>x.id===id);
+  toast("badge",`Badge: ${b?b.name:id}`); sfx("badge");
+}
+function checkBadges(){
+  const n=exercisesPassed(), lv=levelInfo(S.game.xp).level, st=S.streak.count||0;
+  if(n>=1) badgeEarned("first");
+  if(n>=10) badgeEarned("ten");
+  if(n>=50) badgeEarned("fifty");
+  if(n>=100) badgeEarned("century");
+  if(st>=3) badgeEarned("streak3");
+  if(st>=7) badgeEarned("streak7");
+  if(st>=30) badgeEarned("streak30");
+  if(lv>=5) badgeEarned("lvl5");
+  if(lv>=10) badgeEarned("lvl10");
+  if((S.game.bestCombo||0)>=10) badgeEarned("combo10");
+  if((S.game.goalDays||0)>=7) badgeEarned("goal7");
+  const langs=new Set((S.sessions||[]).filter(s=>s.score>=4).map(s=>s.lang));
+  if(langs.size>=3) badgeEarned("polyglot");
+}
+function chapterDone(chId){
+  const ch=chapterById(chId); if(!ch) return false;
+  const r=chRead(chId), readN=Object.keys(r).filter(k=>r[k]).length;
+  return readN>=ch.sections.length&&bookExDone(chId).length>=ch.exercises.length;
+}
+function toast(kind,text){ fx.push({kind,text}); if(fx.length>4) fx.shift(); }
+
+/* Sound is synthesised — no audio files, nothing to download, works offline. */
+let actx=null;
+function sfx(kind){
+  if(!S.game||!S.game.opts||!S.game.opts.sound) return;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    if(!actx) actx=new AC();
+    if(actx.state==="suspended"&&actx.resume) actx.resume();
+    const notes={right:[660,880],wrong:[220,165],level:[523,659,784],badge:[784,1047],
+                 goal:[659,784,1047],done:[523,659,784,1047]}[kind]||[440];
+    notes.forEach((f,i)=>{
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.type=kind==="wrong"?"sawtooth":"sine"; o.frequency.value=f;
+      const t=actx.currentTime+i*0.09;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.16,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.24);
+    });
+  }catch(e){}
+}
+function buzz(ms){ try{ if(navigator.vibrate&&S.game.opts.sound) navigator.vibrate(ms); }catch(e){} }
 
 /* ============ helpers ============ */
 const $=(s)=>document.querySelector(s);
@@ -715,6 +972,48 @@ async function runJS(code){
     await new Promise(r=>setTimeout(r,700));
     return {ok:true,output:out.join("\n")};
   }catch(e){ return {ok:false,output:out.join("\n"),error:String(e.message||e)}; }
+}
+
+/* R runs on WebR (R compiled to WASM). It needs no cross-origin isolation, so
+   it works on GitHub Pages exactly as it does locally — verified, not assumed. */
+let webR=null, webRTried=false;
+const WEBR_BASE="https://webr.r-wasm.org/latest/";
+const rInstalled=new Set();
+async function bootR(){
+  if(webR) return webR;
+  try{
+    const mod=await import(WEBR_BASE+"webr.mjs");
+    const w=new mod.WebR({interactive:false});
+    await w.init();
+    webR=w; return webR;
+  }catch(e){
+    webRTried=true;
+    throw new Error(online()?"R runtime unreachable":"no connection");
+  }
+}
+async function ensureRPkgs(pkgs){
+  const want=(pkgs||[]).filter(p=>!rInstalled.has(p));
+  if(!want.length) return;
+  const w=await bootR();
+  await w.installPackages(want,true);
+  want.forEach(p=>rInstalled.add(p));
+}
+async function runR(code,pkgs){
+  const w=await bootR();
+  if(pkgs&&pkgs.length) await ensureRPkgs(pkgs);
+  let shelter=null;
+  try{
+    shelter=await new w.Shelter();
+    // captureConditions:false keeps the transcript console-faithful: an R error
+    // arrives as the "Error: ..." line R itself prints instead of a JS throw.
+    const cap=await shelter.captureR(code,{withAutoprint:true,captureConditions:false});
+    const lines=cap.output.filter(o=>o.type==="stdout"||o.type==="stderr");
+    const out=lines.map(o=>o.data).join("\n");
+    const bad=lines.find(o=>o.type==="stderr"&&/^Error\b/.test(o.data));
+    return bad?{ok:false,output:out,error:bad.data}:{ok:true,output:out};
+  }catch(e){
+    return {ok:false,output:"",error:String((e&&e.message)||e)};
+  }finally{ if(shelter){ try{shelter.purge();}catch(e){} } }
 }
 
 /* ============ static checks ============ */
@@ -797,6 +1096,12 @@ function newTask(){
 async function submit(){
   const code=$("#code").value;
   if(!code.trim()||!task) return;
+  ensureGame();
+  // Hearts gate graded attempts only. Reading and lessons are never blocked.
+  if(heartsLeft()<=0){
+    banner=`Out of hearts. One comes back in ${heartETA()} — keep reading in the meantime, or switch hearts off in the ledger.`;
+    sfx("wrong"); render(); return;
+  }
   stopTimer(); busy="Running your code…"; banner=null; render();
   const kind=LANGS[S.lang].runs;
   exec=null;
@@ -809,25 +1114,62 @@ async function submit(){
       banner=`Python could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
     }
   }
+  else if(kind==="webr"){
+    busy = webR?"Running your code…":(online()?"Booting R — one-time download":"Checking for the R runtime…"); render();
+    try{ exec=await runR(code,task.pkgs); }
+    catch(e){
+      S.queue.push({date:today(),lang:S.lang,concept:task.c,title:task.t,code,expected:task.o,secs,book:task.book||null,pkgs:task.pkgs||null}); persist();
+      banner=`R could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
+    }
+  }
   grade=gradeIt(S.lang,code,exec,task);
   logSession(grade);
   busy=null; render();
   setTimeout(()=>{const n=$("#gradecard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
 }
 function logSession(g){
+  ensureGame();
   const mins=Math.max(1,Math.round(secs/60)), d=today();
   const gap=S.streak.last?dayGap(S.streak.last,d):null;
+  const prevStreak=S.streak.count;
   S.streak={count:gap===0?S.streak.count:gap===1?S.streak.count+1:1,last:d};
+  if(S.streak.count>prevStreak&&S.streak.count>1) toast("streak",`${S.streak.count}-day streak`);
   S.sessions.unshift({date:d,lang:S.lang,mins,topic:task.c,score:g.scores.correctness,verdict:g.verdict});
   const solid=S.solid[S.lang]||[], shaky=S.shaky[S.lang]||[];
   const pass=g.mastered&&g.scores.correctness>=4;
   S.solid[S.lang]=pass?[...new Set([...solid,task.c])]:solid;
   S.shaky[S.lang]=pass?shaky.filter(c=>c!==task.c):[...new Set([...shaky,task.c])];
+
+  let firstTime=true, finishedChapter=false;
   if(task.book&&pass){
     ensureBook();
     const arr=S.book.ex[task.book]||[];
-    if(!arr.includes(task.t)) arr.push(task.t);
+    firstTime=!arr.includes(task.t);
+    if(firstTime) arr.push(task.t);
     S.book.ex[task.book]=arr;
+    finishedChapter=firstTime&&chapterDone(task.book);
+  }
+
+  if(pass){
+    S.game.combo=(S.game.combo||0)+1;
+    S.game.bestCombo=Math.max(S.game.bestCombo||0,S.game.combo);
+    bumpQuest("ex",1); bumpQuest("combo",S.game.combo); bumpQuest("mins",mins);
+    const gained=task.book?(firstTime?XP.exercise:XP.repeat):XP.drill;
+    const bonus=S.game.combo>=3?Math.min(10,S.game.combo):0;
+    awardXP(gained+bonus,"exercise");
+    sfx("right"); buzz(18);
+    if(finishedChapter){
+      const ch=chapterById(task.book);
+      awardXP(XP.chapter,"chapter");
+      badgeEarned("chapter");
+      party={title:"Chapter complete",sub:ch?`${ch.n}. ${ch.title}`:"",xp:gained+bonus+XP.chapter,
+             lines:[`${ch?ch.exercises.length:0} exercises passed`,`Streak: ${S.streak.count} days`]};
+      sfx("done");
+    }
+  }else{
+    S.game.combo=0;
+    loseHeart();
+    sfx("wrong"); buzz([12,40,12]);
   }
   persist();
 }
@@ -836,25 +1178,27 @@ async function drainQueue(){
   busy="Grading queued submissions…"; render();
   const still=[];
   for(const q of S.queue){
-    if(q.lang!=="python"){ still.push(q); continue; }
+    const kind=(LANGS[q.lang]||{}).runs;
+    if(kind!=="pyodide"&&kind!=="webr"){ still.push(q); continue; }
     try{
-      const ex=await runPython(q.code);
-      const g=gradeIt("python",q.code,ex,{o:q.expected});
-      const solid=S.solid.python||[], shaky=S.shaky.python||[];
+      const ex = kind==="webr" ? await runR(q.code,q.pkgs) : await runPython(q.code);
+      const g=gradeIt(q.lang,q.code,ex,{o:q.expected});
+      const solid=S.solid[q.lang]||[], shaky=S.shaky[q.lang]||[];
       const pass=g.mastered;
-      S.sessions.unshift({date:q.date,lang:"python",mins:Math.max(1,Math.round(q.secs/60)),topic:q.concept,score:g.scores.correctness,verdict:"(queued) "+g.verdict});
-      S.solid.python=pass?[...new Set([...solid,q.concept])]:solid;
-      S.shaky.python=pass?shaky.filter(c=>c!==q.concept):[...new Set([...shaky,q.concept])];
+      S.sessions.unshift({date:q.date,lang:q.lang,mins:Math.max(1,Math.round(q.secs/60)),topic:q.concept,score:g.scores.correctness,verdict:"(queued) "+g.verdict});
+      S.solid[q.lang]=pass?[...new Set([...solid,q.concept])]:solid;
+      S.shaky[q.lang]=pass?shaky.filter(c=>c!==q.concept):[...new Set([...shaky,q.concept])];
       if(q.book&&pass){
         ensureBook();
         const arr=S.book.ex[q.book]||[];
         if(!arr.includes(q.title)) arr.push(q.title);
         S.book.ex[q.book]=arr;
+        awardXP(XP.exercise,"Queued exercise");
       }
     }catch(e){ still.push(q); }
   }
   S.queue=still; persist();
-  busy=null; banner=still.length?`${still.length} still pending — Python runtime is still unreachable.`:"Queue cleared. Results are in the ledger.";
+  busy=null; banner=still.length?`${still.length} still pending — the runtime is still unreachable.`:"Queue cleared. Results are in the ledger.";
   render();
 }
 /* ============ book actions ============ */
@@ -863,7 +1207,7 @@ function ensureBook(){ if(!S.book||typeof S.book!=="object") S.book={last:null,r
 function chRead(chId){ return (S.book&&S.book.read&&S.book.read[chId])||{}; }
 function bookExDone(chId){ return (S.book&&S.book.ex&&S.book.ex[chId])||[]; }
 function firstUnread(chId){
-  const ch=bookChapters()[chId]; if(!ch) return 0;
+  const ch=chapterById(chId); if(!ch) return 0;
   const r=chRead(chId);
   for(let i=0;i<ch.sections.length;i++) if(!r[i]) return i;
   return ch.sections.length-1;
@@ -878,15 +1222,23 @@ function openBook(chId,sec){
 function markRead(chId,i){
   ensureBook();
   if(!S.book.read[chId]) S.book.read[chId]={};
+  const fresh=!S.book.read[chId][i];
   S.book.read[chId][i]=true;
-  const ch=bookChapters()[chId];
+  const ch=chapterById(chId);
   S.book.last={ch:chId,sec:Math.min(i+1,(ch?ch.sections.length:1)-1)};
+  if(fresh){ ensureGame(); bumpQuest("read",1); awardXP(XP.section,"section"); sfx("right"); buzz(10);
+    if(chapterDone(chId)){ awardXP(XP.chapter,"chapter"); badgeEarned("chapter");
+      party={title:"Chapter complete",sub:ch?`${ch.n}. ${ch.title}`:"",xp:XP.section+XP.chapter,
+             lines:["Every section read","Every exercise passed"]}; sfx("done"); } }
   persist(); render();
 }
 function startBookExercise(chId,i){
-  const ch=bookChapters()[chId]; if(!ch||!ch.exercises[i]) return;
-  if(S.lang!=="python"){ S.lang="python"; persist(); }
+  const ch=chapterById(chId); if(!ch||!ch.exercises[i]) return;
+  const lang=bookLangOf(chId);
+  if(S.lang!==lang){ S.lang=lang; persist(); }
   task=clone(ch.exercises[i]); task.book=chId;
+  // R exercises declare the packages WebR must install before grading.
+  if(ch.pkgs&&ch.pkgs.length) task.pkgs=clone(ch.pkgs);
   lesson=null; hintTier=0; exec=null; grade=null; banner=null; secs=0; view="practice";
   startTimer(); render();
   setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
@@ -925,6 +1277,16 @@ async function cacheRuntime(){
     await runPython("print('ready')");
     banner="Python runtime cached. It will now work with no signal.";
   }catch(e){ banner="Could not cache the runtime: "+e.message; }
+  busy=null; askRuntime(); render();
+}
+async function cacheR(){
+  if(!online()){ banner="Connect to wifi first — this downloads the R runtime."; render(); return; }
+  busy="Downloading R runtime…"; banner=null; render();
+  try{
+    await bootR();
+    await runR("cat('ready')");
+    banner="R runtime cached. It will now work with no signal.";
+  }catch(e){ banner="Could not cache R: "+e.message; }
   busy=null; askRuntime(); render();
 }
 
@@ -1032,14 +1394,16 @@ function wireHighlighting(){
 
 /* ============ render ============ */
 function render(){
+  ensureGame();
   const app=$("#app"); app.innerHTML="";
   const solid=S.solid[S.lang]||[], shaky=S.shaky[S.lang]||[];
   const totalMins=S.sessions.reduce((a,s)=>a+s.mins,0);
 
   app.append(el("header",{},
     el("h1",{},"Practice Log"),
-    el("div",{class:"meta"},`${S.streak.count} DAY STREAK · ${totalMins} MIN · ${online()?"ONLINE":"OFFLINE"}`)
+    el("div",{class:"meta"},`${totalMins} MIN · ${online()?"ONLINE":"OFFLINE"}`)
   ));
+  renderStats(app);
 
   const nav=el("nav",{});
   for(const[k,v]of Object.entries(LANGS))
@@ -1058,7 +1422,7 @@ function render(){
   else if(view==="book"){ renderBook(app); }
   else{
     // continue-the-book card
-    const lastB=S.book&&S.book.last, lastCh=lastB&&bookChapters()[lastB.ch];
+    const lastB=S.book&&S.book.last, lastCh=lastB&&chapterById(lastB.ch);
     if(lastCh){
       const r=chRead(lastB.ch), readN=Object.keys(r).filter(k=>r[k]).length;
       app.append(el("div",{class:"card"},
@@ -1084,7 +1448,7 @@ function render(){
       el("span",{class:"lab"},"Next milestone"),
       el("div",{style:"font-size:18px;font-weight:400;margin-top:6px"},nc),
       el("div",{class:"meta",style:"margin-top:4px"},
-        `${solid.length} / ${LADDER[S.lang].length} cleared · ${runs==="native"?"graded by running your code":runs==="pyodide"?"graded by running your code (needs runtime)":"static checks only"}`));
+        `${solid.length} / ${LADDER[S.lang].length} cleared · ${runs==="native"?"graded by running your code":(runs==="pyodide"||runs==="webr")?"graded by running your code (needs runtime)":"static checks only"}`));
     if(LESSONS[S.lang]&&LESSONS[S.lang][nc])
       mile.append(el("button",{class:"ghost",style:"margin-top:14px",onclick:teach},"Teach me this"));
     mile.append(el("button",{class:"primary",onclick:newTask},task?"Next exercise":"Give me an exercise"));
@@ -1099,15 +1463,93 @@ function render(){
   const foot=el("footer",{});
   const ready = cachedFiles>0 || !!pyodide;
   foot.append(el("div",{},
-    ready ? "Python runtime is cached — it runs with no signal. JavaScript always has."
-          : "JavaScript runs fully offline. Python needs its runtime cached once while connected."));
+    ready ? "Python and R runtimes are cached once downloaded — they run with no signal. JavaScript always has."
+          : "JavaScript runs fully offline. Python and R each need their runtime cached once while connected."));
   const acts=el("div",{style:"display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"});
   if(!ready) acts.append(el("button",{class:"ghost",onclick:cacheRuntime},"Cache Python for offline (~12 MB)"));
+  if(!webR) acts.append(el("button",{class:"ghost",onclick:cacheR},"Cache R for offline"));
   acts.append(el("button",{class:"ghost",onclick:exportData},"Export progress"));
   foot.append(acts);
   if(!standalone()) foot.append(el("div",{style:"margin-top:14px"},
     "Not installed yet. iOS: Share \u2192 Add to Home Screen. Android: menu \u2192 Install app."));
   app.append(foot);
+  drawToasts(); drawParty();
+}
+
+/* The always-visible scoreboard: streak, XP, level, hearts, daily goal. */
+function renderStats(app){
+  const g=S.game, li=levelInfo(g.xp);
+  const bar=el("div",{class:"stats"});
+  bar.append(el("div",{class:"stat",title:"Day streak"},
+    el("span",{class:"flame"},"◆"), el("span",{class:"n"},String(S.streak.count||0))));
+  bar.append(el("div",{class:"stat",title:"Total XP"},
+    el("span",{class:"gem"},"✦"), el("span",{class:"n"},String(g.xp))));
+  const hearts=el("div",{class:"stat",title:g.opts.hearts?(heartsLeft()<HEART_MAX?("Next heart in "+heartETA()):"Hearts full"):"Hearts are off"});
+  if(g.opts.hearts){
+    for(let i=0;i<HEART_MAX;i++)
+      hearts.append(el("span",{class:i<heartsLeft()?"heart":"hollow"},i<heartsLeft()?"♥":"♡"));
+  }else hearts.append(el("span",{class:"stat dim"},"∞ practice"));
+  bar.append(hearts);
+  const goalPct=Math.min(100,Math.round(g.todayXp/Math.max(1,g.goal)*100));
+  bar.append(el("div",{class:"ringwrap"},
+    el("span",{class:"stat dim"},`L${li.level}`),
+    el("span",{class:"lvlbar",style:"width:64px"},el("i",{style:`width:${Math.round(li.into/li.span*100)}%`})),
+    el("span",{class:"stat dim",title:"Today's goal"},`${g.todayXp}/${g.goal}`),
+    el("span",{class:"lvlbar",style:"width:52px"},el("i",{style:`width:${goalPct}%;background:${goalPct>=100?"var(--teal)":"var(--gold)"}`}))));
+  app.append(bar);
+}
+
+function drawToasts(){
+  let host=$("#toasts");
+  if(!host){ host=el("div",{id:"toasts"}); document.body.appendChild(host); }
+  host.innerHTML="";
+  if(!fx.length) return;
+  fx.forEach(t=>host.append(el("div",{class:"toast "+(t.kind==="badge"?"badge-t":t.kind==="level"?"level-t":"")},t.text)));
+  const mine=fx.slice();
+  setTimeout(()=>{ fx=fx.filter(t=>!mine.includes(t)); const h=$("#toasts"); if(h) h.innerHTML=""; },2600);
+}
+
+function drawParty(){
+  const old=$("#party"); if(old) old.remove();
+  const oldC=$("#confetti"); if(oldC) oldC.remove();
+  if(!party) return;
+  const p=party;
+  const box=el("div",{id:"party"});
+  box.append(el("div",{style:"font-size:52px"},"✦"));
+  box.append(el("h2",{},p.title));
+  if(p.sub) box.append(el("p",{class:"note",style:"margin:0 0 8px"},p.sub));
+  box.append(el("div",{class:"xpbig"},"+"+p.xp+" XP"));
+  (p.lines||[]).forEach(l=>box.append(el("p",{class:"note",style:"margin:2px 0"},l)));
+  box.append(el("button",{class:"primary",style:"max-width:280px;margin-top:22px",
+    onclick:()=>{party=null;render();}},"Keep going"));
+  document.body.appendChild(box);
+  confetti();
+}
+
+/* Canvas confetti — no library, no assets. Skipped when motion is reduced. */
+function confetti(){
+  let reduced=false;
+  try{ if(typeof window.matchMedia==="function") reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  if(reduced||!S.game.opts.motion) return;
+  const cv=el("canvas",{id:"confetti"});
+  document.body.appendChild(cv);
+  const w=cv.width=window.innerWidth||360, h=cv.height=window.innerHeight||640;
+  const ctx=cv.getContext&&cv.getContext("2d"); if(!ctx){ cv.remove(); return; }
+  const cols=["#137565","#9C6A08","#B03428","#2E3330"];
+  const bits=[];
+  for(let i=0;i<90;i++) bits.push({x:Math.random()*w,y:-20-Math.random()*h*0.5,
+    vx:(Math.random()-0.5)*2.2,vy:2+Math.random()*3.4,s:4+Math.random()*6,
+    c:cols[i%cols.length],r:Math.random()*Math.PI,vr:(Math.random()-0.5)*0.25});
+  let frames=0;
+  (function step(){
+    frames++;
+    ctx.clearRect(0,0,w,h);
+    bits.forEach(b=>{ b.x+=b.vx; b.y+=b.vy; b.r+=b.vr;
+      ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.r);
+      ctx.fillStyle=b.c; ctx.fillRect(-b.s/2,-b.s/2,b.s,b.s*0.6); ctx.restore(); });
+    if(frames<210&&document.getElementById("confetti")) requestAnimationFrame(step);
+    else cv.remove();
+  })();
 }
 
 function renderLesson(app){
@@ -1171,7 +1613,7 @@ function renderLesson(app){
 }
 function renderTask(app){
   const c=el("div",{class:"card",id:"taskcard"});
-  const chOfTask=task.book&&bookChapters()[task.book];
+  const chOfTask=task.book&&chapterById(task.book);
   c.append(el("span",{class:"lab"},chOfTask?`Book exercise · Chapter ${chOfTask.n} · ${task.c}`:task.c),el("h2",{},task.t),el("p",{class:"brief"},task.b));
   c.append(el("div",{style:"margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)"},
     el("span",{class:"lab"},task.o!=null?"Expected output · checked automatically":"Expected result · not auto-checkable"),
@@ -1224,38 +1666,55 @@ function renderBook(app){
   const chs=bookChapters();
   if(bookCh&&chs[bookCh]){ renderChapter(app,bookCh,chs[bookCh]); return; }
 
-  const head=el("div",{class:"card"});
-  head.append(el("span",{class:"lab"},"The book"),
-    el("h2",{},BOOK_META.title),
-    el("p",{class:"note"},`${BOOK_META.author} · ${BOOK_META.edition}. ${BOOK_META.credit}`),
-    el("div",{style:"margin-top:10px"},el("a",{href:BOOK_META.url,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:14px"},"Read the original online →")));
-  app.append(head);
+  const bk=curBook();
+  if(!bk){ app.append(el("div",{class:"card"},el("p",{class:"note"},"No book for this language yet."))); return; }
+  const META=bk.meta, ORDER=bk.order;
 
-  const any=BOOK_ORDER.some(id=>chs[id]);
+  const any=ORDER.some(id=>chs[id]);
   if(!any){ app.append(el("div",{class:"card"},el("p",{class:"note"},"No chapters are loaded. Chapter files live in the book/ folder and register themselves on load."))); return; }
 
-  BOOK_ORDER.forEach(id=>{
-    const ch=chs[id]; if(!ch) return;
+  const loaded=ORDER.filter(id=>chs[id]);
+  const doneCount=loaded.filter(id=>chapterDone(id)).length;
+  const head=el("div",{class:"card"});
+  head.append(el("span",{class:"lab"},"The book · "+LANGS[S.lang].label),
+    el("h2",{},META.title),
+    el("p",{class:"note"},`${META.author} · ${META.edition}. ${META.credit}`),
+    el("div",{class:"meta",style:"margin-top:10px"},`${doneCount} / ${loaded.length} chapters complete`),
+    el("div",{class:"bar",style:"margin-top:6px"},el("i",{style:`width:${Math.round(doneCount/loaded.length*100)}%;background:var(--teal)`})),
+    el("div",{style:"margin-top:10px"},el("a",{href:META.url,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:14px"},"Read the original online →")));
+  app.append(head);
+
+  // The path. Chapters stay unlocked (the owner asked for that) — progression is
+  // shown rather than enforced, and the next unfinished chapter pulses.
+  const nextId=loaded.find(id=>!chapterDone(id));
+  const wrap=el("div",{class:"card"});
+  wrap.append(el("span",{class:"lab"},"Your path"));
+  const path=el("div",{class:"path"});
+  path.append(el("div",{class:"rail"}));
+  loaded.forEach((id,i)=>{
+    const ch=chs[id];
     const r=chRead(id), total=ch.sections.length;
     const readN=Object.keys(r).filter(k=>r[k]).length;
     const exN=bookExDone(id).length, exT=ch.exercises.length;
-    const done=readN>=total&&exN>=exT;
-    const c=el("div",{class:"card"});
-    c.append(el("div",{class:"row"},
-      el("span",{class:"lab"},"Chapter "+ch.n),
-      el("span",{class:done?"teal":"meta",style:"font-size:11px;letter-spacing:.08em"},done?"COMPLETE":(readN||exN)?"IN PROGRESS":"UNREAD")));
-    c.append(el("h2",{style:"margin:6px 0"},ch.title));
-    c.append(el("p",{class:"note"},ch.blurb));
-    c.append(el("div",{class:"meta",style:"margin-top:8px"},`${readN} / ${total} sections read · ${exN} / ${exT} exercises passed`));
-    c.append(el("button",{class:"primary",onclick:()=>openBook(id)},readN===0?"Start chapter":"Continue chapter"));
-    app.append(c);
+    const done=chapterDone(id), started=readN>0||exN>0, isNext=id===nextId;
+    const cls="knob "+(done?"done":isNext?"now pulse":started?"part":"");
+    const knob=el("button",{class:cls,onclick:()=>openBook(id),"aria-label":`Chapter ${ch.n}: ${ch.title}`},
+      el("span",{},done?"✓":String(ch.n)),
+      el("span",{class:"cn"},done?"DONE":`${readN}/${total}`));
+    if(done) knob.append(el("span",{class:"crown"},"♛"));
+    const info=el("div",{class:"stepinfo"},
+      el("div",{class:"t"},ch.title),
+      el("div",{class:"m"},done?"Complete · tap to revisit":`${readN}/${total} sections · ${exN}/${exT} exercises`));
+    path.append(el("div",{class:"step"+(i%2?" right":"")},knob,info));
   });
+  wrap.append(path);
+  app.append(wrap);
 }
 
 function renderChapter(app,chId,ch){
   const c=el("div",{class:"card",id:"bookcard"});
   c.append(el("button",{class:"ghost",style:"margin-bottom:16px",onclick:()=>{bookCh=null;render();}},"← All chapters"));
-  c.append(el("span",{class:"lab"},"Chapter "+ch.n+" · "+BOOK_META.title),el("h2",{},ch.title));
+  c.append(el("span",{class:"lab"},"Chapter "+ch.n+" · "+((bookFor(bookLangOf(chId))||{meta:{}}).meta.title||"")),el("h2",{},ch.title));
   if(window.getSelection) c.append(el("div",{class:"meta",style:"margin:-2px 0 2px"},"Select any text to highlight it · tap a highlight to remove"));
   c.append(el("div",{style:"margin:8px 0 2px"},el("a",{href:ch.src,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:13px"},"Read the original chapter →")));
 
@@ -1318,6 +1777,71 @@ function renderChapter(app,chId,ch){
 }
 
 function renderLedger(app,solid,shaky){
+  const g=S.game, li=levelInfo(g.xp);
+  // Level + daily goal
+  const top=el("div",{class:"card"});
+  top.append(el("div",{class:"row"},el("span",{class:"lab"},"Level "+li.level),
+    el("span",{class:"meta"},`${li.into} / ${li.span} XP to level ${li.level+1}`)));
+  top.append(el("div",{class:"bar",style:"margin-top:8px"},el("i",{style:`width:${Math.round(li.into/li.span*100)}%;background:var(--teal)`})));
+  top.append(el("div",{class:"row",style:"margin-top:14px"},el("span",{class:"lab"},"Today"),
+    el("span",{class:"meta"},`${g.todayXp} / ${g.goal} XP`)));
+  top.append(el("div",{class:"bar",style:"margin-top:6px"},el("i",{style:`width:${Math.min(100,Math.round(g.todayXp/Math.max(1,g.goal)*100))}%`})));
+  const goalRow=el("div",{style:"display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"});
+  [20,50,100].forEach(v=>goalRow.append(el("button",{class:"ghost",style:g.goal===v?"border-color:var(--teal);color:var(--teal)":"",
+    onclick:()=>{S.game.goal=v;persist();render();}},v+" XP/day")));
+  top.append(goalRow);
+  app.append(top);
+
+  // Daily quests
+  const q=el("div",{class:"card"},el("span",{class:"lab"},"Daily quests"));
+  (g.quests.items||[]).forEach(item=>{
+    const pct=Math.min(100,Math.round(item.have/item.need*100));
+    q.append(el("div",{class:"quest"+(item.done?" qdone":"")},
+      el("span",{style:"width:15px"},item.done?"✓":"·"),
+      el("span",{style:"flex:1;font-size:14px"},item.label),
+      el("span",{class:"qbar",style:"max-width:74px"},el("i",{style:`width:${pct}%`})),
+      el("span",{class:"meta",style:"width:44px;text-align:right"},`${Math.min(item.have,item.need)}/${item.need}`)));
+  });
+  q.append(el("p",{class:"note",style:"margin-top:8px"},"Quests reset each day. Finishing one is worth "+XP.quest+" XP."));
+  app.append(q);
+
+  // Weekly XP — your own history, not a leaderboard against strangers.
+  const wkCard=el("div",{class:"card"},el("span",{class:"lab"},"Last 7 days"));
+  const days=[]; for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*864e5).toISOString().slice(0,10); days.push([d,(g.hist||{})[d]||0]); }
+  const peak=Math.max(10,...days.map(d=>d[1]));
+  const wk=el("div",{class:"wk"});
+  days.forEach(([d,v])=>wk.append(el("div",{title:`${d}: ${v} XP`},
+    el("i",{style:`height:${Math.round(v/peak*100)}%;background:${v>=g.goal?"var(--teal)":"var(--gold)"}`}),
+    el("span",{},d.slice(8)))));
+  wkCard.append(wk);
+  wkCard.append(el("p",{class:"note",style:"margin-top:8px"},`Best streak ${Math.max(S.streak.count||0,0)} days · best run of correct answers ${g.bestCombo||0}.`));
+  app.append(wkCard);
+
+  // Badges
+  const bd=el("div",{class:"card"},el("span",{class:"lab"},`Badges · ${Object.keys(g.badges||{}).length} / ${BADGES.length}`));
+  const list=el("div",{class:"badges"});
+  BADGES.forEach(b=>{
+    const on=!!g.badges[b.id];
+    list.append(el("div",{class:"badge"+(on?" on":""),title:b.d},el("b",{},on?b.name:"Locked"),on?b.d:b.d));
+  });
+  bd.append(list);
+  app.append(bd);
+
+  // Settings
+  const st=el("div",{class:"card"},el("span",{class:"lab"},"Settings"));
+  const row=(label,key,note)=>{
+    const on=!!g.opts[key];
+    st.append(el("div",{class:"row",style:"margin-top:10px"},
+      el("span",{style:"font-size:14.5px"},label),
+      el("button",{class:"ghost",style:on?"border-color:var(--teal);color:var(--teal)":"",
+        onclick:()=>{S.game.opts[key]=!on; if(key==="hearts"&&!S.game.opts[key]) S.game.hearts=HEART_MAX; persist(); render();}},on?"On":"Off")));
+    if(note) st.append(el("p",{class:"note",style:"margin:4px 0 0"},note));
+  };
+  row("Hearts","hearts","Wrong answers cost a heart. Off means unlimited attempts — reading is never blocked either way.");
+  row("Sound and vibration","sound");
+  row("Celebration animation","motion");
+  app.append(st);
+
   const lad=el("div",{class:"card"},el("span",{class:"lab"},LANGS[S.lang].label+" ladder"));
   LADDER[S.lang].forEach(c=>{
     const done=solid.includes(c),weak=shaky.includes(c);
