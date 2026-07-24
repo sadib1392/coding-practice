@@ -164,6 +164,50 @@ setTimeout(async () => {
   await wait(20);
   check(!d2.querySelector('#party'), 'celebration dismisses');
 
+  // --- theme ---
+  const dom3 = makeDom(null);
+  const w3 = dom3.window, d3 = w3.document;
+  await wait(60);
+  const root = d3.documentElement;
+  const themeColor = () => (d3.querySelector('meta[name="theme-color"]') || {getAttribute(){return null}}).getAttribute('content');
+  check(state(w3).theme === 'light', 'default theme is light, not the device preference');
+  check(!root.hasAttribute('data-theme'), 'light theme sets no data-theme attribute');
+
+  w3.eval('setTheme("dark")');
+  await wait(20);
+  check(root.getAttribute('data-theme') === 'dark', 'choosing dark sets data-theme="dark"');
+  check(state(w3).theme === 'dark', 'theme choice persisted');
+  check(themeColor() === '#15181A', `theme-color meta follows the theme (got ${themeColor()})`);
+
+  w3.eval('setTheme("light")');
+  await wait(20);
+  check(!root.hasAttribute('data-theme'), 'switching back to light clears the attribute');
+  check(themeColor() === '#FBFAF8', 'theme-color meta restored');
+
+  // The whole point of the original light-only pinning: a device that prefers
+  // dark must not flip the app on its own. Only the "system" choice may.
+  const darkDevice = () => { w3.matchMedia = q => ({ matches: /prefers-color-scheme:\s*dark/.test(q), media: q, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} }); };
+  darkDevice();
+  w3.eval('applyTheme()');
+  check(!root.hasAttribute('data-theme'), 'a dark-preferring device does NOT darken the app on the light setting');
+  w3.eval('S.theme="system"; applyTheme();');
+  check(root.getAttribute('data-theme') === 'dark', 'the system setting does follow a dark device');
+  w3.matchMedia = q => ({ matches: false, media: q, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
+  w3.eval('applyTheme()');
+  check(!root.hasAttribute('data-theme'), 'the system setting follows a light device too');
+  // No matchMedia at all must not throw and must resolve light.
+  const savedMM = w3.matchMedia; w3.matchMedia = undefined;
+  let threw = false;
+  try { w3.eval('S.theme="system"; applyTheme();'); } catch (e) { threw = true; }
+  check(!threw && !root.hasAttribute('data-theme'), 'system setting degrades to light when matchMedia is missing');
+  w3.matchMedia = savedMM;
+
+  // Theme survives a reload.
+  w3.eval('setTheme("dark")');
+  const dom4 = makeDom(w3.eval('persist(); localStorage.getItem("' + KEY + '")'));
+  await wait(60);
+  check(dom4.window.document.documentElement.getAttribute('data-theme') === 'dark', 'dark theme restored on reload');
+
   console.log(fails === 0 ? '\nSMOKE4: ALL PASS' : `\nSMOKE4: ${fails} FAILURE(S)`);
   process.exit(fails === 0 ? 0 : 1);
  } catch (e) { console.log('SMOKE4 ERROR:', e.stack || e.message); process.exit(2); }
