@@ -13,15 +13,37 @@
 <meta name="apple-mobile-web-app-title" content="Practice">
 <meta name="theme-color" content="#FBFAF8">
 <style>
+  /* Light is the default and stays pinned to `light only`, which is what stops
+     a device's force-dark from inverting the page. Dark is opt-in: choosing it
+     sets data-theme="dark" and declares `color-scheme: dark`, so the browser
+     leaves that alone too. Neither theme is ever applied automatically. */
   html{color-scheme:light only;}
   :root{
     color-scheme:light only;
-    --paper:#FBFAF8; --card:#FFFFFF; --deep:#F4F5F2; --ink:#2E3330; --soft:#7C857F;
-    --rule:#E1E4DF; --gold:#9C6A08; --sig:#B03428; --teal:#137565;
+    /* --soft was #7C857F and --gold #9C6A08; both measured just under WCAG AA
+       for normal text (3.48:1 and 4.49:1 at worst). Nudged until they clear
+       4.5:1 on paper, card and deep. See tests/contrast_check.mjs. */
+    --paper:#FBFAF8; --card:#FFFFFF; --deep:#F4F5F2; --ink:#2E3330; --soft:#69716C;
+    --rule:#E1E4DF; --gold:#976708; --sig:#B03428; --teal:#137565;
+    /* Semantic pairs, so components never hardcode a colour that only works
+       on one palette. --fill is the ink-coloured button/pill fill. */
+    --fill:#2E3330; --onFill:#FFFFFF; --onAccent:#FFFFFF;
+    --hl:#FCE7A6; --onHl:#2E3330; --knobShadow:#0d5548;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
   }
+  /* Designed, not inverted: a warm near-black that keeps the editorial feel,
+     with accents lifted until they clear AA on a dark surface. Every pair here
+     is measured by tests/contrast_check.mjs. */
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --paper:#15181A; --card:#1E2225; --deep:#272C30; --ink:#E9ECE9; --soft:#A7B0AB;
+    --rule:#39403D; --gold:#E3AC4A; --sig:#F4877B; --teal:#5BD3B6;
+    --fill:#E9ECE9; --onFill:#15181A; --onAccent:#10201C;
+    --hl:#6A5312; --onHl:#F7EBCB; --knobShadow:#2F6D5E;
+  }
+  html[data-theme="dark"]{color-scheme:dark;}
   *{box-sizing:border-box}
   html,body{margin:0}
   body{
@@ -48,9 +70,9 @@
   button{font-family:var(--sans);cursor:pointer}
   .tab{font-size:12px;font-weight:500;letter-spacing:.05em;background:transparent;color:var(--soft);
     border:1px solid var(--rule);border-radius:6px;padding:7px 12px}
-  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .primary{font-size:15px;font-weight:500;letter-spacing:.02em;background:var(--ink);
-    color:#fff;border:none;border-radius:8px;padding:14px 18px;width:100%;margin-top:14px}
+  .tab.on{background:var(--fill);color:var(--onFill);border-color:var(--fill)}
+  .primary{font-size:15px;font-weight:500;letter-spacing:.02em;background:var(--fill);
+    color:var(--onFill);border:none;border-radius:8px;padding:14px 18px;width:100%;margin-top:14px}
   .primary:disabled{opacity:.4}
   .ghost{font-size:13px;font-weight:400;background:transparent;color:var(--ink);
     border:1px solid var(--rule);border-radius:6px;padding:9px 14px}
@@ -77,8 +99,8 @@
   .teal{color:var(--teal)} .sig{color:var(--sig)} .gold{color:var(--gold)}
   .read{font-family:var(--serif);font-size:16.5px;line-height:1.72;margin:0 0 13px;color:var(--ink)}
   [data-hl]{-webkit-tap-highlight-color:transparent}
-  mark.hl{background:#FCE7A6;color:var(--ink);border-radius:2px;padding:0 1px;cursor:pointer}
-  #hlbtn{position:fixed;display:none;z-index:60;background:var(--ink);color:#fff;border:none;
+  mark.hl{background:var(--hl);color:var(--onHl);border-radius:2px;padding:0 1px;cursor:pointer}
+  #hlbtn{position:fixed;display:none;z-index:60;background:var(--fill);color:var(--onFill);border:none;
     border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;letter-spacing:.03em;
     box-shadow:0 2px 10px rgba(20,25,22,.28)}
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
@@ -105,8 +127,8 @@
     box-shadow:0 3px 0 var(--rule);transition:transform .12s ease}
   .knob:active{transform:translateY(3px);box-shadow:0 0 0 var(--rule)}
   .knob .cn{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--soft);margin-top:-2px}
-  .knob.done{background:var(--teal);border-color:var(--teal);color:#fff;box-shadow:0 3px 0 #0d5548}
-  .knob.done .cn{color:#D6EFE9}
+  .knob.done{background:var(--teal);border-color:var(--teal);color:var(--onAccent);box-shadow:0 3px 0 var(--knobShadow)}
+  .knob.done .cn{color:var(--onAccent);opacity:.82}
   .knob.now{border-color:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--gold)}
   .knob.part{border-color:var(--gold);color:var(--ink);box-shadow:0 3px 0 var(--rule)}
   .knob .crown{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:14px;
@@ -135,9 +157,9 @@
   /* ---- toasts + celebration ---- */
   #toasts{position:fixed;left:0;right:0;top:calc(8px + env(safe-area-inset-top));z-index:70;
     display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;padding:0 12px}
-  .toast{background:var(--ink);color:#fff;border-radius:999px;padding:9px 16px;font-size:13.5px;
+  .toast{background:var(--fill);color:var(--onFill);border-radius:999px;padding:9px 16px;font-size:13.5px;
     font-weight:500;box-shadow:0 3px 14px rgba(20,25,22,.26);max-width:100%}
-  .toast.badge-t{background:var(--gold)} .toast.level-t{background:var(--teal)}
+  .toast.badge-t{background:var(--gold);color:var(--onAccent)} .toast.level-t{background:var(--teal);color:var(--onAccent)}
   #party{position:fixed;inset:0;z-index:80;background:var(--paper);display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;padding:28px}
   #party h2{font-size:27px;margin:14px 0 4px}
@@ -145,22 +167,33 @@
   #confetti{position:fixed;inset:0;z-index:79;pointer-events:none}
   @media (prefers-reduced-motion:reduce){ .pulse{animation:none} }
 
-  /* Re-assert the light palette if the container or OS forces dark mode */
+  /* Re-assert the light palette if the container or OS forces dark mode.
+     This is the fix for the owner's device force-inverting the page, so it
+     stays — but every rule is now scoped to :not([data-theme="dark"]). A dark
+     theme the user chose is never clobbered by the OS preference; a dark theme
+     the OS imposed still is. Values come from the variables so the two
+     palettes cannot drift apart. */
   @media (prefers-color-scheme:dark){
-    .stats,.knob{background:#FFFFFF !important}
-    .knob.done{background:#137565 !important;color:#fff !important}
-    .badge{background:#F4F5F2 !important} .badge.on{background:#FFFFFF !important;color:#2E3330 !important}
-    #party{background:#FBFAF8 !important}
-    .toast{background:#2E3330 !important;color:#FFFFFF !important}
-    .toast.badge-t{background:#9C6A08 !important} .toast.level-t{background:#137565 !important}
-    html,body{color-scheme:light only;background:#FBFAF8 !important;color:#2E3330 !important}
-    .card{background:#FFFFFF !important;color:#2E3330 !important}
-    pre,textarea{background:#F4F5F2 !important;color:#2E3330 !important}
-    .primary{background:#2E3330 !important;color:#FFFFFF !important}
-    .tab.on{background:#2E3330 !important;color:#FFFFFF !important}
-    .tab,.ghost{background:transparent !important}
-    mark.hl{background:#FCE7A6 !important;color:#2E3330 !important}
-    #hlbtn{background:#2E3330 !important;color:#FFFFFF !important}
+    html:not([data-theme="dark"]){color-scheme:light only;background:var(--paper) !important;color:var(--ink) !important}
+    html:not([data-theme="dark"]) body{background:var(--paper) !important;color:var(--ink) !important}
+    html:not([data-theme="dark"]) .card{background:var(--card) !important;color:var(--ink) !important}
+    html:not([data-theme="dark"]) pre,
+    html:not([data-theme="dark"]) textarea{background:var(--deep) !important;color:var(--ink) !important}
+    html:not([data-theme="dark"]) .stats,
+    html:not([data-theme="dark"]) .knob{background:var(--card) !important}
+    html:not([data-theme="dark"]) .badge{background:var(--deep) !important}
+    html:not([data-theme="dark"]) .badge.on{background:var(--card) !important;color:var(--ink) !important}
+    html:not([data-theme="dark"]) #party{background:var(--paper) !important}
+    html:not([data-theme="dark"]) .primary,
+    html:not([data-theme="dark"]) .tab.on,
+    html:not([data-theme="dark"]) .toast,
+    html:not([data-theme="dark"]) #hlbtn{background:var(--fill) !important;color:var(--onFill) !important}
+    html:not([data-theme="dark"]) .knob.done{background:var(--teal) !important;color:var(--onAccent) !important}
+    html:not([data-theme="dark"]) .toast.badge-t{background:var(--gold) !important;color:var(--onAccent) !important}
+    html:not([data-theme="dark"]) .toast.level-t{background:var(--teal) !important;color:var(--onAccent) !important}
+    html:not([data-theme="dark"]) .tab,
+    html:not([data-theme="dark"]) .ghost{background:transparent !important}
+    html:not([data-theme="dark"]) mark.hl{background:var(--hl) !important;color:var(--onHl) !important}
   }
 </style>
 </head>
@@ -953,7 +986,7 @@ const chapterById=(chId)=>{ const b=bookFor(bookLangOf(chId)); return b?b.chapte
 
 /* ============ storage ============ */
 const KEY="practicelog.offline.v1";
-const blank={lang:"python",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{}},
+const blank={lang:"python",theme:"light",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{}},
   game:{xp:0,day:null,todayXp:0,goal:50,hearts:5,heartTs:null,freezes:2,combo:0,bestCombo:0,
         quests:{day:null,items:[]},badges:{},hist:{},goalDays:0,lastGoalDay:null,
         opts:{hearts:true,sound:true,motion:true}}};
@@ -964,6 +997,42 @@ catch(e){ S = clone(blank); }
 if(!S || typeof S !== "object") S = clone(blank);
 for(const k in blank) if(S[k]===undefined) S[k]=clone(blank[k]);
 function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ flash("Progress could not be saved — storage is full or blocked."); } }
+
+/* ============ theme ============ */
+// Three settings: "light" (default), "dark", "system". Only "system" consults
+// the device, and only because the user picked it — nothing here reacts to the
+// OS unless asked, which is what keeps a force-darkening device from deciding
+// for us. matchMedia is feature-detected; without it "system" resolves light.
+const THEME_COLOR={light:"#FBFAF8",dark:"#15181A"};
+function prefersDark(){
+  try{ return typeof window.matchMedia==="function" && window.matchMedia("(prefers-color-scheme: dark)").matches; }
+  catch(e){ return false; }
+}
+function resolvedTheme(){
+  const t=(S&&S.theme)||"light";
+  if(t==="dark") return "dark";
+  if(t==="system"&&prefersDark()) return "dark";
+  return "light";
+}
+function applyTheme(){
+  const dark=resolvedTheme()==="dark";
+  try{
+    const root=document.documentElement;
+    if(dark) root.setAttribute("data-theme","dark"); else root.removeAttribute("data-theme");
+    const meta=document.querySelector('meta[name="theme-color"]');
+    if(meta) meta.setAttribute("content",dark?THEME_COLOR.dark:THEME_COLOR.light);
+  }catch(e){}
+}
+function watchSystemTheme(){
+  try{
+    if(typeof window.matchMedia!=="function") return;
+    const mq=window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange=()=>{ if(S.theme==="system"){ applyTheme(); render(); } };
+    if(mq.addEventListener) mq.addEventListener("change",onChange);
+    else if(mq.addListener) mq.addListener(onChange);   // older Safari
+  }catch(e){}
+}
+function setTheme(t){ S.theme=t; persist(); applyTheme(); render(); }
 
 /* ============ game ============ */
 // Progress mechanics: XP, levels, a daily goal, hearts, quests and badges.
@@ -1745,7 +1814,13 @@ function confetti(){
   document.body.appendChild(cv);
   const w=cv.width=window.innerWidth||360, h=cv.height=window.innerHeight||640;
   const ctx=cv.getContext&&cv.getContext("2d"); if(!ctx){ cv.remove(); return; }
-  const cols=["#137565","#9C6A08","#B03428","#2E3330"];
+  // Read the live palette so confetti stays visible on whichever theme is on.
+  let cols=["#137565","#976708","#B03428","#2E3330"];
+  try{
+    const cs=getComputedStyle(document.documentElement);
+    const pick=(n,f)=>{ const v=cs.getPropertyValue(n).trim(); return v||f; };
+    cols=[pick("--teal",cols[0]),pick("--gold",cols[1]),pick("--sig",cols[2]),pick("--ink",cols[3])];
+  }catch(e){}
   const bits=[];
   for(let i=0;i<90;i++) bits.push({x:Math.random()*w,y:-20-Math.random()*h*0.5,
     vx:(Math.random()-0.5)*2.2,vy:2+Math.random()*3.4,s:4+Math.random()*6,
@@ -2046,6 +2121,14 @@ function renderLedger(app,solid,shaky){
         onclick:()=>{S.game.opts[key]=!on; if(key==="hearts"&&!S.game.opts[key]) S.game.hearts=HEART_MAX; persist(); render();}},on?"On":"Off")));
     if(note) st.append(el("p",{class:"note",style:"margin:4px 0 0"},note));
   };
+  st.append(el("div",{class:"row",style:"margin-top:10px"},
+    el("span",{style:"font-size:14.5px"},"Theme"),
+    el("div",{style:"display:flex;gap:6px;flex-wrap:wrap"},
+      [["light","Light"],["dark","Dark"],["system","System"]].map(([v,label])=>
+        el("button",{class:"ghost",style:(S.theme||"light")===v?"border-color:var(--teal);color:var(--teal)":"",
+          onclick:()=>setTheme(v)},label)))));
+  st.append(el("p",{class:"note",style:"margin:4px 0 0"},
+    "System follows your device. Light and Dark ignore it — pick one of those if your device darkens pages on its own."));
   row("Hearts","hearts","Wrong answers cost a heart. Off means unlimited attempts — reading is never blocked either way.");
   row("Sound and vibration","sound");
   row("Celebration animation","motion");
@@ -2073,6 +2156,7 @@ function renderLedger(app,solid,shaky){
 window.addEventListener("online",render);
 window.addEventListener("offline",render);
 wireHighlighting();
+applyTheme(); watchSystemTheme();
 window.addEventListener("error",function(e){
   const a=document.getElementById("app");
   if(a && !a.children.length){

@@ -92,26 +92,30 @@ Everything below is merged to `main` and deployed:
 - **Chapters are NOT gated** — any chapter can be started at any time. The
   owner has been offered locked progression and hasn't asked for it.
 - Nav is three tabs: PRACTICE / BOOK / LEDGER, plus language tabs.
-- Service worker `SHELL` is at `shell-v5`.
+- Service worker `SHELL` is at `shell-v8`.
+- **Themes**: Light (default) / Dark / System, chosen in the ledger. See the
+  theme constraint under "Hard constraints".
 
 ## Architecture (index.html, one script block, in order)
 
 | Section | Contents |
 |---|---|
-| `LANGS` | per-language metadata; `runs` is `"native"`, `"pyodide"`, or `false` |
+| `LANGS` | per-language metadata; `runs` is `"native"`, `"pyodide"`, `"webr"`, or `false` |
 | `LADDER` | ordered concept list per language |
 | `BANK` | ladder exercises |
-| `LESSONS` | lessons (`i`, `s`, `w`, and for Python `read`, `practice`) |
-| book consts | `BOOK_META`, `BOOK_ORDER`, `bookChapters()` |
+| `LESSONS` | lessons (`i`, `s`, `w`, and for Python and R `read`, `practice`) |
+| book consts | `BOOKS` (python + r), `curBook()`, `bookChapters()`, `chapterById()` |
 | storage | `S`, `persist()`, key `practicelog.offline.v1` |
+| theme | `applyTheme()`, `resolvedTheme()`, `setTheme()`, `watchSystemTheme()` |
+| game | `XP`, `levelInfo`, hearts, quests, `BADGES`, `awardXP`, `sfx`, `toast` |
 | helpers | `el()`, `norm()`, `clone()` (JSON-based) |
-| execution | `runPython`, `runJS`, `bootPython` |
+| execution | `runPython`, `runJS`, `bootPython`, `bootR`, `runR`, `ensureRPkgs` |
 | static checks | `lint`, `gradeIt` |
 | actions | `teach`, `newTask`, `submit`, `logSession`, `drainQueue` |
 | book actions | `openBook`, `markRead`, `startBookExercise`, `firstUnread`, `ensureBook` |
 | PWA | SW registration, `cacheRuntime` |
 | highlighting | `hlSpans`, `hlElK`/`hlEl`, `applyHighlight`, `wireHighlighting` |
-| render | `render`, `renderBook`, `renderChapter`, `renderLesson`, `renderTask`, `renderRun`, `renderGrade`, `renderLedger` |
+| render | `render`, `renderStats`, `drawToasts`, `drawParty`, `confetti`, `renderBook`, `renderChapter`, `renderLesson`, `renderTask`, `renderRun`, `renderGrade`, `renderLedger` |
 
 ### Game mechanics (index.html, `/* ============ game ============ */`)
 
@@ -247,10 +251,24 @@ would apply. Until verified, keep writing original text.
 - **Do not use `structuredClone`** (broke on the owner's browser). Use `clone()`.
 - **Guard every browser API** — `matchMedia`, `scrollIntoView`, `localStorage`,
   `getSelection` have all failed somewhere. Feature-detect first.
-- **Keep `color-scheme: light only` and the `prefers-color-scheme: dark`
-  override block.** The owner's device force-inverted the page; this is the fix.
-- Text contrast stays ≥ WCAG AA. The owner asked for lighter type once; it is
-  already at the floor.
+- **Themes are opt-in, never automatic.** Light is the default and keeps
+  `color-scheme: light only` — the fix for the owner's device force-inverting
+  the page. Dark is a designed palette under `:root[data-theme="dark"]`, chosen
+  in the ledger (Light / Dark / System); only "System" consults the device.
+  The `prefers-color-scheme: dark` re-assertion block still exists but every
+  rule is scoped `html:not([data-theme="dark"])`, so an OS-imposed dark theme is
+  still overridden while a deliberately chosen one is not. `smoke4.mjs` asserts
+  a dark-preferring device does NOT darken the app on the Light setting.
+- **Components must not hardcode colours.** Use the semantic pairs —
+  `--fill`/`--onFill` (ink-coloured buttons and pills), `--onAccent` (text on a
+  teal or gold fill), `--hl`/`--onHl` (highlights), `--knobShadow`. A literal
+  `#fff` on a `var(--ink)` background inverts into unreadable text in dark.
+- Text contrast stays ≥ WCAG AA **in both palettes**, checked by
+  `node tests/contrast_check.mjs`, which parses the variables out of index.html.
+  Note: `--soft` and `--gold` were previously **below** AA (3.48:1 and 4.49:1)
+  despite this file claiming otherwise, and were darkened to #69716C and
+  #976708. If the owner asks for lighter muted type again, that is the tradeoff
+  being requested — it is one line, but it drops below AA.
 - **Every expected output must be captured by executing the code** — reference
   solutions for exercises, REPL results in readings, predict-the-output
   answers. Never write outputs from memory. `tests/ch1_verify.py` and
@@ -269,7 +287,8 @@ No framework; jsdom harnesses in `tests/`. Setup: `npm install jsdom`
 node tests/smoke.mjs    # core: renders, lesson shows, JS drill PASS 5/5, wrong answer MISMATCH
 node tests/smoke2.mjs   # lessons: reading/practice sections, reveal toggle, highlight round-trip
 node tests/smoke3.mjs   # book: deep flows + auto-checks EVERY wired chapter's render counts
-node tests/smoke4.mjs   # game: XP, hearts, quests, badges, levels, celebration
+node tests/smoke4.mjs   # game + theme: XP, hearts, quests, badges, levels, celebration
+node tests/contrast_check.mjs     # WCAG AA for both palettes (parses the CSS variables)
 node tests/shape_check.mjs        # data contract for all book/ch*.js (counts, concepts, register)
 for n in $(seq 1 29); do [ -f "tests/rch${n}_verify.mjs" ] && (node "tests/rch${n}_verify.mjs" >/dev/null || echo "r$n FAIL"); done
 python3 tests/practice_verify.py  # re-verify lesson practice outputs (prints for eyeballing)
