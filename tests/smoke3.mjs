@@ -93,6 +93,14 @@ setTimeout(async () => {
   revealQ[0].click();
   check(d.querySelector('#bookcard').textContent.includes('The operators are *, -, /, and +'), 'question 1 reveals its answer');
 
+  // --- write-in answers ---
+  const qans = [...d.querySelectorAll('#bookcard textarea.qans')];
+  check(qans.length === 10, 'each question has a write-in answer box');
+  qans[1].value = 'An expression is values plus operators; it evaluates to one value.';
+  qans[1].dispatchEvent(new w.Event('change'));
+  const stA = JSON.parse(w.localStorage.getItem(KEY));
+  check(!!(stA.book.ans && stA.book.ans.ch01 && stA.book.ans.ch01['1'] && stA.book.ans.ch01['1'].includes('one value')), 'written answer persisted on change');
+
   // --- exercise starts into grading flow ---
   clickIn(d, 'Start exercise');
   await wait(20);
@@ -111,6 +119,7 @@ setTimeout(async () => {
   check(st4.queue.length === 1 && st4.queue[0].book === 'ch01', 'offline submission queued with its book tag');
   check(!(st4.book.ex && st4.book.ex.ch01 && st4.book.ex.ch01.length), 'no chapter credit from static-only grading');
   check(d.querySelector('#app').textContent.includes('queued'), 'queued banner shown');
+  check(!d.querySelector('#gradecard').textContent.includes('WHERE TO LOOK'), 'no reading pointer on a static-only grade (nothing proven wrong)');
 
   // --- drain queue with runtime available: chapter gets credit ---
   w.eval('runPython = async (code) => ({ok: true, output: "20\\n30\\n256"})');
@@ -119,6 +128,24 @@ setTimeout(async () => {
   const st5 = JSON.parse(w.localStorage.getItem(KEY));
   check(st5.queue.length === 0, 'queue drained');
   check(st5.book.ex.ch01 && st5.book.ex.ch01.includes('Order of operations'), 'drained pass credits the chapter exercise');
+
+  // --- wrong answer, proven by execution: feedback points back at the reading ---
+  clickIn(d, 'BOOK'); // bookCh is still ch01, so this lands inside the chapter
+  clickIn(d, 'Do it again');
+  await wait(20);
+  w.eval('runPython = async (code) => ({ok: true, output: "wrong\\noutput"})');
+  d.querySelector('#code').value = 'print("wrong")\nprint("output")';
+  clickIn(d, 'Run and grade');
+  await wait(200);
+  const gtxt = d.querySelector('#gradecard') ? d.querySelector('#gradecard').textContent : '';
+  check(gtxt.includes('WHERE TO LOOK'), 'wrong answer shows WHERE TO LOOK feedback');
+  check(gtxt.includes('Chapter 1, "Expressions and the interactive shell"'), 'feedback names the exact chapter and section');
+  check(gtxt.includes('precedence is the culprit'), 'feedback relates the failure back to the reading');
+  const reread = [...d.querySelectorAll('button')].find(b => b.textContent.startsWith('Reread'));
+  check(!!reread && reread.textContent.includes('Expressions and the interactive shell'), 'reread button names the section');
+  reread.click();
+  await wait(80);
+  check(!!d.querySelector('#bookcard'), 'reread button jumps back into the book chapter');
 
   // --- reload: resume ---
   const dom2 = makeDom(w.localStorage.getItem(KEY));
@@ -135,6 +162,8 @@ setTimeout(async () => {
   check(!!d2.querySelector('#bookcard mark.hl'), 'book highlight restored after reload');
   const list2 = d2.querySelector('#app').textContent;
   check(list2.includes('Read ✓'), 'read state restored after reload');
+  const qans2 = [...d2.querySelectorAll('#bookcard textarea.qans')];
+  check(qans2.length === 10 && qans2[1].value.includes('one value'), 'written answer restored after reload');
 
   // --- every chapter in BOOK_ORDER: listed, opens, renders declared counts ---
   const dom3 = makeDom(null);

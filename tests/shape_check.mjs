@@ -89,6 +89,10 @@ for (const id of ids.sort()) {
     if (typeof x.o !== 'string' || !x.o) fail(`exercise ${xi} o must be a non-empty exact string`);
     if (!Array.isArray(x.h) || x.h.length !== 3) fail(`exercise ${xi} needs exactly 3 hints`);
     if (x.book !== id) fail(`exercise ${xi} book tag "${x.book}", want "${id}"`);
+    if (x.sec !== undefined && (!Number.isInteger(x.sec) || x.sec < 0 || x.sec >= (ch.sections || []).length))
+      fail(`exercise ${xi} sec ${x.sec} is not a valid section index`);
+    if (x.fb !== undefined && typeof x.fb !== 'string') fail(`exercise ${xi} fb must be a string`);
+    if (x.fb) prose.push([`ex${xi}.fb`, x.fb]);
     prose.push([`ex${xi}.t`, x.t || '']); prose.push([`ex${xi}.b`, x.b || '']);
     (x.h || []).forEach((h, hi) => prose.push([`ex${xi}.h${hi}`, h]));
   });

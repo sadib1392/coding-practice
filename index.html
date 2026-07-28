@@ -79,6 +79,8 @@
   textarea{width:100%;min-height:210px;margin-top:16px;padding:14px;font-family:var(--mono);
     font-size:15px;line-height:1.6;color:var(--ink);background:var(--deep);
     border:1px solid var(--rule);border-radius:8px;resize:vertical}
+  textarea.qans{min-height:68px;margin-top:10px;padding:10px 12px;
+    font-family:var(--serif);font-size:15.5px}
   .bar{height:8px;background:var(--deep);border-radius:4px;overflow:hidden}
   .bar > i{display:block;height:100%;background:var(--gold);transition:width 1s linear}
   .clock{font-family:var(--mono);font-size:28px;font-weight:400;letter-spacing:-.02em}
@@ -986,7 +988,7 @@ const chapterById=(chId)=>{ const b=bookFor(bookLangOf(chId)); return b?b.chapte
 
 /* ============ storage ============ */
 const KEY="practicelog.offline.v1";
-const blank={lang:"python",theme:"light",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{}},
+const blank={lang:"python",theme:"light",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{},ans:{}},
   game:{xp:0,day:null,todayXp:0,goal:50,hearts:5,heartTs:null,freezes:2,combo:0,bestCombo:0,
         quests:{day:null,items:[]},badges:{},hist:{},goalDays:0,lastGoalDay:null,
         opts:{hearts:true,sound:true,motion:true}}};
@@ -1481,8 +1483,15 @@ async function drainQueue(){
   render();
 }
 /* ============ book actions ============ */
-function ensureBook(){ if(!S.book||typeof S.book!=="object") S.book={last:null,read:{},ex:{}};
-  if(!S.book.read) S.book.read={}; if(!S.book.ex) S.book.ex={}; }
+function ensureBook(){ if(!S.book||typeof S.book!=="object") S.book={last:null,read:{},ex:{},ans:{}};
+  if(!S.book.read) S.book.read={}; if(!S.book.ex) S.book.ex={}; if(!S.book.ans) S.book.ans={}; }
+function saveAns(chId,qi,txt){
+  ensureBook();
+  if(!S.book.ans[chId]) S.book.ans[chId]={};
+  const t=String(txt||"");
+  if(t.trim()==="") delete S.book.ans[chId][qi]; else S.book.ans[chId][qi]=t;
+  persist();
+}
 function chRead(chId){ return (S.book&&S.book.read&&S.book.read[chId])||{}; }
 function bookExDone(chId){ return (S.book&&S.book.ex&&S.book.ex[chId])||[]; }
 function firstUnread(chId){
@@ -1493,7 +1502,8 @@ function firstUnread(chId){
 }
 function openBook(chId,sec){
   view="book"; bookCh=chId;
-  if(S.lang!=="python"){ S.lang="python"; persist(); }
+  const lang=bookLangOf(chId);
+  if(S.lang!==lang){ S.lang=lang; persist(); }
   render();
   const target=sec!=null?sec:firstUnread(chId);
   setTimeout(()=>{const n=$("#bsec"+target); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
@@ -1944,6 +1954,22 @@ function renderGrade(app){
       pips, el("p",{class:"note"},grade.notes[k])));
   });
   c.append(el("p",{class:"verdict"},grade.verdict));
+
+  // A wrong book exercise points back at the reading it came from.
+  // Only when execution proved it wrong — a queued/static grade proves nothing.
+  if(task&&task.book&&exec&&grade.scores.correctness<4){
+    const bch=chapterById(task.book);
+    if(bch){
+      const meta=(bookFor(bookLangOf(task.book))||{meta:{}}).meta;
+      const si=(typeof task.sec==="number"&&bch.sections[task.sec])?task.sec:null;
+      const where=si!=null?`Chapter ${bch.n}, "${bch.sections[si].t}"`:`Chapter ${bch.n}: ${bch.title}`;
+      c.append(el("div",{class:"hint",style:"margin-top:16px"},
+        el("b",{},"WHERE TO LOOK"),el("br"),
+        (task.fb?task.fb+" ":"")+`This exercise comes from ${where} in ${meta.title||"the book"} — that reading covers exactly this. Reread it, then try again.`));
+      c.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>openBook(task.book,si!=null?si:undefined)},
+        si!=null?`Reread "${bch.sections[si].t}"`:"Reread the chapter"));
+    }
+  }
   app.append(c);
 }
 
@@ -2021,14 +2047,19 @@ function renderChapter(app,chId,ch){
   if(ch.questions&&ch.questions.length){
     const qs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
     qs.append(el("span",{class:"lab"},"Practice questions"));
-    qs.append(el("p",{class:"note",style:"margin-top:4px"},"Answer from memory first, then reveal. If one surprises you, reread its section before moving on."));
+    qs.append(el("p",{class:"note",style:"margin-top:4px"},"Write your answer in your own words, then reveal to compare. If one surprises you, reread its section before moving on."));
     ch.questions.forEach((item,qi)=>{
       const box=el("div",{class:"prob"});
       box.append(hlElK("p","read","book|"+chId+"|q"+qi,item.q));
+      const ta=el("textarea",{class:"qans",placeholder:"Write your answer here…"});
+      ta.value=(S.book&&S.book.ans&&S.book.ans[chId]&&S.book.ans[chId][qi])||"";
+      ta.addEventListener("change",()=>saveAns(chId,qi,ta.value));
+      box.append(ta);
       const ans=el("div",{style:"display:none;margin-top:8px"});
-      ans.append(el("p",{class:"why"},item.a));
+      ans.append(el("span",{class:"lab"},"Book answer"),el("p",{class:"why"},item.a));
       const btn=el("button",{class:"ghost",style:"margin-top:8px"},"Reveal answer");
       btn.addEventListener("click",()=>{
+        saveAns(chId,qi,ta.value);
         const shown=ans.style.display!=="none";
         ans.style.display=shown?"none":"block";
         btn.textContent=shown?"Reveal answer":"Hide answer";

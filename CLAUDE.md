@@ -45,7 +45,7 @@ tests/                  jsdom smoke suites, shape contract check, one self-check
 .github/workflows/deploy-pages.yml   auto-deploy to GitHub Pages
 ```
 
-## Current state (as of 2026-07-23)
+## Current state (as of 2026-07-28)
 
 Everything below is merged to `main` and deployed:
 
@@ -91,8 +91,19 @@ Everything below is merged to `main` and deployed:
   (sqlite3) and ch18 (csv/json/xml) are stdlib and fully runnable in-app.
 - **Chapters are NOT gated** — any chapter can be started at any time. The
   owner has been offered locked progression and hasn't asked for it.
+- **Write-in question answers** (owner's July 27 ask): every book question has
+  a `textarea.qans` above its Reveal button; answers persist in `S.book.ans`
+  (saved on change and on reveal) and restore on reload.
+- **Failed-exercise feedback** (owner's July 27 ask): when a book exercise is
+  proven wrong **by execution** (never on a static/queued grade), the grade
+  card appends a WHERE TO LOOK hint naming the chapter — and the exact section
+  plus a tie-back sentence when the exercise carries `sec`/`fb` — with a
+  "Reread" button that jumps there. ch01 has `sec`/`fb` on all 4 exercises;
+  the other 52 chapters fall back to chapter-level pointers until backfilled.
+- `openBook()` now derives the language from the chapter id (`bookLangOf`);
+  it previously forced python, which broke opening R chapters directly.
 - Nav is three tabs: PRACTICE / BOOK / LEDGER, plus language tabs.
-- Service worker `SHELL` is at `shell-v8`.
+- Service worker `SHELL` is at `shell-v9`.
 - **Themes**: Light (default) / Dark / System, chosen in the ledger. See the
   theme constraint under "Hard constraints".
 
@@ -141,7 +152,8 @@ S = {
   queue[],                          // Python submissions awaiting a runtime
                                     // entries carry book:chId|null for credit
   highlights{ key: [[start,end],...] },  // key: "python|loops|r0" or "book|ch01|s2|b1"
-  book{ last:{ch,sec}|null, read:{ch01:{0:true,...}}, ex:{ch01:["Exercise title",...]} },
+  book{ last:{ch,sec}|null, read:{ch01:{0:true,...}}, ex:{ch01:["Exercise title",...]},
+        ans:{ch01:{0:"the learner's written answer",...}} },   // write-in question answers
   game{ xp, day, todayXp, goal, hearts, heartTs, freezes, combo, bestCombo,
         quests:{day,items[]}, badges:{id:date}, hist:{date:xp}, goalDays,
         lastGoalDay, opts:{hearts,sound,motion} }
@@ -160,7 +172,15 @@ window.BOOK.chapters.chNN = {
   blurb,
   sections: [ { t, body: [ ["p",text] | ["code",text] | ["note",text] ] } ],
   questions: [ { q, a } ],             // reveal-style self-checks
-  exercises: [ { c, t, b, o, h:[3], book:"chNN" } ]  // BANK-shaped, graded
+  exercises: [ { c, t, b, o, h:[3], book:"chNN",
+                 sec?, fb? } ]  // BANK-shaped, graded. Optional: sec is the index
+                                // of the section that teaches this exercise, fb a
+                                // one-sentence tie-back shown on a failed attempt.
+                                // Both feed the WHERE TO LOOK feedback in
+                                // renderGrade; without sec it falls back to a
+                                // chapter-level pointer. ch01 is the exemplar —
+                                // backfilling sec/fb across chapters is an open
+                                // content task. shape_check validates both.
 };
 ```
 Exercise `c` maps to a `LADDER.python` concept so passing also advances the
@@ -232,6 +252,16 @@ library workflows taught output-free; everything else runs for real.
   derivative work, so the same rule applies with the license now confirmed
   rather than merely unknown. Curriculum structure (a list of topics) is not
   copyrightable; the words are.
+
+**Owner request on file (July 27 log): "do not deviate too much from the
+original text. do not summarize."** Resolution: verbatim or near-verbatim text
+cannot be added for either book under the verified terms above — that part of
+the request must not be implemented by copying or close paraphrase, in any
+session. What CAN honor its spirit: keep readings full prose that covers every
+topic the original chapter covers (no thin summaries), keep the original-
+chapter link prominent in every chapter, and deepen any section that skimps.
+If the owner obtains permission from a rights holder, revisit; until then this
+is settled policy, not an open question.
 
 **All chapter text is original prose written for this app**,
 following the book's chapter-by-chapter curriculum, credited to Al Sweigart
