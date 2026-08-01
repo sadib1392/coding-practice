@@ -1,0 +1,19 @@
+<!DOCTYPE html><body><script type="module">
+import mermaid from './node_modules/mermaid/dist/mermaid.esm.min.mjs';
+mermaid.initialize({ startOnLoad: false });
+const out = {};
+const tryParse = async (label, code) => {
+  try { const r = await mermaid.parse(code); out[label] = 'VALID (' + (r && r.diagramType) + ')'; }
+  catch (e) { out[label] = 'ERROR: ' + String(e.message || e).split('\n').slice(0, 4).join(' / '); }
+};
+await tryParse('flow-chain', 'flowchart LR\n  A[Wake] --> B[Coffee] --> C[Code]');
+await tryParse('flow-bad-direction', 'flowchart XX\n  A --> B');
+await tryParse('shapes-valid', 'flowchart TD\n  A([Start]) --> B{Ready?}\n  B --> C[(Database)]');
+await tryParse('edges-valid', 'flowchart TD\n  A -.-> B\n  B ==> C\n  A -->|skip| C');
+await tryParse('edge-label-unclosed', 'flowchart TD\n  A -->|yes B');
+await tryParse('edge-plain-line', 'flowchart TD\n  A --- B');
+await tryParse('seq-missing-colon', 'sequenceDiagram\n  User->>Server Request');
+await tryParse('state-no-arrow', 'stateDiagram-v2\n  [*] Idle');
+await tryParse('state-old-header-v2syntax', 'stateDiagram\n  [*] --> Idle\n  Idle --> [*]');
+window.__RESULT = out;
+</script></body>

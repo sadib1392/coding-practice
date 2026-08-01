@@ -101,6 +101,18 @@ setTimeout(async () => {
   const stA = JSON.parse(w.localStorage.getItem(KEY));
   check(!!(stA.book.ans && stA.book.ans.ch01 && stA.book.ans.ch01['1'] && stA.book.ans.ch01['1'].includes('one value')), 'written answer persisted on change');
 
+  // --- self-check marks (question 0 is revealed above) ---
+  const hadIt = [...d.querySelectorAll('#bookcard button')].find(b => b.textContent === 'I had it');
+  check(!!hadIt, 'self-check buttons appear with the revealed answer');
+  hadIt.click();
+  const stQ = JSON.parse(w.localStorage.getItem(KEY));
+  check(stQ.book.quiz && stQ.book.quiz.ch01 && stQ.book.quiz.ch01['0'] === true, 'self-mark persisted');
+  check(d.querySelector('#bookcard').textContent.includes('1 right'), 'question score line updates');
+
+  // --- chapter scratch runner present ---
+  check(d.querySelector('#bookcard').textContent.includes('Try it yourself'), 'chapter has a Try-it-yourself scratch section');
+  check(!!d.querySelector('#bookcard textarea.runbox'), 'chapter scratch runner has a code box');
+
   // --- exercise starts into grading flow ---
   clickIn(d, 'Start exercise');
   await wait(20);
@@ -164,6 +176,22 @@ setTimeout(async () => {
   check(list2.includes('Read ✓'), 'read state restored after reload');
   const qans2 = [...d2.querySelectorAll('#bookcard textarea.qans')];
   check(qans2.length === 10 && qans2[1].value.includes('one value'), 'written answer restored after reload');
+  const gotB2 = [...d2.querySelectorAll('#bookcard button')].filter(b => b.textContent === 'I had it');
+  check(gotB2.some(b => b.style.color.includes('--teal')), 'self-mark state restored after reload');
+
+  // --- playground: present on practice view, and actually runs JS ---
+  const dom5 = makeDom(null);
+  const w5 = dom5.window, d5 = w5.document;
+  await wait(250);
+  check(d5.querySelector('#app').textContent.includes('Playground · Python'), 'playground card on the practice view');
+  const jsTab = [...d5.querySelectorAll('button')].find(b => b.textContent.trim().startsWith('JS'));
+  jsTab.click();
+  const box = d5.querySelector('textarea.runbox');
+  check(!!box, 'JS playground has a code box');
+  box.value = 'console.log([1,2,3].map(x => x * 2));';
+  [...d5.querySelectorAll('button')].find(b => b.textContent === 'Run code').click();
+  await wait(1100);
+  check(d5.querySelector('#app').textContent.includes('[2,4,6]'), 'playground executes JS and shows real output');
 
   // --- every chapter in BOOK_ORDER: listed, opens, renders declared counts ---
   const dom3 = makeDom(null);

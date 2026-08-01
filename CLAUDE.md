@@ -53,10 +53,14 @@ Everything below is merged to `main` and deployed:
   `LESSONS`, graded drills, streaks, ledger, offline queue for Python.
 - **Lessons** for all 33 ladder concepts (12 py / 10 js / 6 r / 5 mermaid):
   intro `i`, syntax pairs `s`, gotchas `w`.
-- **Extended lessons**: every Python concept (12) and every R concept (15) has
-  `read` (multi-paragraph prose) and `practice` (3 predict-the-output problems).
-  JS/Mermaid don't have these yet — the shape is optional and backward
-  compatible. **Extending read/practice to JS is a natural next task.**
+- **Extended lessons cover all four languages** (42 concepts): every concept
+  has `read` (3+ paragraphs) and `practice` (3 problems). Verification per
+  language: Python via python3, R via WebR, **JS via a harness replicating the
+  runJS console shim exactly** (strings raw, everything else JSON.stringify —
+  arrays print as [1,2,3]; see tests/js_practice_verify.mjs), **Mermaid via
+  real mermaid.parse verdicts captured in Chromium** (tests/mmd_verify.mjs;
+  practice is predict-the-verdict, and two verdicts are deliberately
+  "surprisingly VALID": bare state names and the old stateDiagram header).
 - **R ladder is 15 concepts** covering base R and the tidyverse, with 2 BANK
   drills each (30). Every R drill carries a real expected output captured from
   WebR — they were all `o:null` before R could execute.
@@ -102,8 +106,21 @@ Everything below is merged to `main` and deployed:
   the other 52 chapters fall back to chapter-level pointers until backfilled.
 - `openBook()` now derives the language from the chapter id (`bookLangOf`);
   it previously forced python, which broke opening R chapters directly.
+- **Question self-checks**: after revealing a book answer, "I had it" /
+  "Missed it" buttons record `S.book.quiz[chId][qi]` (true/false). Score shows
+  in the questions header and on the chapter path. **Self-marks pay no XP** —
+  rewards hang off executed code only — and do not affect `chapterDone`.
+- **Free-run code, no grading**: `runnerEl(lang,{pkgs})` renders a
+  textarea + Run + output block. Placed as "Try it yourself" below every
+  chapter's exercises (book language, chapter `pkgs` honored) and as a
+  "Playground" card on the practice view for the current language tab. The R
+  runner also auto-installs packages named in `library()`/`require()` calls.
+  **Mermaid renders** via CDN-on-demand ESM import (`renderMermaid`, theme
+  follows the app theme); the SW caches `/npm/mermaid` chunks in the RUNTIME
+  cache so rendering works offline after first use. Rendering is display
+  only — Mermaid **grading** is still static and still capped, as disclosed.
 - Nav is three tabs: PRACTICE / BOOK / LEDGER, plus language tabs.
-- Service worker `SHELL` is at `shell-v9`.
+- Service worker `SHELL` is at `shell-v10`.
 - **Themes**: Light (default) / Dark / System, chosen in the ledger. See the
   theme constraint under "Hard constraints".
 
@@ -153,7 +170,8 @@ S = {
                                     // entries carry book:chId|null for credit
   highlights{ key: [[start,end],...] },  // key: "python|loops|r0" or "book|ch01|s2|b1"
   book{ last:{ch,sec}|null, read:{ch01:{0:true,...}}, ex:{ch01:["Exercise title",...]},
-        ans:{ch01:{0:"the learner's written answer",...}} },   // write-in question answers
+        ans:{ch01:{0:"the learner's written answer",...}},     // write-in question answers
+        quiz:{ch01:{0:true,1:false,...}} },                    // self-check marks (no XP)
   game{ xp, day, todayXp, goal, hearts, heartTs, freezes, combo, bestCombo,
         quests:{day,items[]}, badges:{id:date}, hist:{date:xp}, goalDays,
         lastGoalDay, opts:{hearts,sound,motion} }
@@ -344,8 +362,9 @@ Python for offline" on wifi.
 
 ## Known limitations — do not "fix" silently
 
-- Mermaid never executes; correctness capped at 3/5 (disclosed in footer).
-  R **does** execute now, via WebR.
+- Mermaid **grading** never executes; correctness capped at 3/5 (disclosed in
+  footer). Mermaid does **render** in the free-run runners — display only, it
+  emits no text to diff, so the grading cap stands. R executes via WebR.
 - Pyodide cache is evictable (iOS ~7 weeks unused); the cache button
   reappearing is intended.
 - Progress is device-local; "Export progress" is the backup.
@@ -372,8 +391,8 @@ Python for offline" on wifi.
 2. ~~WebR execution for R~~ **DONE: R runs and is graded by execution.**
 3. ~~R book~~ **DONE: all 29 r4ds 2e chapters,** plus the 15-concept R ladder
    with lessons and drills. Future book work is edits, not additions.
-4. Extend `read`/`practice` lesson sections to JavaScript concepts — the last
-   language without them.
+4. ~~Extend `read`/`practice` to JS and Mermaid~~ **DONE: all 42 concepts in
+   all four languages carry the deep tier, outputs/verdicts verified.**
 5. More Python BANK drills (2-3 per concept; `while` loops and string
    formatting underrepresented).
 6. Gamification follow-ups the owner has NOT asked for, so do not add

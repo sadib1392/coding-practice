@@ -81,6 +81,10 @@
     border:1px solid var(--rule);border-radius:8px;resize:vertical}
   textarea.qans{min-height:68px;margin-top:10px;padding:10px 12px;
     font-family:var(--serif);font-size:15.5px}
+  textarea.runbox{min-height:120px;margin-top:12px}
+  .mmdout{background:var(--card);border:1px solid var(--rule);border-radius:8px;
+    padding:12px;overflow-x:auto}
+  .mmdout svg{max-width:100%;height:auto}
   .bar{height:8px;background:var(--deep);border-radius:4px;overflow:hidden}
   .bar > i{display:block;height:100%;background:var(--gold);transition:width 1s linear}
   .clock{font-family:var(--mono);font-size:28px;font-weight:400;letter-spacing:-.02em}
@@ -550,7 +554,9 @@ javascript:{
      ["null == undefined","true — both mean \"no value\"."]],
   w:["const stops reassignment, not mutation. A const array can still be pushed to.",
      "== coerces types: \"\" == 0 and \"5\" == 5 are both true. Use === unless you have a reason.",
-     "typeof null is \"object\" — a historical bug. Check x === null explicitly."]
+     "typeof null is \"object\" — a historical bug. Check x === null explicitly."],
+  read:["Declaring a variable is a promise about how you will use it. const says the name will never be reassigned, and the engine enforces that promise — most bindings in real code are const, and reaching for let is a signal to the reader that the value genuinely changes. What const does not promise is that the value itself is frozen: a const array or object can still be mutated through the binding.","JavaScript's primitives — number, string, boolean, undefined, null — behave predictably one at a time; the trouble starts when operators mix them. Loose equality (==) coerces the two sides toward each other before comparing, which is how '5' == 5 and 1 == true both end up true. Strict equality (===) compares value and type with no conversion, which is why it is the default choice: it never surprises you.","typeof is the quick type probe: it returns a string like \"number\" or \"string\". In this app's runner, strings print as-is and every other value prints in JSON form — arrays as [1,2,3], objects as {\"k\":1} — which is worth knowing before you predict any output."],
+  practice:[{code:"let x = 5;\nx = x + 1;\nconsole.log(x);\nconsole.log(typeof x, typeof 'hi', typeof true);",out:"6\nnumber string boolean",why:"let allows the reassignment; typeof names each primitive's type as a string."},{code:"console.log('5' == 5);\nconsole.log('5' === 5);\nconsole.log(1 == true);",out:"true\nfalse\ntrue",why:"== coerces before comparing, so both mixed comparisons pass; === refuses the type mismatch."},{code:"const nums = [1, 2];\nnums.push(3);\nconsole.log(nums);\nconsole.log(nums.length);",out:"[1,2,3]\n3",why:"const locks the binding, not the contents — push mutates the same array."}]
  },
  "template literals":{
   i:"A template literal is a string in backticks. Inside it, ${...} evaluates any expression and drops the result into the string, and the string can span several lines with no escapes. It replaces clumsy + concatenation.",
@@ -561,7 +567,9 @@ javascript:{
      ["`${cond ? \"y\" : \"n\"}`","A ternary inside the interpolation."]],
   w:["It is a backtick, not a single quote. 'Hi ${name}' stays literal — no interpolation happens.",
      "Everything between the backticks is kept verbatim, including indentation and line breaks.",
-     "${} takes an expression, not a statement. You cannot put an if inside — use a ternary."]
+     "${} takes an expression, not a statement. You cannot put an if inside — use a ternary."],
+  read:["A template literal is a string written in backticks, and the backticks buy you two things: ${...} slots that evaluate any expression and splice the result into the text, and real multi-line strings with no escape characters. Once you have them, the old habit of gluing strings together with + mostly disappears, along with its off-by-one-space bugs.","The slot takes a full expression, not just a variable name: arithmetic, method calls, and function calls are all fine. ${age + 1} computes before it interpolates; ${name.toUpperCase()} transforms first. What a slot cannot take is a statement — no if, no for. When you need a choice inside a template, the conditional (ternary) operator is the tool: ${score >= 60 ? 'passed' : 'failed'}.","Everything between the backticks that is not a slot is kept exactly as typed, including line breaks and indentation. That makes template literals the right way to build multi-line output, and a small trap inside indented code — the leading spaces of your source lines become part of the string."],
+  practice:[{code:"const name = 'ada';\nconst age = 36;\nconsole.log(`${name} will be ${age + 1} next year`);",out:"ada will be 37 next year",why:"The slot computes age + 1 before interpolating; the rest is literal text."},{code:"const a = 7, b = 3;\nconsole.log(`${a} times ${b} is ${a * b}`);",out:"7 times 3 is 21",why:"Any expression works in a slot, including arithmetic on two variables."},{code:"const score = 82;\nconsole.log(`You ${score >= 60 ? 'passed' : 'failed'} with ${score}`);",out:"You passed with 82",why:"A ternary is an expression, so it is legal inside ${} — 82 >= 60 picks 'passed'."}]
  },
  "arrays":{
   i:"An array is an ordered, resizable list. It has methods for adding, removing, and copying, and some change the array in place while others return a new one — knowing which is which saves you from lost data.",
@@ -574,7 +582,9 @@ javascript:{
      ["[...new Set(a)]","Drops duplicate values."]],
   w:["slice() copies; splice() changes the array in place. The names are easy to swap.",
      "sort() sorts as strings by default: [10, 2].sort() reorders wrong. Pass (a, b) => a - b for numbers.",
-     "const a still allows a.push — const locks the binding, not the contents."]
+     "const a still allows a.push — const locks the binding, not the contents."],
+  read:["The array methods split into two families, and knowing which family a method belongs to prevents most array bugs. slice, concat, map, and filter return a new array and leave the original alone; push, pop, splice, sort, and reverse change the array in place. The names give no hint — slice copies but splice mutates — so it is worth memorizing the mutating five.","sort() has a second trap on top of mutating: with no arguments it sorts elements as strings, so [10, 2, 33] orders as 10, 2, 33 by their first characters. Sorting numbers needs a comparator: (a, b) => a - b. Spreading into a fresh array first — [...nums].sort(...) — gets you a sorted copy without touching the original.","For membership questions, includes(value) answers true or false, and indexOf(value) answers with a position — or -1 when the value is absent. The -1 convention predates includes and still appears everywhere, so read indexOf(x) !== -1 as 'contains x' when you meet it in older code."],
+  practice:[{code:"const nums = [1, 2, 3, 4, 5];\nconsole.log(nums.slice(1, 3));\nconsole.log(nums);",out:"[2,3]\n[1,2,3,4,5]",why:"slice copies from index 1 up to but not including 3; the original is untouched."},{code:"const nums = [10, 2, 33, 4];\nconsole.log([...nums].sort());\nconsole.log([...nums].sort((a, b) => a - b));",out:"[10,2,33,4]\n[2,4,10,33]",why:"Default sort compares as strings ('10' < '2'); the comparator sorts numerically."},{code:"const pets = ['cat', 'dog'];\nconsole.log(pets.includes('dog'));\nconsole.log(pets.indexOf('fish'));",out:"true\n-1",why:"includes answers the yes/no question; indexOf answers -1 for a missing value."}]
  },
  "objects":{
   i:"An object maps string keys to values. You reach a value by key with dot or bracket notation. Objects model a thing with named fields, and they are passed around by reference, not copied.",
@@ -587,7 +597,9 @@ javascript:{
      ["\"name\" in o","Tests for a key."]],
   w:["Use brackets when the key is in a variable: o[k], not o.k (which looks for a literal \"k\").",
      "const o = other copies the reference; changing o.x changes other.x. Spread {...o} for a shallow copy.",
-     "Reading a missing key gives undefined, not an error — a typo in a key name fails silently."]
+     "Reading a missing key gives undefined, not an error — a typo in a key name fails silently."],
+  read:["An object is a bag of named values. Dot access (o.name) is for keys you know when you write the code; bracket access (o[k]) is for keys that live in a variable — o.k would look for a key literally called k. Reading a key that is not there quietly gives undefined rather than an error, which is convenient right up until a typo in a key name becomes an invisible bug. The in operator ('city' in o) asks the existence question directly.","Objects travel by reference. Assigning an object to a second variable copies the reference, not the object, so a change made through either name is visible through both. When you actually want an independent copy, spread it: {...a} makes a new object with the same top-level entries. The copy is shallow — nested objects inside are still shared.","Object.keys(o), Object.values(o), and Object.entries(o) turn an object's contents into arrays you can loop or map over — entries gives [key, value] pairs. They are the bridge between objects and all the array machinery from the previous concepts."],
+  practice:[{code:"const o = {name: 'Ada', age: 36};\nconst k = 'name';\nconsole.log(o.name);\nconsole.log(o[k]);\nconsole.log('city' in o);",out:"Ada\nAda\nfalse",why:"Dot and bracket reach the same key here; in reports that city is absent."},{code:"const a = {n: 1};\nconst b = a;\nb.n = 2;\nconsole.log(a.n);\nconst c = {...a};\nc.n = 3;\nconsole.log(a.n);",out:"2\n2",why:"b shares a's object, so the first change shows through a; the spread copy c does not."},{code:"const o = {x: 1, y: 2};\nconsole.log(Object.keys(o));\nconsole.log(Object.entries(o));",out:"[\"x\",\"y\"]\n[[\"x\",1],[\"y\",2]]",why:"keys gives an array of names; entries gives [key, value] pairs — printed here in JSON form."}]
  },
  "functions & arrow fns":{
   i:"A function takes arguments and returns a value. Arrow functions are a shorter syntax; a one-expression arrow returns that expression with no return keyword. Arrows also keep the surrounding this instead of getting their own.",
@@ -599,7 +611,9 @@ javascript:{
      ["function f(a = 1) {}","A default argument."]],
   w:["An arrow with braces needs an explicit return: x => { return x*2 }. Without braces it returns automatically.",
      "To return an object literal from an arrow, wrap it: x => ({a: x}). Bare braces read as a function body.",
-     "Arrow functions have no own this — do not use them as object methods that rely on this."]
+     "Arrow functions have no own this — do not use them as object methods that rely on this."],
+  read:["Arrow functions come in two shapes. Without braces, the body is a single expression and its value is returned automatically: x => x * 2. With braces you get a full function body, and the automatic return disappears — x => { x * 2 } quietly returns undefined until you write return yourself. Most arrow bugs are this rule half-remembered.","Returning an object literal collides with the braces rule, because { looks like the start of a body. Wrap the object in parentheses to disambiguate: x => ({value: x}). Default parameter values, written name = 'there' in the parameter list, apply when the caller omits the argument entirely.","Which shape to use is a readability decision. A named function declaration hoists and reads well for top-level logic; a one-line arrow shines as an argument to map or filter. The one hard technical difference to remember: arrows do not get their own this, so they cannot serve as methods that rely on it."],
+  practice:[{code:"const double = x => x * 2;\nconst triple = x => { return x * 3; };\nconsole.log(double(4));\nconsole.log(triple(4));",out:"8\n12",why:"The expression body returns implicitly; the braced body needs its explicit return."},{code:"function greet(name = 'there') {\n  return 'hi ' + name;\n}\nconsole.log(greet());\nconsole.log(greet('ada'));",out:"hi there\nhi ada",why:"The default fills in only when the argument is omitted."},{code:"const make = x => ({value: x});\nconsole.log(make(5));",out:"{\"value\":5}",why:"Parentheses make the braces an object literal, not a function body — printed in JSON form."}]
  },
  "map/filter/reduce":{
   i:"These three replace most loops over arrays. map transforms every element into a new array, filter keeps the elements that pass a test, and reduce boils the whole array down to a single value. None of them change the original.",
@@ -611,7 +625,9 @@ javascript:{
      ["nums.reduce((a, b) => Math.max(a, b))","No seed: starts from the first element."]],
   w:["map always returns an array of the same length. To get fewer, that is filter.",
      "reduce needs a starting value as the second argument; leave it off on an empty array and it throws.",
-     "These return new arrays. nums.map(...) on its own line does nothing unless you use the result."]
+     "These return new arrays. nums.map(...) on its own line does nothing unless you use the result."],
+  read:["These three methods are the loop, specialized. map says 'same length, each element transformed'. filter says 'same elements, only the ones that pass'. reduce says 'the whole array boiled down to one value'. Saying which one you mean tells the reader the shape of the result before they read the callback — that is the real advantage over a hand-written for loop.","None of them touch the original array, which means the result must go somewhere: assigned, returned, logged, or chained. Chaining is where they earn their keep — nums.filter(x => x > 7).map(x => x * 2) reads left to right as 'keep the big ones, then double them'. Each link hands a fresh array to the next.","reduce is the most general and the easiest to misuse. Its callback carries an accumulator and the current element; the second argument to reduce seeds the accumulator. With a seed of 0 it sums; with no seed it starts from the first element, which is handy for max but throws on an empty array. If a reduce takes more than a couple of lines, a plain loop is usually clearer."],
+  practice:[{code:"const nums = [1, 2, 3, 4];\nconsole.log(nums.map(x => x * 10));\nconsole.log(nums);",out:"[10,20,30,40]\n[1,2,3,4]",why:"map builds a new array; the original is unchanged."},{code:"const nums = [5, 12, 8, 21];\nconsole.log(nums.filter(x => x > 7).map(x => x * 2));",out:"[24,16,42]",why:"filter keeps 12, 8, 21 in order; map then doubles each."},{code:"const nums = [3, 1, 4, 1, 5];\nconsole.log(nums.reduce((acc, x) => acc + x, 0));\nconsole.log(nums.reduce((a, b) => Math.max(a, b)));",out:"14\n5",why:"Seeded with 0 it sums; unseeded it starts from the first element and keeps the max."}]
  },
  "destructuring":{
   i:"Destructuring unpacks values out of arrays and objects into variables in one statement. Array destructuring goes by position; object destructuring goes by key name.",
@@ -624,7 +640,9 @@ javascript:{
      ["[a, b] = [b, a];","Swap without a temporary."]],
   w:["Object destructuring matches by key name, so order does not matter — but the names must match the keys exactly.",
      "Renaming is {key: newName}, which reads backwards the first few times.",
-     "Destructuring null or undefined throws. Give a fallback: const {x} = obj || {}."]
+     "Destructuring null or undefined throws. Give a fallback: const {x} = obj || {}."],
+  read:["Destructuring unpacks a structure into named variables in one statement, and the pattern mirrors the thing being unpacked. Array patterns go by position: skip an element by leaving its slot empty, and gather the tail with ...rest, which is always an array. Object patterns go by key name, so order is irrelevant but spelling is everything.","Object patterns support two refinements that read backwards at first. Renaming is {name: n} — take the key called name, bind it to a variable called n. Defaults are {country = 'UK'} — use 'UK' only when the key is missing. Combined, {name: n = 'anon'} renames and defaults at once.","Two idioms show up constantly: swapping two variables with [a, b] = [b, a], and unpacking a function's options argument right in the parameter list — function draw({width, height = 100}) — so the body works with clean local names. The one hazard: destructuring null or undefined throws, so give a fallback when the source might be absent."],
+  practice:[{code:"const [first, , third, ...rest] = [10, 20, 30, 40, 50];\nconsole.log(first, third);\nconsole.log(rest);",out:"10 30\n[40,50]",why:"The empty slot skips 20; rest gathers whatever remains into an array."},{code:"const person = {name: 'Ada', city: 'London'};\nconst {name: n, country = 'UK'} = person;\nconsole.log(n);\nconsole.log(country);",out:"Ada\nUK",why:"name is renamed to n; country is missing, so the default applies."},{code:"let a = 1, b = 2;\n[a, b] = [b, a];\nconsole.log(a, b);",out:"2 1",why:"The right side builds [2, 1] first, then the pattern assigns both at once — no temp needed."}]
  },
  "promises":{
   i:"A promise represents a value that is not ready yet — the result of something asynchronous. It settles once, either fulfilled with a value or rejected with an error, and you attach handlers with .then and .catch.",
@@ -636,7 +654,9 @@ javascript:{
      ["Promise.all([p1, p2])","Fulfills with both results, or rejects on the first failure."]],
   w:[".then gives you the value; the promise object itself is not the value. You cannot read it synchronously.",
      "An unhandled rejection is a silent bug. Always attach a .catch (or use try/catch with await).",
-     "Promise.all rejects as soon as any one rejects. Use Promise.allSettled to get every result regardless."]
+     "Promise.all rejects as soon as any one rejects. Use Promise.allSettled to get every result regardless."],
+  read:["A promise is a placeholder for a value that is still on its way. The promise object itself is not the value and never becomes it — you attach a .then callback, and the callback receives the value once the promise fulfills. This split between 'now' and 'later' has one visible consequence: synchronous lines keep running first, and then-callbacks run after the current code finishes, even for a promise that is already resolved.","Each .then returns a new promise carrying whatever its callback returned, which is what makes chains work: p.then(v => v * 2).then(v => console.log(v)) doubles the value in the first link and prints it in the second. A rejection skips forward past every .then to the nearest .catch, so one catch at the end of a chain covers every link before it.","An unhandled rejection is a silent bug — always end a chain with .catch (or use async/await and try/catch, next concept). For running several promises together: Promise.all fulfills with all results but rejects on the first failure; Promise.allSettled always waits for everything and reports each outcome."],
+  practice:[{code:"console.log('one');\nPromise.resolve('three').then(v => console.log(v));\nconsole.log('two');",out:"one\ntwo\nthree",why:"Even an already-resolved promise runs its .then after the synchronous lines finish."},{code:"const p = new Promise(resolve => resolve(21));\np.then(v => v * 2).then(v => console.log(v));",out:"42",why:"The first link returns 42, and the second link receives it — chains pass values forward."},{code:"Promise.reject(new Error('nope'))\n  .then(() => console.log('never'))\n  .catch(e => console.log('caught:', e.message));",out:"caught: nope",why:"A rejection skips the .then entirely and lands in the .catch."}]
  },
  "async/await":{
   i:"async/await is syntax over promises that lets asynchronous code read top to bottom. await pauses inside an async function until a promise settles and gives you its value; errors surface as normal exceptions you catch with try/catch.",
@@ -648,7 +668,9 @@ javascript:{
      ["const f = async () => { await g(); };","An async arrow function."]],
   w:["await only works inside an async function. At the top level of a normal script it is a syntax error.",
      "Awaiting inside a loop runs the calls one after another. To run them together, start them all, then await Promise.all.",
-     "An async function returns a promise even when you return a plain value — the caller still awaits it."]
+     "An async function returns a promise even when you return a plain value — the caller still awaits it."],
+  read:["async/await is the same promise machinery wearing sequential clothes. Inside an async function, await pauses that function at the await line until the promise settles, then hands back its value — so the code reads top to bottom in the order it actually happens. Only the async function pauses; the rest of the program keeps going.","Errors become ordinary again: a rejected promise that you await throws at the await line, and a normal try/catch handles it. That is usually cleaner than .catch chains, because one try block can cover several awaited steps and share one error path.","The pattern to watch is accidental serialization. Awaiting inside a loop runs the operations one after another; when they are independent, start them all first and await Promise.all(...) so they run together. And remember what the caller sees: an async function always returns a promise, even when its body returns a plain value."],
+  practice:[{code:"async function f() {\n  console.log('start');\n  const v = await Promise.resolve(42);\n  console.log('got', v);\n}\nawait f();\nconsole.log('after');",out:"start\ngot 42\nafter",why:"await inside f pauses f; awaiting f() makes the outer code wait for it too."},{code:"const delay = v => new Promise(r => setTimeout(() => r(v), 50));\nconst a = await delay('first');\nconsole.log(a);\nconst b = await delay('second');\nconsole.log(b);",out:"first\nsecond",why:"Each await pauses until its promise resolves, so the logs come in sequence."},{code:"try {\n  await Promise.reject(new Error('bad'));\n  console.log('never');\n} catch (e) {\n  console.log('caught', e.message);\n}",out:"caught bad",why:"An awaited rejection throws like a normal exception, caught by try/catch."}]
  },
  "closures":{
   i:"A closure is a function that remembers the variables from the scope where it was created, even after that scope has finished. It is what lets an inner function keep using an outer function's variables after the outer one returns.",
@@ -660,7 +682,9 @@ javascript:{
      ["next(); next();","1, then 2 — c persists between calls."]],
   w:["Each call to the outer function makes a fresh closure with its own variables. Two counters do not share a count.",
      "A closure captures the variable, not a snapshot of its value. In a var loop, all closures see the final value — use let.",
-     "Closures keep their captured variables alive in memory; holding many of them adds up."]
+     "Closures keep their captured variables alive in memory; holding many of them adds up."],
+  read:["A closure is a function plus the variables that were in scope where it was created. When an inner function outlives the outer function that made it — returned from it, stored somewhere, passed along — it keeps live access to those variables. That is how a counter function remembers its count between calls with no global in sight: the count lives in the closure.","Each call to the outer function creates a fresh scope, so each returned function closes over its own private copy. Two counters made by the same factory advance independently. This is the lightest form of private state JavaScript has, and it is the mechanism behind function factories like make(n) returning x => x * n.","A closure captures the variable itself, not a snapshot of its value — the function sees whatever the variable holds when the function finally runs. The classic trap is a var loop, where every callback shares one variable and sees its final value. let gives each loop iteration its own binding, which is why functions created in a let loop each remember their own i."],
+  practice:[{code:"function counter() {\n  let c = 0;\n  return () => ++c;\n}\nconst next = counter();\nconsole.log(next());\nconsole.log(next());\nconsole.log(next());",out:"1\n2\n3",why:"c lives in the closure, so it persists between calls and increments each time."},{code:"function counter() {\n  let c = 0;\n  return () => ++c;\n}\nconst a = counter();\nconst b = counter();\na(); a();\nconsole.log(a(), b());",out:"3 1",why:"Each counter() call makes a fresh c — a is on its third call, b on its first."},{code:"const fns = [];\nfor (let i = 0; i < 3; i++) {\n  fns.push(() => i * 10);\n}\nconsole.log(fns.map(f => f()));",out:"[0,10,20]",why:"let gives each iteration its own i, so each function remembers a different value."}]
  }
 },
 r:{
@@ -906,7 +930,9 @@ mermaid:{
      ["A[Start] --> B[End]","Nodes with labels."]],
   w:["The first line must declare the type (flowchart or graph) and a direction, or nothing renders.",
      "Node ids are the bare words (A, B); the text in brackets is only the label.",
-     "TD/TB is top-down, LR is left-right. Mixing up the letters just rotates the layout."]
+     "TD/TB is top-down, LR is left-right. Mixing up the letters just rotates the layout."],
+  read:["Mermaid is text that a renderer turns into a picture. You never position anything — you declare what exists and what connects to what, and the layout engine does the geometry. That declaration starts on line one: the diagram type plus a direction, like flowchart TD. Everything after it is nodes and edges, one or more statements per line.","A node is an id with an optional bracketed label: A[Start] is a node whose id is A and whose label is Start. Ids are how you refer to the same node again; labels are only what gets drawn. Edges chain naturally — A --> B --> C is three nodes and two arrows in one line. The direction codes are TD/TB (top-down), LR (left-right), and their reverses RL and BT.","When a diagram refuses to render, it is almost always one of two failures. A missing or misspelled header means the parser cannot even decide what kind of diagram it is reading — that is the 'no diagram type detected' error, or a lexical error when the direction code is wrong. A half-finished statement, like an arrow with nothing after it, is a parse error pointing at the first token that made no sense. The parser's verdicts in the practice below were captured by actually running Mermaid's parser."],
+  practice:[{code:"flowchart LR\n  A[Wake] --> B[Coffee] --> C[Code]",out:"VALID — parses as flowchart-v2",why:"Header declares type and direction; the chain makes three nodes and two edges in one line."},{code:"A --> B",out:"ERROR — no diagram type detected",why:"Without a header line the parser cannot tell what kind of diagram this is."},{code:"flowchart XX\n  A --> B",out:"LEXICAL ERROR on line 1",why:"XX is not a direction — the parser rejects the header before reading any nodes."}]
  },
  "node shapes":{
   i:"The bracket you wrap a node's label in decides its shape — a rectangle, a rounded box, a diamond for decisions, and so on. The shape carries meaning, so pick it to match the node's role.",
@@ -918,7 +944,9 @@ mermaid:{
      ["F[(Database)]","A cylinder."]],
   w:["Every opening bracket needs its matching close of the same kind. Mismatched brackets stop the whole diagram rendering.",
      "The diamond {} is for decisions — use it where the flow splits, not for an ordinary step.",
-     "If a label has special characters, wrap it in quotes: A[\"a/b (c)\"]."]
+     "If a label has special characters, wrap it in quotes: A[\"a/b (c)\"]."],
+  read:["The bracket pair around a node's label chooses its shape. Square brackets draw a rectangle, round parentheses a rounded box, ([ ]) a stadium pill, curly braces a diamond, [[ ]] a subroutine box, and [( )] a cylinder. The id stays the same either way — the brackets are pure presentation.","Shapes carry meaning by convention, and the renderer does not enforce it — but readers rely on it. A diamond marks a decision where flow splits, a stadium marks start and end points, a cylinder marks stored data. Using the rectangle for everything parses fine and reads worse; using the diamond for a non-decision actively misleads.","The discipline that matters is bracket matching: every opener must be closed by its partner of the same kind. Opening with [ and closing with ) — or opening a second node before closing the first — is the most common Mermaid parse error, and the message names the token it wanted against the token it got. When a label needs characters the parser treats specially, put the label in quotes inside the brackets."],
+  practice:[{code:"flowchart TD\n  A([Start]) --> B{Ready?}\n  B --> C[(Database)]",out:"VALID — parses as flowchart-v2",why:"Stadium, diamond, and cylinder — three shapes, all brackets correctly paired."},{code:"flowchart TD\n  A[Start --> B[End]",out:"PARSE ERROR",why:"A's label was never closed — the parser wanted a ] and instead met a new [."},{code:"flowchart TD\n  A(Round] --> B",out:"PARSE ERROR",why:"Opened with ( but closed with ] — bracket pairs must match in kind."}]
  },
  "edge types":{
   i:"Edges are not all the same. A solid arrow shows normal flow, a dotted arrow a weaker or optional link, a thick arrow emphasis, and you can label any of them to say what the connection means.",
@@ -930,7 +958,9 @@ mermaid:{
      ["A -- text --> B","Another way to label an edge."]],
   w:["The arrowhead is the > at the end. A --- B has no head and reads as an undirected link.",
      "A label goes in |pipes| right after the arrow, or between two dashes — do not mix the two forms in one edge.",
-     "Dotted and thick are -.-> and ==>; get the dots or dashes wrong and it falls back to a plain line."]
+     "Dotted and thick are -.-> and ==>; get the dots or dashes wrong and it falls back to a plain line."],
+  read:["Edges are not all the same arrow. --> is the solid directed arrow for normal flow. --- is a plain undirected line — legal syntax, no arrowhead, for connections without direction. -.-> is dotted, the convention for weak or optional links, and ==> is thick, for the path you want the eye to follow first.","An edge can carry a label two ways: pipes right after the arrow, A -->|yes| B, or embedded in the dashes, A -- yes --> B. Labels are what make decision diamonds work — the yes and no branches read from the edge text. Pick one label style and stay consistent within a diagram.","Edge mistakes fail in two different ways, and the second is sneakier. An unclosed label pipe is a parse error — the parser keeps waiting for the closing | and complains at whatever it finds instead. But a mistyped arrow often still parses as some other valid edge: leave the > off --> and you have drawn a plain line, silently. A diagram that parses is not automatically the diagram you meant — look at the picture."],
+  practice:[{code:"flowchart TD\n  A -.-> B\n  B ==> C\n  A -->|skip| C",out:"VALID — parses as flowchart-v2",why:"Dotted, thick, and a pipe-labelled solid arrow — all three edge styles in one diagram."},{code:"flowchart TD\n  A --- B",out:"VALID — parses as flowchart-v2",why:"Three dashes is a legal undirected line. No arrowhead is drawn — valid is not the same as intended."},{code:"flowchart TD\n  A -->|yes B",out:"PARSE ERROR",why:"The label pipe was never closed, so the parser reads on hunting for the second |."}]
  },
  "sequence diagrams":{
   i:"A sequence diagram shows messages passing between participants over time, read top to bottom. Each participant gets a vertical lifeline, and arrows between lifelines are the messages — solid for calls, dashed for replies.",
@@ -942,7 +972,9 @@ mermaid:{
      ["Note over A: text","A note on the diagram."]],
   w:["Sequence arrows use ->> and -->>, not the flowchart's -->. Flowchart syntax will not render here.",
      "The message text goes after a colon on the same line. Forget the colon and the label drops.",
-     "Order is time: put the messages in the order they actually happen, top to bottom."]
+     "Order is time: put the messages in the order they actually happen, top to bottom."],
+  read:["A sequence diagram is about time. Each participant gets a vertical lifeline, and every message is an arrow from one lifeline to another, read top to bottom in the order things happen. Participants appear automatically the first time a message names them, or you can declare them up front with participant lines to control their left-to-right order.","The arrow encodes the message kind: ->> is a solid arrow for a call or request, -->> is dashed for the reply, and -) is an open arrowhead for an asynchronous message nobody waits for. After the arrow comes a colon and the message text — the colon is mandatory, and the text after it is what gets drawn on the arrow.","Sequence syntax is its own grammar, not the flowchart's. The flowchart arrow --> does not mean 'message' here, and leaving out the colon before the text is a parse error — the parser expected message text and found the end of the line. When a sequence diagram will not parse, check the arrow form first and the colon second."],
+  practice:[{code:"sequenceDiagram\n  User->>Server: Request\n  Server-->>User: Reply",out:"VALID — parses as sequence",why:"Solid request, dashed reply, both with the mandatory colon before the text."},{code:"sequenceDiagram\n  User --> Server",out:"PARSE ERROR",why:"That is the flowchart arrow — in sequence grammar it never reaches valid message form."},{code:"sequenceDiagram\n  User->>Server Request",out:"PARSE ERROR",why:"No colon: the parser expected ': text' after the arrow and hit the line's end instead."}]
  },
  "state diagrams":{
   i:"A state diagram shows the states something can be in and the transitions between them. A special start marker shows where it begins, and each arrow can carry the event that causes the move.",
@@ -954,7 +986,9 @@ mermaid:{
      ["state \"Waiting\" as W","Give a state a display name."]],
   w:["[*] is both the start and the end marker; which it means depends on whether it is the arrow's source or target.",
      "Use stateDiagram-v2, not the older stateDiagram, for the current layout engine.",
-     "The event label goes after a colon on the transition, the same as a sequence message."]
+     "The event label goes after a colon on the transition, the same as a sequence message."],
+  read:["A state diagram answers one question: what states can this thing be in, and what moves it between them. States are just names; transitions are arrows between them. The special marker [*] is the entry point when an arrow leaves it and the end point when an arrow enters it — the same token playing both roles depending on which side of the arrow it sits.","A transition can carry the event that causes it, written after a colon: Running --> Idle: stop. Use stateDiagram-v2 as the header — it is the current layout engine. Nesting, forks, and notes exist when you need them, but most diagrams are states, arrows, and labels.","The parser here is more permissive than you might expect, and that cuts both ways. A bare state name on its own line is not an error — it just declares the state — so forgetting an arrow gives you a valid diagram with a floating state rather than a helpful message. The old stateDiagram header also still parses. Valid, in state diagrams especially, is not proof of correct: render it and look."],
+  practice:[{code:"stateDiagram-v2\n  [*] --> Idle\n  Idle --> Running: start",out:"VALID — parses as stateDiagram",why:"[*] as source is the entry marker; the colon labels the transition with its event."},{code:"stateDiagram-v2\n  [*] Idle",out:"VALID — parses as stateDiagram",why:"Surprise: no arrow is no error. This just declares states — a floating Idle, not a transition."},{code:"stateDiagram\n  [*] --> Idle\n  Idle --> [*]",out:"VALID — parses as stateDiagram",why:"The old header still parses. Prefer stateDiagram-v2, but the parser will not force you."}]
  }
 },
 };
@@ -988,7 +1022,7 @@ const chapterById=(chId)=>{ const b=bookFor(bookLangOf(chId)); return b?b.chapte
 
 /* ============ storage ============ */
 const KEY="practicelog.offline.v1";
-const blank={lang:"python",theme:"light",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{},ans:{}},
+const blank={lang:"python",theme:"light",sessions:[],streak:{count:0,last:null},solid:{},shaky:{},queue:[],highlights:{},book:{last:null,read:{},ex:{},ans:{},quiz:{}},
   game:{xp:0,day:null,todayXp:0,goal:50,hearts:5,heartTs:null,freezes:2,combo:0,bestCombo:0,
         quests:{day:null,items:[]},badges:{},hist:{},goalDays:0,lastGoalDay:null,
         opts:{hearts:true,sound:true,motion:true}}};
@@ -1297,6 +1331,64 @@ async function runR(code,pkgs){
   }finally{ if(shelter){ try{shelter.purge();}catch(e){} } }
 }
 
+/* ============ free-run scratch (no grading) ============ */
+// Mermaid renders through the same CDN-on-demand pattern as Pyodide and WebR.
+// Rendering is display only — Mermaid grading stays static, as the footer says.
+let mermaidMod=null, mmdN=0;
+async function renderMermaid(code){
+  const mod=mermaidMod||(await import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs")).default;
+  mermaidMod=mod;
+  mod.initialize({startOnLoad:false,securityLevel:"strict",
+    theme:(typeof resolvedTheme==="function"&&resolvedTheme()==="dark")?"dark":"default"});
+  const r=await mod.render("mmdrun"+(++mmdN),code);
+  return r.svg;
+}
+function runnerEl(lang,opts){
+  const wrap=el("div",{});
+  const ta=el("textarea",{class:"runbox",spellcheck:"false",autocapitalize:"off",autocorrect:"off",
+    placeholder:lang==="mermaid"?"Type Mermaid source, then Render…":`Type ${LANGS[lang].label} here, then Run…`});
+  const btn=el("button",{class:"ghost",style:"margin-top:10px"},lang==="mermaid"?"Render diagram":"Run code");
+  const outWrap=el("div",{style:"display:none;margin-top:10px"});
+  const outLab=el("span",{class:"lab"},"Output");
+  const outPre=el("pre",{style:"margin-top:6px"});
+  outWrap.append(outLab,outPre);
+  const diagram=el("div",{class:"mmdout",style:"display:none;margin-top:10px"});
+  btn.addEventListener("click",async()=>{
+    const code=ta.value; if(!code.trim()||btn.disabled) return;
+    const orig=btn.textContent; btn.disabled=true;
+    btn.textContent=lang==="python"&&!pyodide?"Booting Python — one-time download…"
+                  :lang==="r"&&!webR?"Booting R — one-time download…"
+                  :lang==="mermaid"&&!mermaidMod?"Loading Mermaid…":"Running…";
+    try{
+      if(lang==="mermaid"){
+        // Rendering the user's own source; same trust model as runJS.
+        diagram.innerHTML=await renderMermaid(code);
+        diagram.style.display="block"; outWrap.style.display="none";
+      }else{
+        let res;
+        if(lang==="javascript") res=await runJS(code);
+        else if(lang==="python") res=await runPython(code);
+        else if(lang==="r"){
+          // library()/require() calls name the packages the code needs — install
+          // them like a chapter's pkgs list so scratch code matches chapter code.
+          const detected=[...code.matchAll(/\b(?:library|require)\(\s*["']?([A-Za-z][A-Za-z0-9.]*)["']?\s*\)/g)].map(m=>m[1]);
+          res=await runR(code,[...new Set([...(opts&&opts.pkgs||[]),...detected])]);
+        }else res={ok:false,output:"",error:"This language does not execute in the app."};
+        outLab.textContent=res.ok?"Output":"Output · error";
+        outPre.textContent=(res.output||"")+(res.ok?"":((res.output?"\n":"")+(res.error||"")))||"(nothing printed)";
+        outWrap.style.display="block"; diagram.style.display="none";
+      }
+    }catch(e){
+      outLab.textContent="Could not run";
+      outPre.textContent=String((e&&e.message)||e);
+      outWrap.style.display="block"; diagram.style.display="none";
+    }
+    btn.disabled=false; btn.textContent=orig;
+  });
+  wrap.append(ta,btn,outWrap,diagram);
+  return wrap;
+}
+
 /* ============ static checks ============ */
 function lint(lang,code){
   const lines=code.split("\n"), f=[];
@@ -1483,8 +1575,20 @@ async function drainQueue(){
   render();
 }
 /* ============ book actions ============ */
-function ensureBook(){ if(!S.book||typeof S.book!=="object") S.book={last:null,read:{},ex:{},ans:{}};
-  if(!S.book.read) S.book.read={}; if(!S.book.ex) S.book.ex={}; if(!S.book.ans) S.book.ans={}; }
+function ensureBook(){ if(!S.book||typeof S.book!=="object") S.book={last:null,read:{},ex:{},ans:{},quiz:{}};
+  if(!S.book.read) S.book.read={}; if(!S.book.ex) S.book.ex={}; if(!S.book.ans) S.book.ans={}; if(!S.book.quiz) S.book.quiz={}; }
+function markQuiz(chId,qi,val){
+  ensureBook();
+  if(!S.book.quiz[chId]) S.book.quiz[chId]={};
+  S.book.quiz[chId][qi]=val;
+  persist();
+}
+function quizState(chId,qi){ return (S.book&&S.book.quiz&&S.book.quiz[chId])?S.book.quiz[chId][qi]:undefined; }
+function quizScore(chId){
+  const q=(S.book&&S.book.quiz&&S.book.quiz[chId])||{};
+  const vals=Object.values(q);
+  return {right:vals.filter(v=>v===true).length, marked:vals.length};
+}
 function saveAns(chId,qi,txt){
   ensureBook();
   if(!S.book.ans[chId]) S.book.ans[chId]={};
@@ -1747,6 +1851,15 @@ function render(){
     if(task) renderTask(app);
     if(exec) renderRun(app);
     if(grade) renderGrade(app);
+
+    // playground: free-run scratch for the current language tab
+    const pg=el("div",{class:"card"});
+    pg.append(el("span",{class:"lab"},"Playground · "+LANGS[S.lang].label));
+    pg.append(el("p",{class:"note",style:"margin-top:4px"},
+      S.lang==="mermaid"?"Write Mermaid source and render the diagram in place. Rendering is display only — graded correctness for Mermaid is still capped, as the footer says."
+                        :`Run any ${LANGS[S.lang].label} with nothing on the line — no grading, no hearts, no log.`));
+    pg.append(runnerEl(S.lang,{}));
+    app.append(pg);
   }
 
   const foot=el("footer",{});
@@ -1883,8 +1996,11 @@ function renderLesson(app){
   // practice: predict the output
   if(data.practice&&data.practice.length){
     const pr=el("div",{style:"margin-top:20px"});
-    pr.append(el("span",{class:"lab"},"Practice · predict the output"));
-    pr.append(el("p",{class:"note",style:"margin-top:4px"},"Read the code, decide what it prints, then reveal the answer. These are warm-ups — the graded exercise comes after."));
+    const mmd=S.lang==="mermaid";
+    pr.append(el("span",{class:"lab"},mmd?"Practice · predict the verdict":"Practice · predict the output"));
+    pr.append(el("p",{class:"note",style:"margin-top:4px"},mmd
+      ?"Read the diagram source and decide whether Mermaid's parser accepts it, then reveal the verdict. All verdicts were captured from the real parser."
+      :"Read the code, decide what it prints, then reveal the answer. These are warm-ups — the graded exercise comes after."));
     data.practice.forEach((p)=>{
       const box=el("div",{class:"prob"});
       box.append(el("pre",{},p.code));
@@ -2012,9 +2128,10 @@ function renderBook(app){
       el("span",{},done?"✓":String(ch.n)),
       el("span",{class:"cn"},done?"DONE":`${readN}/${total}`));
     if(done) knob.append(el("span",{class:"crown"},"♛"));
+    const qsc=quizScore(id);
     const info=el("div",{class:"stepinfo"},
       el("div",{class:"t"},ch.title),
-      el("div",{class:"m"},done?"Complete · tap to revisit":`${readN}/${total} sections · ${exN}/${exT} exercises`));
+      el("div",{class:"m"},done?"Complete · tap to revisit":`${readN}/${total} sections · ${exN}/${exT} exercises`+(qsc.marked?` · ${qsc.right}/${ch.questions.length} questions`:"")));
     path.append(el("div",{class:"step"+(i%2?" right":"")},knob,info));
   });
   wrap.append(path);
@@ -2046,8 +2163,14 @@ function renderChapter(app,chId,ch){
 
   if(ch.questions&&ch.questions.length){
     const qs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
-    qs.append(el("span",{class:"lab"},"Practice questions"));
-    qs.append(el("p",{class:"note",style:"margin-top:4px"},"Write your answer in your own words, then reveal to compare. If one surprises you, reread its section before moving on."));
+    const scoreEl=el("span",{class:"meta",style:"font-size:12px"});
+    const paintScore=()=>{
+      const sc=quizScore(chId);
+      scoreEl.textContent=sc.marked?`${sc.right} right · ${sc.marked}/${ch.questions.length} checked`:"";
+    };
+    qs.append(el("div",{class:"row"},el("span",{class:"lab"},"Practice questions"),scoreEl));
+    paintScore();
+    qs.append(el("p",{class:"note",style:"margin-top:4px"},"Write your answer in your own words, reveal to compare, then mark yourself honestly — marks feed the chapter meter, nothing else."));
     ch.questions.forEach((item,qi)=>{
       const box=el("div",{class:"prob"});
       box.append(hlElK("p","read","book|"+chId+"|q"+qi,item.q));
@@ -2057,6 +2180,22 @@ function renderChapter(app,chId,ch){
       box.append(ta);
       const ans=el("div",{style:"display:none;margin-top:8px"});
       ans.append(el("span",{class:"lab"},"Book answer"),el("p",{class:"why"},item.a));
+      // self-check: compare, then say so. Self-marks pay no XP — only executed
+      // code earns rewards — they only drive the review meter.
+      const gotB=el("button",{class:"ghost qmark"},"I had it");
+      const missB=el("button",{class:"ghost qmark"},"Missed it");
+      const paintMarks=()=>{
+        const v=quizState(chId,qi);
+        gotB.style.color=v===true?"var(--teal)":""; gotB.style.borderColor=v===true?"var(--teal)":"";
+        missB.style.color=v===false?"var(--sig)":""; missB.style.borderColor=v===false?"var(--sig)":"";
+        paintScore();
+      };
+      gotB.addEventListener("click",()=>{markQuiz(chId,qi,true);paintMarks();});
+      missB.addEventListener("click",()=>{markQuiz(chId,qi,false);paintMarks();});
+      const mrow=el("div",{style:"display:flex;align-items:center;gap:8px;margin-top:10px"},
+        el("span",{class:"lab",style:"display:inline"},"Did you have it?"),gotB,missB);
+      ans.append(mrow);
+      paintMarks();
       const btn=el("button",{class:"ghost",style:"margin-top:8px"},"Reveal answer");
       btn.addEventListener("click",()=>{
         saveAns(chId,qi,ta.value);
@@ -2088,6 +2227,15 @@ function renderChapter(app,chId,ch){
     });
     c.append(xs);
   }
+
+  const tryLang=bookLangOf(chId);
+  const tr=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+  tr.append(el("span",{class:"lab"},"Try it yourself"));
+  tr.append(el("p",{class:"note",style:"margin-top:4px"},
+    `Scratch space — run any ${LANGS[tryLang].label} here while you work through the chapter. Nothing is graded and nothing is saved.`));
+  tr.append(runnerEl(tryLang,{pkgs:ch.pkgs}));
+  c.append(tr);
+
   app.append(c);
 }
 
