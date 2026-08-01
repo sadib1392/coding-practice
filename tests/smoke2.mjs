@@ -89,6 +89,20 @@ setTimeout(async ()=>{
   const saved2=JSON.parse(w.localStorage.getItem(KEY));
   check(Object.keys(saved2.highlights||{}).length===0, 'removal persisted (highlights cleared)');
 
+  // --- every language now has the deep tier: read + practice ---
+  clickText('JS'); clickText('teach me this');
+  let lc=d.querySelector('#lessoncard').textContent;
+  check(lc.includes('Reading') && lc.includes('Practice · predict the output'), 'JS lesson has Reading and Practice sections');
+  const jsReveal=[...d.querySelectorAll('#lessoncard button')].find(b=>b.textContent.includes('Reveal output'));
+  jsReveal.click();
+  check(d.querySelector('#lessoncard').textContent.includes('number string boolean'), 'JS practice reveals a runJS-verified output');
+  clickText('MMD'); clickText('teach me this');
+  lc=d.querySelector('#lessoncard').textContent;
+  check(lc.includes('Reading') && lc.includes('Practice · predict the verdict'), 'Mermaid lesson has Reading and predict-the-verdict practice');
+  const mmdReveal=[...d.querySelectorAll('#lessoncard button')].find(b=>b.textContent.includes('Reveal output'));
+  mmdReveal.click();
+  check(d.querySelector('#lessoncard').textContent.includes('VALID — parses as flowchart-v2'), 'Mermaid practice reveals a parser-captured verdict');
+
   console.log(fails===0?'\nSMOKE2: ALL PASS':`\nSMOKE2: ${fails} FAILURE(S)`);
   process.exit(fails===0?0:1);
  }catch(e){ console.log('SMOKE2 ERROR:', e.stack||e.message); process.exit(2); }

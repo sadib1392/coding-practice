@@ -45,7 +45,7 @@ tests/                  jsdom smoke suites, shape contract check, one self-check
 .github/workflows/deploy-pages.yml   auto-deploy to GitHub Pages
 ```
 
-## Current state (as of 2026-07-23)
+## Current state (as of 2026-07-28)
 
 Everything below is merged to `main` and deployed:
 
@@ -53,10 +53,14 @@ Everything below is merged to `main` and deployed:
   `LESSONS`, graded drills, streaks, ledger, offline queue for Python.
 - **Lessons** for all 33 ladder concepts (12 py / 10 js / 6 r / 5 mermaid):
   intro `i`, syntax pairs `s`, gotchas `w`.
-- **Extended lessons**: every Python concept (12) and every R concept (15) has
-  `read` (multi-paragraph prose) and `practice` (3 predict-the-output problems).
-  JS/Mermaid don't have these yet — the shape is optional and backward
-  compatible. **Extending read/practice to JS is a natural next task.**
+- **Extended lessons cover all four languages** (42 concepts): every concept
+  has `read` (3+ paragraphs) and `practice` (3 problems). Verification per
+  language: Python via python3, R via WebR, **JS via a harness replicating the
+  runJS console shim exactly** (strings raw, everything else JSON.stringify —
+  arrays print as [1,2,3]; see tests/js_practice_verify.mjs), **Mermaid via
+  real mermaid.parse verdicts captured in Chromium** (tests/mmd_verify.mjs;
+  practice is predict-the-verdict, and two verdicts are deliberately
+  "surprisingly VALID": bare state names and the old stateDiagram header).
 - **R ladder is 15 concepts** covering base R and the tidyverse, with 2 BANK
   drills each (30). Every R drill carries a real expected output captured from
   WebR — they were all `o:null` before R could execute.
@@ -91,8 +95,32 @@ Everything below is merged to `main` and deployed:
   (sqlite3) and ch18 (csv/json/xml) are stdlib and fully runnable in-app.
 - **Chapters are NOT gated** — any chapter can be started at any time. The
   owner has been offered locked progression and hasn't asked for it.
+- **Write-in question answers** (owner's July 27 ask): every book question has
+  a `textarea.qans` above its Reveal button; answers persist in `S.book.ans`
+  (saved on change and on reveal) and restore on reload.
+- **Failed-exercise feedback** (owner's July 27 ask): when a book exercise is
+  proven wrong **by execution** (never on a static/queued grade), the grade
+  card appends a WHERE TO LOOK hint naming the chapter — and the exact section
+  plus a tie-back sentence when the exercise carries `sec`/`fb` — with a
+  "Reread" button that jumps there. ch01 has `sec`/`fb` on all 4 exercises;
+  the other 52 chapters fall back to chapter-level pointers until backfilled.
+- `openBook()` now derives the language from the chapter id (`bookLangOf`);
+  it previously forced python, which broke opening R chapters directly.
+- **Question self-checks**: after revealing a book answer, "I had it" /
+  "Missed it" buttons record `S.book.quiz[chId][qi]` (true/false). Score shows
+  in the questions header and on the chapter path. **Self-marks pay no XP** —
+  rewards hang off executed code only — and do not affect `chapterDone`.
+- **Free-run code, no grading**: `runnerEl(lang,{pkgs})` renders a
+  textarea + Run + output block. Placed as "Try it yourself" below every
+  chapter's exercises (book language, chapter `pkgs` honored) and as a
+  "Playground" card on the practice view for the current language tab. The R
+  runner also auto-installs packages named in `library()`/`require()` calls.
+  **Mermaid renders** via CDN-on-demand ESM import (`renderMermaid`, theme
+  follows the app theme); the SW caches `/npm/mermaid` chunks in the RUNTIME
+  cache so rendering works offline after first use. Rendering is display
+  only — Mermaid **grading** is still static and still capped, as disclosed.
 - Nav is three tabs: PRACTICE / BOOK / LEDGER, plus language tabs.
-- Service worker `SHELL` is at `shell-v8`.
+- Service worker `SHELL` is at `shell-v10`.
 - **Themes**: Light (default) / Dark / System, chosen in the ledger. See the
   theme constraint under "Hard constraints".
 
@@ -141,7 +169,9 @@ S = {
   queue[],                          // Python submissions awaiting a runtime
                                     // entries carry book:chId|null for credit
   highlights{ key: [[start,end],...] },  // key: "python|loops|r0" or "book|ch01|s2|b1"
-  book{ last:{ch,sec}|null, read:{ch01:{0:true,...}}, ex:{ch01:["Exercise title",...]} },
+  book{ last:{ch,sec}|null, read:{ch01:{0:true,...}}, ex:{ch01:["Exercise title",...]},
+        ans:{ch01:{0:"the learner's written answer",...}},     // write-in question answers
+        quiz:{ch01:{0:true,1:false,...}} },                    // self-check marks (no XP)
   game{ xp, day, todayXp, goal, hearts, heartTs, freezes, combo, bestCombo,
         quests:{day,items[]}, badges:{id:date}, hist:{date:xp}, goalDays,
         lastGoalDay, opts:{hearts,sound,motion} }
@@ -160,7 +190,15 @@ window.BOOK.chapters.chNN = {
   blurb,
   sections: [ { t, body: [ ["p",text] | ["code",text] | ["note",text] ] } ],
   questions: [ { q, a } ],             // reveal-style self-checks
-  exercises: [ { c, t, b, o, h:[3], book:"chNN" } ]  // BANK-shaped, graded
+  exercises: [ { c, t, b, o, h:[3], book:"chNN",
+                 sec?, fb? } ]  // BANK-shaped, graded. Optional: sec is the index
+                                // of the section that teaches this exercise, fb a
+                                // one-sentence tie-back shown on a failed attempt.
+                                // Both feed the WHERE TO LOOK feedback in
+                                // renderGrade; without sec it falls back to a
+                                // chapter-level pointer. ch01 is the exemplar —
+                                // backfilling sec/fb across chapters is an open
+                                // content task. shape_check validates both.
 };
 ```
 Exercise `c` maps to a `LADDER.python` concept so passing also advances the
@@ -232,6 +270,16 @@ library workflows taught output-free; everything else runs for real.
   derivative work, so the same rule applies with the license now confirmed
   rather than merely unknown. Curriculum structure (a list of topics) is not
   copyrightable; the words are.
+
+**Owner request on file (July 27 log): "do not deviate too much from the
+original text. do not summarize."** Resolution: verbatim or near-verbatim text
+cannot be added for either book under the verified terms above — that part of
+the request must not be implemented by copying or close paraphrase, in any
+session. What CAN honor its spirit: keep readings full prose that covers every
+topic the original chapter covers (no thin summaries), keep the original-
+chapter link prominent in every chapter, and deepen any section that skimps.
+If the owner obtains permission from a rights holder, revisit; until then this
+is settled policy, not an open question.
 
 **All chapter text is original prose written for this app**,
 following the book's chapter-by-chapter curriculum, credited to Al Sweigart
@@ -314,8 +362,9 @@ Python for offline" on wifi.
 
 ## Known limitations — do not "fix" silently
 
-- Mermaid never executes; correctness capped at 3/5 (disclosed in footer).
-  R **does** execute now, via WebR.
+- Mermaid **grading** never executes; correctness capped at 3/5 (disclosed in
+  footer). Mermaid does **render** in the free-run runners — display only, it
+  emits no text to diff, so the grading cap stands. R executes via WebR.
 - Pyodide cache is evictable (iOS ~7 weeks unused); the cache button
   reappearing is intended.
 - Progress is device-local; "Export progress" is the backup.
@@ -342,8 +391,8 @@ Python for offline" on wifi.
 2. ~~WebR execution for R~~ **DONE: R runs and is graded by execution.**
 3. ~~R book~~ **DONE: all 29 r4ds 2e chapters,** plus the 15-concept R ladder
    with lessons and drills. Future book work is edits, not additions.
-4. Extend `read`/`practice` lesson sections to JavaScript concepts — the last
-   language without them.
+4. ~~Extend `read`/`practice` to JS and Mermaid~~ **DONE: all 42 concepts in
+   all four languages carry the deep tier, outputs/verdicts verified.**
 5. More Python BANK drills (2-3 per concept; `while` loops and string
    formatting underrepresented).
 6. Gamification follow-ups the owner has NOT asked for, so do not add

@@ -1,5 +1,5 @@
 /* Practice Log service worker */
-const SHELL = "shell-v8";
+const SHELL = "shell-v10";
 const RUNTIME = "pyodide-v1";
 
 const APP_FILES = [
@@ -83,10 +83,12 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// Language runtimes: Pyodide (Python) and WebR (R). Both are large, immutable
-// downloads, so they live in their own cache and are kept forever.
+// Language runtimes: Pyodide (Python), WebR (R), and Mermaid (diagram
+// rendering). All are immutable versioned downloads, so they live in their
+// own cache and are kept forever.
 const isRuntime = (url) =>
   url.includes("pyodide") || url.includes("webr.r-wasm.org") ||
+  url.includes("/npm/mermaid") ||
   url.endsWith(".wasm") || url.endsWith(".zip") || url.endsWith(".data");
 
 self.addEventListener("fetch", (e) => {
