@@ -111,6 +111,9 @@
     border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;letter-spacing:.03em;
     box-shadow:0 2px 10px rgba(20,25,22,.28)}
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+  .backq{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));
+    z-index:65;background:var(--fill);color:var(--onFill);border:none;border-radius:999px;
+    min-height:44px;padding:10px 20px;font-size:14px;font-weight:500;box-shadow:0 3px 14px rgba(20,25,22,.26)}
   .why{font-family:var(--serif);font-size:15px;line-height:1.6;margin:8px 0 0;color:var(--soft)}
 
   /* ---- game chrome ---- */
@@ -1804,6 +1807,7 @@ function wireHighlighting(){
 /* ============ render ============ */
 function render(){
   ensureGame();
+  const bq=$("#backq"); if(bq&&(view!=="book"||bq.dataset.ch!==bookCh)) bq.remove();
   const app=$("#app"); app.innerHTML="";
   const solid=S.solid[S.lang]||[], shaky=S.shaky[S.lang]||[];
   const totalMins=S.sessions.reduce((a,s)=>a+s.mins,0);
@@ -2101,7 +2105,7 @@ function renderGrade(app){
       const where=si!=null?`Chapter ${bch.n}, "${bch.sections[si].t}"`:`Chapter ${bch.n}: ${bch.title}`;
       c.append(el("div",{class:"hint",style:"margin-top:16px"},
         el("b",{},"WHERE TO LOOK"),el("br"),
-        (task.fb?task.fb+" ":"")+`This exercise comes from ${where} in ${meta.title||"the book"} — that reading covers exactly this. Reread it, then try again.`));
+        (task.fb?task.fb+" ":"")+`This exercise comes from ${where} in ${meta.title||"the book"}. That reading covers exactly this. Reread it, then try again.`));
       c.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>openBook(task.book,si!=null?si:undefined)},
         si!=null?`Reread "${bch.sections[si].t}"`:"Reread the chapter"));
     }
@@ -2158,6 +2162,16 @@ function renderBook(app){
   app.append(wrap);
 }
 
+// After jumping from a question to its section, a pill takes you back to the
+// question. It removes itself once used or once the view re-renders.
+function showBackTo(qi){
+  const old=$("#backq"); if(old) old.remove();
+  const b=el("button",{id:"backq",class:"backq",onclick:()=>{
+    const q=$("#bq"+qi); if(q&&q.scrollIntoView) q.scrollIntoView({behavior:"smooth",block:"center"});
+    b.remove();
+  }},`Back to question ${qi+1}`);
+  document.body.append(b);
+}
 function renderChapter(app,chId,ch){
   const c=el("div",{class:"card",id:"bookcard"});
   c.append(el("button",{class:"ghost",style:"margin-bottom:16px",onclick:()=>{bookCh=null;render();}},"← All chapters"));
@@ -2181,6 +2195,11 @@ function renderChapter(app,chId,ch){
     c.append(s);
   });
 
+  const jumpToSection=(qi,si)=>{
+    const n=$("#bsec"+si); if(!n) return;
+    if(n.scrollIntoView) n.scrollIntoView({behavior:"smooth",block:"start"});
+    showBackTo(qi);
+  };
   if(ch.questions&&ch.questions.length){
     const qs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
     const scoreEl=el("span",{class:"meta",style:"font-size:12px"});
@@ -2192,7 +2211,7 @@ function renderChapter(app,chId,ch){
     paintScore();
     qs.append(el("p",{class:"note",style:"margin-top:4px"},"Write your answer in your own words, reveal to compare, then mark yourself honestly — marks feed the chapter meter, nothing else."));
     ch.questions.forEach((item,qi)=>{
-      const box=el("div",{class:"prob"});
+      const box=el("div",{class:"prob",id:"bq"+qi});
       box.append(hlElK("p","read","book|"+chId+"|q"+qi,item.q));
       const ta=el("textarea",{class:"qans",placeholder:"Write your answer here…"});
       ta.value=(S.book&&S.book.ans&&S.book.ans[chId]&&S.book.ans[chId][qi])||"";
@@ -2212,10 +2231,21 @@ function renderChapter(app,chId,ch){
       };
       gotB.addEventListener("click",()=>{markQuiz(chId,qi,true);paintMarks();});
       missB.addEventListener("click",()=>{markQuiz(chId,qi,false);paintMarks();});
-      const mrow=el("div",{style:"display:flex;align-items:center;gap:8px;margin-top:10px"},
+      const mrow=el("div",{style:"display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap"},
         el("span",{class:"lab",style:"display:inline"},"Did you have it?"),gotB,missB);
       ans.append(mrow);
-      paintMarks();
+      // A missed question names the section that answers it and jumps there.
+      const sTitle=(typeof item.sec==="number"&&ch.sections[item.sec])?ch.sections[item.sec].t:null;
+      const look=el("div",{class:"qlook",style:"display:none;margin-top:12px"});
+      if(sTitle){
+        look.append(el("div",{class:"hint",style:"margin-bottom:0"},el("b",{},"WHERE TO LOOK"),el("br"),
+          `Chapter ${ch.n}, "${sTitle}" answers this one.`));
+        look.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>jumpToSection(qi,item.sec)},`Reread "${sTitle}"`));
+      }
+      const paintLook=()=>{look.style.display=(sTitle&&quizState(chId,qi)===false)?"block":"none";};
+      missB.addEventListener("click",paintLook); gotB.addEventListener("click",paintLook);
+      ans.append(look);
+      paintMarks(); paintLook();
       const btn=el("button",{class:"ghost",style:"margin-top:8px"},"Reveal answer");
       btn.addEventListener("click",()=>{
         saveAns(chId,qi,ta.value);
