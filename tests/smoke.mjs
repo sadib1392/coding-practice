@@ -100,6 +100,13 @@ setTimeout(async () => {
     check(fd('x  y\n\n', 'x y') === null, 'firstDiff ignores whitespace norm() ignores');
     check(!!d.querySelector('.diffnote code'), 'MISMATCH card shows the first-difference note');
 
+    // 7b. a Python crash names the learner's failing line (innermost <exec> frame)
+    const tb = '  File "<exec>", line 5, in <module>\n  File "<exec>", line 2, in f\nNameError: x';
+    const at = w.errorLine(tb, 'def f():\n    return x\n\n\nprint(f())');
+    check(at && at.n === 2 && at.src === 'return x', 'errorLine picks the innermost frame and quotes the line');
+    check(w.errorLine('NameError: x', 'print(x)') === null, 'errorLine stays quiet when no line is named');
+    check(w.errorLine('  File "<exec>", line 9, in <module>', 'one line') === null, 'errorLine ignores a line number past the end of the code');
+
     // 8. code editor keys: Tab indents, Enter auto-indents after a colon, Shift+Tab dedents
     const ta = d.createElement('textarea'); d.body.append(ta);
     w.wireEditor(ta, 'python', null);

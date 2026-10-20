@@ -147,6 +147,7 @@ setTimeout(async () => {
   await wait(20);
   w.eval('runPython = async (code) => ({ok: true, output: "wrong\\noutput"})');
   d.querySelector('#code').value = 'print("wrong")\nprint("output")';
+  d.querySelector('#code').dispatchEvent(new w.Event('input'));
   clickIn(d, 'Run and grade');
   await wait(200);
   const gtxt = d.querySelector('#gradecard') ? d.querySelector('#gradecard').textContent : '';
@@ -156,8 +157,17 @@ setTimeout(async () => {
   const reread = [...d.querySelectorAll('button')].find(b => b.textContent.startsWith('Reread'));
   check(!!reread && reread.textContent.includes('Expressions and the interactive shell'), 'reread button names the section');
   reread.click();
-  await wait(80);
+  await wait(150);
   check(!!d.querySelector('#bookcard'), 'reread button jumps back into the book chapter');
+  check(!!d.querySelector('#bsec0.secflash'), 'the section it lands on is marked');
+  const exPill = d.querySelector('#backq');
+  check(!!exPill && exPill.textContent === 'Back to your exercise', 'failed exercise reread offers Back to your exercise');
+  [...d.querySelectorAll('#bsec0 button')].find(b => b.textContent.includes('Mark section') || b.textContent.includes('Read')).click();
+  check(!!d.querySelector('#backq'), 'the back pill survives a re-render inside the same chapter');
+  d.querySelector('#backq').click();
+  await wait(100);
+  check(!!d.querySelector('#taskcard') && d.querySelector('#code').value.includes('wrong'), 'back pill returns to the task with the code still there');
+  clickIn(d, 'BOOK');
 
   // --- a missed question points at the section that answers it ---
   const q2 = d.querySelector('#bq2');
@@ -184,6 +194,14 @@ setTimeout(async () => {
   const stT = JSON.parse(w.localStorage.getItem(KEY));
   check(stT.book.ans.ch01['3'] === 'typed but never blurred', 'answer saved after typing stops, no blur needed');
   check(d.querySelector('#bq3 .qsaved').textContent === 'Saved', 'Saved label confirms the answer');
+
+  // --- ledger lists the missed question with a link to its section ---
+  clickIn(d, 'LEDGER');
+  const revisit = [...d.querySelectorAll('.card')].find(c => c.textContent.includes('Questions to revisit'));
+  check(!!revisit && revisit.textContent.includes('Chapter 1 · Question 3'), 'ledger lists the missed question');
+  [...revisit.querySelectorAll('button')].find(b => b.textContent.startsWith('Reread')).click();
+  await wait(150);
+  check(!!d.querySelector('#bookcard') && d.querySelector('#backq') && d.querySelector('#backq').textContent === 'Back to question 3', 'ledger link opens the chapter with a way back to the question');
 
   // --- reload: resume ---
   const dom2 = makeDom(w.localStorage.getItem(KEY));
