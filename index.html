@@ -7,7 +7,9 @@
 <meta name="supported-color-schemes" content="light">
 <title>Practice Log</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Practice">
@@ -1489,6 +1491,25 @@ document.addEventListener("focusin",e=>{ if(e.target&&e.target.classList&&e.targ
 document.addEventListener("focusout",e=>{ if(e.target&&e.target.classList&&e.target.classList.contains("codeed"))
   setTimeout(()=>{ const a=document.activeElement; if(!(a&&a.classList&&a.classList.contains("codeed"))) hideKeybar(); },0); });
 if(window.visualViewport){ window.visualViewport.addEventListener("resize",placeKeybar); window.visualViewport.addEventListener("scroll",placeKeybar); }
+// When the on-screen keyboard opens it shrinks the visual viewport. If the
+// field being typed into ends up under the keyboard (or the key bar), scroll
+// it back up so the text you are writing stays visible.
+function keepFocusVisible(){
+  const vv=window.visualViewport, a=document.activeElement;
+  if(!vv||!a||!/^(TEXTAREA|INPUT)$/.test(a.tagName)) return;
+  const r=a.getBoundingClientRect(), bar=$("#keybar");
+  const barH=bar&&bar.style.display!=="none"?bar.offsetHeight:0;
+  const bottom=vv.height-barH;
+  if(r.top>bottom-72) window.scrollBy(0,r.top-Math.max(16,bottom*0.25));
+  else if(r.bottom<0) window.scrollBy(0,r.top-16);
+}
+if(window.visualViewport){
+  let lastH=window.visualViewport.height;
+  window.visualViewport.addEventListener("resize",()=>{
+    const h=window.visualViewport.height, shrank=h<lastH-60; lastH=h;
+    if(shrank) setTimeout(keepFocusVisible,50);
+  });
+}
 
 function runnerEl(lang,opts){
   const wrap=el("div",{});
