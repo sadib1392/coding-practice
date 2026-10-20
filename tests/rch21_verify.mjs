@@ -234,7 +234,7 @@ check('claim: mean translates to AVG',
 // happily written into the SQL and only collect() finds out.
 check('claim: show_query passes an unknown function straight through',
   await R.run('show_query(tbl(con, "hives") |> mutate(z = my_own_fn(frames)))'),
-  '<SQL>\nSELECT `hives`.*, my_own_fn(`frames`) AS `z`\nFROM `hives`');
+  '<SQL>\nSELECT *, my_own_fn(`frames`) AS `z`\nFROM `hives`');
 // question 2: an in-memory database starts empty.
 check('claim: a second in-memory connection is a separate, empty database',
   await R.run(`other <- dbConnect(RSQLite::SQLite(), ":memory:")
