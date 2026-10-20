@@ -112,6 +112,8 @@
   #hlbtn{position:fixed;display:none;z-index:60;background:var(--fill);color:var(--onFill);border:none;
     border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;letter-spacing:.03em;
     box-shadow:0 2px 10px rgba(20,25,22,.28)}
+  .jumprow{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .jumprow .ghost{flex:1 1 auto}
   .extlink{color:var(--teal);display:inline-flex;align-items:center;min-height:44px}
   :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
   textarea:focus-visible{outline-offset:0}
@@ -2433,6 +2435,11 @@ function renderChapter(app,chId,ch){
   c.append(el("span",{class:"lab"},"Chapter "+ch.n+" · "+((bookFor(bookLangOf(chId))||{meta:{}}).meta.title||"")),el("h2",{},ch.title));
   if(window.getSelection) c.append(el("div",{class:"meta",style:"margin:-2px 0 2px"},"Select any text to highlight it · tap a highlight to remove"));
   c.append(el("div",{style:"margin:8px 0 2px"},el("a",{class:"extlink",href:ch.src,target:"_blank",rel:"noopener",style:"font-size:13px"},"Read the original chapter →")));
+  // Jump links: on a phone the questions sit below 6-9 sections of reading.
+  const jump=el("div",{class:"jumprow",role:"navigation","aria-label":"Jump within this chapter"});
+  [["bqs","Questions"],["bxs","Exercises"],["btry","Try it"]].forEach(([id,label])=>
+    jump.append(el("button",{class:"ghost",onclick:()=>{const n=$("#"+id); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});}},label)));
+  c.append(jump);
 
   const r=chRead(chId);
   ch.sections.forEach((sec,si)=>{
@@ -2457,7 +2464,7 @@ function renderChapter(app,chId,ch){
     showBackTo(qi);
   };
   if(ch.questions&&ch.questions.length){
-    const qs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+    const qs=el("div",{id:"bqs",style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
     const scoreEl=el("span",{class:"meta",style:"font-size:12px"});
     const paintScore=()=>{
       const sc=quizScore(chId);
@@ -2524,7 +2531,7 @@ function renderChapter(app,chId,ch){
 
   if(ch.exercises&&ch.exercises.length){
     const done=bookExDone(chId);
-    const xs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+    const xs=el("div",{id:"bxs",style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
     xs.append(el("span",{class:"lab"},"Graded exercises"));
     xs.append(el("p",{class:"note",style:"margin-top:4px"},"These run your code for real. Pass them all to complete the chapter."));
     ch.exercises.forEach((ex,xi)=>{
@@ -2542,7 +2549,7 @@ function renderChapter(app,chId,ch){
   }
 
   const tryLang=bookLangOf(chId);
-  const tr=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+  const tr=el("div",{id:"btry",style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
   tr.append(el("span",{class:"lab"},"Try it yourself"));
   tr.append(el("p",{class:"note",style:"margin-top:4px"},
     `Scratch space — run any ${LANGS[tryLang].label} here while you work through the chapter. Nothing is graded and nothing is saved.`));
