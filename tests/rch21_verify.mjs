@@ -119,6 +119,19 @@ try {
   console.log('skip: all WebR execution checks for rch21');
   done();
 }
+// Installed is not the same as loadable. Since 2026-10-19 the WebR repo's
+// RSQLite build installs but its compiled library will not load ("could not
+// load dynamic lib"), in Node and in the app alike. That is a runtime fault,
+// not chapter drift, so it skips loudly with the reason. Any other failure
+// still runs the checks below and fails on drift as before.
+const probe = await R.run('invisible(DBI::dbConnect(RSQLite::SQLite(), ":memory:"))');
+if (/could not load dynamic lib|unable to load shared object/.test(probe)) {
+  console.log('skip: RSQLite installs but its compiled library does not load in this WebR build');
+  console.log('      (' + probe.split('\n').find((l) => /dynamic lib|shared object/.test(l)).trim() + ')');
+  console.log('skip: all WebR execution checks for rch21 until the WebR RSQLite build loads again');
+  await R.close();
+  done();
+}
 
 // Run code block i of a section and diff against block i+1 of the same section.
 const pair = async (title, i, label) => {
