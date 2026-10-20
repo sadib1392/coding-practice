@@ -206,6 +206,9 @@
     .navgrp .tab{flex:1 1 0;min-width:0;padding-left:4px;padding-right:4px}
   }
   @media (pointer:coarse),(max-width:560px){
+    /* iOS Safari zooms the page into any field under 16px when it gets focus
+       and leaves it zoomed. 16px stops that. */
+    textarea,textarea.qans,textarea.runbox,input,select{font-size:16px}
     .tab,.ghost{min-height:44px}
     .tab{font-size:13px}
     .ghost{font-size:14px}
