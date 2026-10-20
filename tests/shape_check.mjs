@@ -78,6 +78,8 @@ for (const id of ids.sort()) {
     fail(`questions: ${ch.questions && ch.questions.length}, want 10`);
   (ch.questions || []).forEach((q, qi) => {
     if (typeof q.q !== 'string' || typeof q.a !== 'string') fail(`question ${qi} malformed`);
+    if (q.sec !== undefined && (!Number.isInteger(q.sec) || q.sec < 0 || q.sec >= (ch.sections || []).length))
+      fail(`question ${qi} sec ${q.sec} is not a valid section index`);
     else { prose.push([`q${qi}`, q.q]); prose.push([`a${qi}`, q.a]); }
   });
 
@@ -93,6 +95,7 @@ for (const id of ids.sort()) {
       fail(`exercise ${xi} sec ${x.sec} is not a valid section index`);
     if (x.fb !== undefined && typeof x.fb !== 'string') fail(`exercise ${xi} fb must be a string`);
     if (x.fb) prose.push([`ex${xi}.fb`, x.fb]);
+    if (x.fb && x.o && x.o.length > 12 && x.fb.includes(x.o.trim())) warn(`exercise ${xi} fb quotes the expected output`);
     prose.push([`ex${xi}.t`, x.t || '']); prose.push([`ex${xi}.b`, x.b || '']);
     (x.h || []).forEach((h, hi) => prose.push([`ex${xi}.h${hi}`, h]));
   });
