@@ -132,6 +132,9 @@
   #keybar .kb[aria-label="Indent"],#keybar .kb[aria-label="Dedent"]{font-family:var(--sans);font-size:14px;font-weight:500}
   body.kbopen{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
   body.kbopen .backq{display:none}
+  .secflash{animation:secflash 2.2s ease-out 1;border-radius:6px}
+  @keyframes secflash{0%,35%{box-shadow:0 0 0 6px var(--hl);background:var(--hl);color:var(--onHl)}100%{box-shadow:0 0 0 6px transparent}}
+  @media (prefers-reduced-motion:reduce){ .secflash{animation:none} }
   .backq{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));
     z-index:65;background:var(--fill);color:var(--onFill);border:none;border-radius:999px;
     min-height:44px;padding:10px 20px;font-size:14px;font-weight:500;box-shadow:0 3px 14px rgba(20,25,22,.26)}
@@ -1801,7 +1804,11 @@ function openBook(chId,sec){
   if(S.lang!==lang){ S.lang=lang; persist(); }
   render();
   const target=sec!=null?sec:firstUnread(chId);
-  setTimeout(()=>{const n=$("#bsec"+target); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
+  setTimeout(()=>{const n=$("#bsec"+target); if(!n) return;
+    if(n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});
+    // A pointed-to section briefly marks itself so you can see where you landed.
+    if(sec!=null){ n.classList.remove("secflash"); void n.offsetWidth; n.classList.add("secflash"); }
+  },60);
 }
 function markRead(chId,i){
   ensureBook();
@@ -2329,7 +2336,14 @@ function renderGrade(app){
       c.append(el("div",{class:"hint",style:"margin-top:16px"},
         el("b",{},"WHERE TO LOOK"),el("br"),
         (task.fb?task.fb+" ":"")+`This exercise comes from ${where} in ${meta.title||"the book"}. That reading covers exactly this. Reread it, then try again.`));
-      c.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>openBook(task.book,si!=null?si:undefined)},
+      c.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>{
+        openBook(task.book,si!=null?si:undefined);
+        // The task, draft and grade stay in memory; the pill returns to them.
+        setTimeout(()=>showBackPill("Back to your exercise",()=>{
+          view="practice"; render();
+          setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
+        }),80);
+      }},
         si!=null?`Reread "${bch.sections[si].t}"`:"Reread the chapter"));
     }
   }
@@ -2397,15 +2411,19 @@ function renderBook(app){
   app.append(wrap);
 }
 
-// After jumping from a question to its section, a pill takes you back to the
-// question. It removes itself once used or once the view re-renders.
-function showBackTo(qi){
+// After jumping from a question or a failed exercise to the section that
+// answers it, a pill takes you back. It removes itself once used, and when
+// you leave the chapter (render() checks data-ch).
+function showBackPill(label,onBack){
   const old=$("#backq"); if(old) old.remove();
-  const b=el("button",{id:"backq",class:"backq",onclick:()=>{
-    const q=$("#bq"+qi); if(q&&q.scrollIntoView) q.scrollIntoView({behavior:scrollMode(),block:"center"});
-    b.remove();
-  }},`Back to question ${qi+1}`);
+  const b=el("button",{id:"backq",class:"backq",onclick:()=>{ b.remove(); onBack(); }},label);
+  b.dataset.ch=bookCh||"";
   document.body.append(b);
+}
+function showBackTo(qi){
+  showBackPill(`Back to question ${qi+1}`,()=>{
+    const q=$("#bq"+qi); if(q&&q.scrollIntoView) q.scrollIntoView({behavior:scrollMode(),block:"center"});
+  });
 }
 function renderChapter(app,chId,ch){
   const c=el("div",{class:"card",id:"bookcard"});
@@ -2433,6 +2451,7 @@ function renderChapter(app,chId,ch){
   const jumpToSection=(qi,si)=>{
     const n=$("#bsec"+si); if(!n) return;
     if(n.scrollIntoView) n.scrollIntoView({behavior:scrollMode(),block:"start"});
+    n.classList.remove("secflash"); void n.offsetWidth; n.classList.add("secflash");
     showBackTo(qi);
   };
   if(ch.questions&&ch.questions.length){
