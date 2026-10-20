@@ -3,7 +3,7 @@ import fs from 'fs';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const bookDir = new URL('../book/', import.meta.url);
-const chapterSrc = fs.readdirSync(bookDir).filter(f => /^ch\d+\.js$/.test(f)).sort()
+const chapterSrc = fs.readdirSync(bookDir).filter(f => /^(ch|r)\d+\.js$/.test(f)).sort()
   .map(f => fs.readFileSync(new URL(f, bookDir), 'utf8'));
 const KEY = 'practicelog.offline.v1';
 
@@ -255,9 +255,35 @@ setTimeout(async () => {
     const secs = card ? card.querySelectorAll('[id^="bsec"]').length : 0;
     const revs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Reveal answer')).length : 0;
     const exs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Start exercise')).length : 0;
-    check(!!card && card.textContent.includes(m.t) && secs === m.s && revs === m.q && exs === m.x,
-      `ch${m.n} "${m.t}": ${secs}/${m.s} sections, ${revs}/${m.q} questions, ${exs}/${m.x} exercises`);
+    const looks = card ? card.querySelectorAll('.qlook button').length : 0;
+    check(!!card && card.textContent.includes(m.t) && secs === m.s && revs === m.q && exs === m.x && looks === m.q,
+      `ch${m.n} "${m.t}": ${secs}/${m.s} sections, ${revs}/${m.q} questions, ${exs}/${m.x} exercises, ${looks}/${m.q} Missed-it pointers`);
     clickIn(d3, 'All chapters');
+  }
+
+  // --- the R book gets the same treatment: listed, opens, renders declared counts ---
+  const dom4 = makeDom(null);
+  const w4 = dom4.window, d4 = w4.document;
+  w4.eval('S.lang="r"; view="book"; render()');
+  const RORDER = JSON.parse(w4.eval('JSON.stringify(BOOKS.r.order)'));
+  const RMETA = JSON.parse(w4.eval(
+    'JSON.stringify(Object.fromEntries(Object.entries(BOOKS.r.chapters()).map(' +
+    '([id,c])=>[id,{n:c.n,t:c.title,s:c.sections.length,q:c.questions.length,x:c.exercises.length}])))'));
+  check(RORDER.length > 0 && RORDER.every(id => RMETA[id]), `every R BOOK_ORDER id has a loaded chapter file (${RORDER.length} wired)`);
+  check(d4.querySelector('#app').textContent.includes('R for Data Science'), 'R tab shows the R book');
+  for (let i = 0; i < RORDER.length; i++) {
+    const m = RMETA[RORDER[i]];
+    const open = [...d4.querySelectorAll('.knob')];
+    if (open.length !== RORDER.length) { check(false, `R path shows ${open.length} chapters, want ${RORDER.length}`); break; }
+    open[i].click();
+    const card = d4.querySelector('#bookcard');
+    const secs = card ? card.querySelectorAll('[id^="bsec"]').length : 0;
+    const revs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Reveal answer')).length : 0;
+    const exs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Start exercise')).length : 0;
+    const looks = card ? card.querySelectorAll('.qlook button').length : 0;
+    check(!!card && card.textContent.includes(m.t) && secs === m.s && revs === m.q && exs === m.x && looks === m.q,
+      `R ch${m.n} "${m.t}": ${secs}/${m.s} sections, ${revs}/${m.q} questions, ${exs}/${m.x} exercises, ${looks}/${m.q} Missed-it pointers`);
+    clickIn(d4, 'All chapters');
   }
 
   // --- second chapter deep flow: exercise opens, queue tags, drain credits ---
