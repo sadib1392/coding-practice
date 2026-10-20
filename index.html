@@ -1362,11 +1362,19 @@ async function bootR(){
     throw new Error(online()?"R runtime unreachable":"no connection");
   }
 }
+// Packages installed from their R-universe WebAssembly build instead of the
+// default WebR repo. repo.r-wasm.org's RSQLite stopped loading on WebR 0.6.0
+// (Oct 2026: "could not load dynamic lib"); r-dbi's build loads. Mirrored in
+// tests/rverify.mjs so the verify scripts run what the app runs.
+const R_UNIVERSE={RSQLite:"https://r-dbi.r-universe.dev"};
 async function ensureRPkgs(pkgs){
   const want=(pkgs||[]).filter(p=>!rInstalled.has(p));
   if(!want.length) return;
   const w=await bootR();
-  await w.installPackages(want,true);
+  for(const p of want.filter(p=>R_UNIVERSE[p]))
+    await w.installPackages([p],{repos:[R_UNIVERSE[p],"https://repo.r-wasm.org/"],quiet:true});
+  const rest=want.filter(p=>!R_UNIVERSE[p]);
+  if(rest.length) await w.installPackages(rest,true);
   want.forEach(p=>rInstalled.add(p));
 }
 async function runR(code,pkgs){
