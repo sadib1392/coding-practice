@@ -112,6 +112,9 @@
   #hlbtn{position:fixed;display:none;z-index:60;background:var(--fill);color:var(--onFill);border:none;
     border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;letter-spacing:.03em;
     box-shadow:0 2px 10px rgba(20,25,22,.28)}
+  .extlink{color:var(--teal);display:inline-flex;align-items:center;min-height:44px}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  textarea:focus-visible{outline-offset:0}
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
   .qsaved{display:block;min-height:16px;margin-top:4px;text-align:right}
   .diffnote{margin-top:10px;color:var(--ink);font-size:15px;overflow-wrap:anywhere}
@@ -1627,13 +1630,13 @@ function pickTask(){
 function teach(){
   lesson=nextConcept(); task=null; exec=null; grade=null; banner=null;
   render();
-  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 function newTask(){
   task=pickTask(); lesson=null; hintTier=0; exec=null; grade=null; banner=null; secs=0;
   if(!task){ flash("No exercises left in this language. Add more to BANK."); return; }
   startTimer(); render();
-  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 async function submit(){
   const code=$("#code").value;
@@ -1667,7 +1670,7 @@ async function submit(){
   grade=gradeIt(S.lang,code,exec,task);
   logSession(grade);
   busy=null; render();
-  setTimeout(()=>{const n=$("#gradecard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#gradecard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 function logSession(g){
   ensureGame();
@@ -1786,7 +1789,7 @@ function openBook(chId,sec){
   if(S.lang!==lang){ S.lang=lang; persist(); }
   render();
   const target=sec!=null?sec:firstUnread(chId);
-  setTimeout(()=>{const n=$("#bsec"+target); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#bsec"+target); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 function markRead(chId,i){
   ensureBook();
@@ -1810,7 +1813,7 @@ function startBookExercise(chId,i){
   if(ch.pkgs&&ch.pkgs.length) task.pkgs=clone(ch.pkgs);
   lesson=null; hintTier=0; exec=null; grade=null; banner=null; secs=0; view="practice";
   startTimer(); render();
-  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 
 function exportData(){
@@ -2201,7 +2204,7 @@ function renderLesson(app){
   }
 
   if(task) c.append(el("button",{class:"primary",onclick:()=>{
-    const n=$("#taskcard"); if(n&&n.scrollIntoView) n.scrollIntoView({behavior:"smooth",block:"start"});
+    const n=$("#taskcard"); if(n&&n.scrollIntoView) n.scrollIntoView({behavior:scrollMode(),block:"start"});
   }},"Back to your exercise"));
   else c.append(el("button",{class:"primary",onclick:newTask},"Give me an exercise on this"));
   app.append(c);
@@ -2241,6 +2244,11 @@ function renderRun(app){
   app.append(c);
 }
 
+// Smooth scrolling unless the device asks for reduced motion.
+function scrollMode(){
+  try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"; }
+  catch(e){ return "smooth"; }
+}
 // Names the first line where the output and the expected text part ways,
 // compared the way norm() grades: trailing spaces and blank lines ignored.
 // Returns an element (values in monospace, so 0 and o stay distinct) or null.
@@ -2300,7 +2308,7 @@ function renderGrade(app){
 }
 function openLessonFor(concept){
   lesson=concept; render();
-  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 
 function renderBook(app){
@@ -2322,7 +2330,7 @@ function renderBook(app){
     el("p",{class:"note"},`${META.author} · ${META.edition}. ${META.credit}`),
     el("div",{class:"meta",style:"margin-top:10px"},`${doneCount} / ${loaded.length} chapters complete`),
     el("div",{class:"bar",style:"margin-top:6px"},el("i",{style:`width:${Math.round(doneCount/loaded.length*100)}%;background:var(--teal)`})),
-    el("div",{style:"margin-top:10px"},el("a",{href:META.url,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:14px"},"Read the original online →")));
+    el("div",{style:"margin-top:10px"},el("a",{class:"extlink",href:META.url,target:"_blank",rel:"noopener",style:"font-size:14px"},"Read the original online →")));
   app.append(head);
 
   // The path. Chapters stay unlocked (the owner asked for that) — progression is
@@ -2357,7 +2365,7 @@ function renderBook(app){
 function showBackTo(qi){
   const old=$("#backq"); if(old) old.remove();
   const b=el("button",{id:"backq",class:"backq",onclick:()=>{
-    const q=$("#bq"+qi); if(q&&q.scrollIntoView) q.scrollIntoView({behavior:"smooth",block:"center"});
+    const q=$("#bq"+qi); if(q&&q.scrollIntoView) q.scrollIntoView({behavior:scrollMode(),block:"center"});
     b.remove();
   }},`Back to question ${qi+1}`);
   document.body.append(b);
@@ -2367,7 +2375,7 @@ function renderChapter(app,chId,ch){
   c.append(el("button",{class:"ghost",style:"margin-bottom:16px",onclick:()=>{bookCh=null;render();}},"← All chapters"));
   c.append(el("span",{class:"lab"},"Chapter "+ch.n+" · "+((bookFor(bookLangOf(chId))||{meta:{}}).meta.title||"")),el("h2",{},ch.title));
   if(window.getSelection) c.append(el("div",{class:"meta",style:"margin:-2px 0 2px"},"Select any text to highlight it · tap a highlight to remove"));
-  c.append(el("div",{style:"margin:8px 0 2px"},el("a",{href:ch.src,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:13px"},"Read the original chapter →")));
+  c.append(el("div",{style:"margin:8px 0 2px"},el("a",{class:"extlink",href:ch.src,target:"_blank",rel:"noopener",style:"font-size:13px"},"Read the original chapter →")));
 
   const r=chRead(chId);
   ch.sections.forEach((sec,si)=>{
@@ -2387,7 +2395,7 @@ function renderChapter(app,chId,ch){
 
   const jumpToSection=(qi,si)=>{
     const n=$("#bsec"+si); if(!n) return;
-    if(n.scrollIntoView) n.scrollIntoView({behavior:"smooth",block:"start"});
+    if(n.scrollIntoView) n.scrollIntoView({behavior:scrollMode(),block:"start"});
     showBackTo(qi);
   };
   if(ch.questions&&ch.questions.length){
