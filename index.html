@@ -1723,7 +1723,7 @@ function logSession(g){
       awardXP(XP.chapter,"chapter");
       badgeEarned("chapter");
       party={title:"Chapter complete",sub:ch?`${ch.n}. ${ch.title}`:"",xp:gained+bonus+XP.chapter,
-             lines:[`${ch?ch.exercises.length:0} exercises passed`,`Streak: ${S.streak.count} days`]};
+             lines:[`${ch?ch.exercises.length:0} exercises passed`,`Streak: ${plural(S.streak.count,"day")}`]};
       sfx("done");
     }
   }else{
@@ -1774,7 +1774,7 @@ function quizState(chId,qi){ return (S.book&&S.book.quiz&&S.book.quiz[chId])?S.b
 function quizScore(chId){
   const q=(S.book&&S.book.quiz&&S.book.quiz[chId])||{};
   const vals=Object.values(q);
-  return {right:vals.filter(v=>v===true).length, marked:vals.length};
+  return {right:vals.filter(v=>v===true).length, missed:vals.filter(v=>v===false).length, marked:vals.length};
 }
 // Answers typed but not yet saved; flushed when the page is hidden.
 const ansPending={};
@@ -2288,6 +2288,7 @@ function selectLine(n){
   ta.focus(); ta.setSelectionRange(start,start+lines[n-1].length);
   if(ta.scrollIntoView) ta.scrollIntoView({behavior:scrollMode(),block:"center"});
 }
+const plural=(n,word)=>`${n} ${word}${n===1?"":"s"}`;
 // Smooth scrolling unless the device asks for reduced motion.
 function scrollMode(){
   try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"; }
@@ -2404,7 +2405,8 @@ function renderBook(app){
     const qsc=quizScore(id);
     const info=el("div",{class:"stepinfo"},
       el("div",{class:"t"},ch.title),
-      el("div",{class:"m"},done?"Complete · tap to revisit":`${readN}/${total} sections · ${exN}/${exT} exercises`+(qsc.marked?` · ${qsc.right}/${ch.questions.length} questions`:"")));
+      el("div",{class:"m"},(done?"Complete · tap to revisit":`${readN}/${total} sections · ${exN}/${exT} exercises`+(qsc.marked?` · ${qsc.right}/${ch.questions.length} questions`:""))
+        +(qsc.missed?` · ${qsc.missed} to revisit`:"")));
     path.append(el("div",{class:"step"+(i%2?" right":"")},knob,info));
   });
   wrap.append(path);
@@ -2459,7 +2461,8 @@ function renderChapter(app,chId,ch){
     const scoreEl=el("span",{class:"meta",style:"font-size:12px"});
     const paintScore=()=>{
       const sc=quizScore(chId);
-      scoreEl.textContent=sc.marked?`${sc.right} right · ${sc.marked}/${ch.questions.length} checked`:"";
+      const written=Object.values((S.book&&S.book.ans&&S.book.ans[chId])||{}).filter(t=>String(t).trim()).length;
+      scoreEl.textContent=[written?`${written} written`:"",sc.marked?`${sc.right} right · ${sc.marked}/${ch.questions.length} checked`:""].filter(Boolean).join(" · ");
     };
     qs.append(el("div",{class:"row"},el("span",{class:"lab"},"Practice questions"),scoreEl));
     paintScore();
@@ -2471,7 +2474,7 @@ function renderChapter(app,chId,ch){
         "aria-label":`Your answer to question ${qi+1}`});
       ta.value=(S.book&&S.book.ans&&S.book.ans[chId]&&S.book.ans[chId][qi])||"";
       const saved=el("span",{class:"meta qsaved","aria-live":"polite"},ta.value.trim()?"Saved":"");
-      const save=()=>{ saveAns(chId,qi,ta.value); delete ansPending[chId+"|"+qi]; saved.textContent=ta.value.trim()?"Saved":""; };
+      const save=()=>{ saveAns(chId,qi,ta.value); delete ansPending[chId+"|"+qi]; saved.textContent=ta.value.trim()?"Saved":""; paintScore(); };
       // Save while typing (debounced), not only on blur: a phone can drop the
       // page when you switch apps before the box ever loses focus.
       ta.addEventListener("input",()=>{ saved.textContent=""; ansPending[chId+"|"+qi]=save; clearTimeout(ta._t); ta._t=setTimeout(save,700); });
@@ -2624,7 +2627,7 @@ function renderLedger(app,solid,shaky){
     el("i",{style:`height:${Math.round(v/peak*100)}%;background:${v>=g.goal?"var(--teal)":"var(--gold)"}`}),
     el("span",{},d.slice(8)))));
   wkCard.append(wk);
-  wkCard.append(el("p",{class:"note",style:"margin-top:8px"},`Best streak ${Math.max(S.streak.count||0,0)} days · best run of correct answers ${g.bestCombo||0}.`));
+  wkCard.append(el("p",{class:"note",style:"margin-top:8px"},`Best streak ${plural(Math.max(S.streak.count||0,0),"day")} · best run of correct answers ${g.bestCombo||0}.`));
   app.append(wkCard);
 
   // Badges
