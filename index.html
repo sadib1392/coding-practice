@@ -111,6 +111,7 @@
     border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;letter-spacing:.03em;
     box-shadow:0 2px 10px rgba(20,25,22,.28)}
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+  .qsaved{display:block;min-height:16px;margin-top:4px;text-align:right}
   .diffnote{margin-top:10px;color:var(--ink);font-size:15px;overflow-wrap:anywhere}
   .diffnote code{font-family:var(--mono);font-size:14px;background:var(--deep);border:1px solid var(--rule);
     border-radius:4px;padding:1px 5px;white-space:pre-wrap}
@@ -1736,6 +1737,13 @@ function quizScore(chId){
   const vals=Object.values(q);
   return {right:vals.filter(v=>v===true).length, marked:vals.length};
 }
+// Answers typed but not yet saved; flushed when the page is hidden.
+const ansPending={};
+function flushAnswers(){ Object.keys(ansPending).forEach(k=>{ try{ ansPending[k](); }catch(e){} }); }
+if(typeof document!=="undefined"){
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flushAnswers(); });
+  window.addEventListener("pagehide",flushAnswers);
+}
 function saveAns(chId,qi,txt){
   ensureBook();
   if(!S.book.ans[chId]) S.book.ans[chId]={};
@@ -2374,10 +2382,16 @@ function renderChapter(app,chId,ch){
     ch.questions.forEach((item,qi)=>{
       const box=el("div",{class:"prob",id:"bq"+qi});
       box.append(hlElK("p","read","book|"+chId+"|q"+qi,item.q));
-      const ta=el("textarea",{class:"qans",placeholder:"Write your answer here…"});
+      const ta=el("textarea",{class:"qans",placeholder:"Write your answer here…",autocapitalize:"sentences",
+        "aria-label":`Your answer to question ${qi+1}`});
       ta.value=(S.book&&S.book.ans&&S.book.ans[chId]&&S.book.ans[chId][qi])||"";
-      ta.addEventListener("change",()=>saveAns(chId,qi,ta.value));
-      box.append(ta);
+      const saved=el("span",{class:"meta qsaved","aria-live":"polite"},ta.value.trim()?"Saved":"");
+      const save=()=>{ saveAns(chId,qi,ta.value); delete ansPending[chId+"|"+qi]; saved.textContent=ta.value.trim()?"Saved":""; };
+      // Save while typing (debounced), not only on blur: a phone can drop the
+      // page when you switch apps before the box ever loses focus.
+      ta.addEventListener("input",()=>{ saved.textContent=""; ansPending[chId+"|"+qi]=save; clearTimeout(ta._t); ta._t=setTimeout(save,700); });
+      ta.addEventListener("change",save);
+      box.append(ta,saved);
       const ans=el("div",{style:"display:none;margin-top:8px"});
       ans.append(el("span",{class:"lab"},"Book answer"),el("p",{class:"why"},item.a));
       // self-check: compare, then say so. Self-marks pay no XP — only executed
