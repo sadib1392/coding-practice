@@ -2493,6 +2493,22 @@ function renderChapter(app,chId,ch){
   app.append(c);
 }
 
+function missedQuestions(){
+  const out=[], quiz=(S.book&&S.book.quiz)||{};
+  ["python","r"].forEach(lang=>{
+    const bk=bookFor(lang); if(!bk) return;
+    const chs=bk.chapters();
+    bk.order.forEach(id=>{
+      const ch=chs[id], marks=quiz[id]; if(!ch||!marks) return;
+      ch.questions.forEach((item,qi)=>{
+        if(marks[qi]===false) out.push({chId:id,ch,qi,q:item.q,
+          sec:(typeof item.sec==="number"&&ch.sections[item.sec])?item.sec:null,
+          book:lang==="r"?"R for Data Science":"Automate the Boring Stuff"});
+      });
+    });
+  });
+  return out;
+}
 function renderLedger(app,solid,shaky){
   const g=S.game, li=levelInfo(g.xp);
   // Level + daily goal
@@ -2523,6 +2539,27 @@ function renderLedger(app,solid,shaky){
   app.append(q);
 
   // Weekly XP — your own history, not a leaderboard against strangers.
+  // Questions you marked "Missed it", across both books, each one link away
+  // from the section that answers it. Self-marks earn nothing; this is a
+  // review list, not a score.
+  const missed=missedQuestions();
+  if(missed.length){
+    const rv=el("div",{class:"card"});
+    rv.append(el("div",{class:"row"},el("span",{class:"lab"},"Questions to revisit"),
+      el("span",{class:"meta"},`${missed.length} marked missed`)));
+    missed.slice(0,8).forEach(m=>{
+      const row=el("div",{class:"quest",style:"flex-direction:column;align-items:stretch;gap:6px"});
+      row.append(el("div",{class:"meta"},`${m.book} · Chapter ${m.ch.n} · Question ${m.qi+1}`),
+        el("div",{class:"note",style:"color:var(--ink);font-size:15px"},m.q.length>140?m.q.slice(0,137)+"…":m.q));
+      const go=()=>{ openBook(m.chId,m.sec!=null?m.sec:undefined); setTimeout(()=>showBackTo(m.qi),80); };
+      row.append(el("button",{class:"ghost",style:"align-self:flex-start",onclick:go},
+        m.sec!=null?`Reread "${m.ch.sections[m.sec].t}"`:"Open the chapter"));
+      rv.append(row);
+    });
+    if(missed.length>8) rv.append(el("p",{class:"meta",style:"margin-top:8px"},`and ${missed.length-8} more, in book order`));
+    app.append(rv);
+  }
+
   const wkCard=el("div",{class:"card"},el("span",{class:"lab"},"Last 7 days"));
   const days=[]; for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*864e5).toISOString().slice(0,10); days.push([d,(g.hist||{})[d]||0]); }
   const peak=Math.max(10,...days.map(d=>d[1]));
