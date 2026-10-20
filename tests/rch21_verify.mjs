@@ -119,6 +119,21 @@ try {
   console.log('skip: all WebR execution checks for rch21');
   done();
 }
+// Installed is not the same as loadable. Since 2026-10-19 the WebR repo's
+// RSQLite build installs but its compiled library will not load ("could not
+// load dynamic lib"), in Node and in the app alike. That is a runtime fault,
+// not chapter drift, so it skips loudly with the reason. Any other failure
+// still runs the checks below and fails on drift as before.
+// The probe closes its own connection: a leaked one makes R's garbage
+// collector print a dbDisconnect() warning into the next block's output.
+const probe = await R.run('local({ .p <- DBI::dbConnect(RSQLite::SQLite(), ":memory:"); DBI::dbDisconnect(.p) })');
+if (/could not load dynamic lib|unable to load shared object/.test(probe)) {
+  console.log('skip: RSQLite installs but its compiled library does not load in this WebR build');
+  console.log('      (' + probe.split('\n').find((l) => /dynamic lib|shared object/.test(l)).trim() + ')');
+  console.log('skip: all WebR execution checks for rch21 until the WebR RSQLite build loads again');
+  await R.close();
+  done();
+}
 
 // Run code block i of a section and diff against block i+1 of the same section.
 const pair = async (title, i, label) => {
@@ -150,7 +165,14 @@ await pair(S4, 0, 's4 GROUP BY with COUNT and SUM');
 await pair(S4, 2, 's4 a parameterised query');
 
 await pair(S5, 0, 's5 tbl returns a lazy table');
-await pair(S5, 2, 's5 printing a lazy table shows ?? rows');
+// The "# Database: sqlite x.y.z" header names the SQLite library compiled into
+// the WebR build, which changes between WebR releases (3.53.1 when the chapter
+// was captured, 3.51.2 on webr 0.5.9). Only those digits are ignored; every
+// other character of the printed table is still compared exactly.
+{
+  const c = codes(S5), sv = (t) => String(t).replace(/(# Database: sqlite )\d+\.\d+\.\d+/, '$1x.y.z');
+  check('s5 printing a lazy table shows ?? rows', sv(await R.run(c[2])), sv(c[3]));
+}
 await pair(S5, 4, 's5 three verbs become one statement');
 await pair(S5, 6, 's5 collect runs it and returns a tibble');
 await pair(S5, 8, 's5 group_by and summarise become GROUP BY');
@@ -212,7 +234,7 @@ check('claim: mean translates to AVG',
 // happily written into the SQL and only collect() finds out.
 check('claim: show_query passes an unknown function straight through',
   await R.run('show_query(tbl(con, "hives") |> mutate(z = my_own_fn(frames)))'),
-  '<SQL>\nSELECT `hives`.*, my_own_fn(`frames`) AS `z`\nFROM `hives`');
+  '<SQL>\nSELECT *, my_own_fn(`frames`) AS `z`\nFROM `hives`');
 // question 2: an in-memory database starts empty.
 check('claim: a second in-memory connection is a separate, empty database',
   await R.run(`other <- dbConnect(RSQLite::SQLite(), ":memory:")

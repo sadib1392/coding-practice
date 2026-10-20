@@ -79,6 +79,9 @@ for (const id of ids.sort()) {
   (ch.questions || []).forEach((q, qi) => {
     if (typeof q.q !== 'string' || typeof q.a !== 'string') fail(`question ${qi} malformed`);
     else { prose.push([`q${qi}`, q.q]); prose.push([`a${qi}`, q.a]); }
+    if (q.sec === undefined) fail(`question ${qi} has no sec (the section "Missed it" points to)`);
+    else if (!Number.isInteger(q.sec) || q.sec < 0 || q.sec >= (ch.sections || []).length)
+      fail(`question ${qi} sec ${q.sec} is not a valid section index`);
   });
 
   if (!Array.isArray(ch.exercises) || ch.exercises.length !== 4)
@@ -89,10 +92,13 @@ for (const id of ids.sort()) {
     if (typeof x.o !== 'string' || !x.o) fail(`exercise ${xi} o must be a non-empty exact string`);
     if (!Array.isArray(x.h) || x.h.length !== 3) fail(`exercise ${xi} needs exactly 3 hints`);
     if (x.book !== id) fail(`exercise ${xi} book tag "${x.book}", want "${id}"`);
-    if (x.sec !== undefined && (!Number.isInteger(x.sec) || x.sec < 0 || x.sec >= (ch.sections || []).length))
+    if (x.sec === undefined) fail(`exercise ${xi} has no sec (the section a wrong answer points to)`);
+    else if (!Number.isInteger(x.sec) || x.sec < 0 || x.sec >= (ch.sections || []).length)
       fail(`exercise ${xi} sec ${x.sec} is not a valid section index`);
-    if (x.fb !== undefined && typeof x.fb !== 'string') fail(`exercise ${xi} fb must be a string`);
+    if (typeof x.fb !== 'string' || !x.fb.trim()) fail(`exercise ${xi} needs fb: one or two sentences on the likely mistake`);
+    else if (/\u2014/.test(x.fb)) warn(`exercise ${xi} fb has an em dash`);
     if (x.fb) prose.push([`ex${xi}.fb`, x.fb]);
+    if (x.fb && x.o && x.o.length > 12 && x.fb.includes(x.o.trim())) warn(`exercise ${xi} fb quotes the expected output`);
     prose.push([`ex${xi}.t`, x.t || '']); prose.push([`ex${xi}.b`, x.b || '']);
     (x.h || []).forEach((h, hi) => prose.push([`ex${xi}.h${hi}`, h]));
   });

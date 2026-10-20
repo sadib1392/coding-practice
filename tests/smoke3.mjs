@@ -3,7 +3,7 @@ import fs from 'fs';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const bookDir = new URL('../book/', import.meta.url);
-const chapterSrc = fs.readdirSync(bookDir).filter(f => /^ch\d+\.js$/.test(f)).sort()
+const chapterSrc = fs.readdirSync(bookDir).filter(f => /^(ch|r)\d+\.js$/.test(f)).sort()
   .map(f => fs.readFileSync(new URL(f, bookDir), 'utf8'));
 const KEY = 'practicelog.offline.v1';
 
@@ -147,6 +147,7 @@ setTimeout(async () => {
   await wait(20);
   w.eval('runPython = async (code) => ({ok: true, output: "wrong\\noutput"})');
   d.querySelector('#code').value = 'print("wrong")\nprint("output")';
+  d.querySelector('#code').dispatchEvent(new w.Event('input'));
   clickIn(d, 'Run and grade');
   await wait(200);
   const gtxt = d.querySelector('#gradecard') ? d.querySelector('#gradecard').textContent : '';
@@ -156,8 +157,60 @@ setTimeout(async () => {
   const reread = [...d.querySelectorAll('button')].find(b => b.textContent.startsWith('Reread'));
   check(!!reread && reread.textContent.includes('Expressions and the interactive shell'), 'reread button names the section');
   reread.click();
-  await wait(80);
+  await wait(150);
   check(!!d.querySelector('#bookcard'), 'reread button jumps back into the book chapter');
+  check(!!d.querySelector('#bsec0.secflash'), 'the section it lands on is marked');
+  const exPill = d.querySelector('#backq');
+  check(!!exPill && exPill.textContent === 'Back to your exercise', 'failed exercise reread offers Back to your exercise');
+  [...d.querySelectorAll('#bsec0 button')].find(b => b.textContent.includes('Mark section') || b.textContent.includes('Read')).click();
+  check(!!d.querySelector('#backq'), 'the back pill survives a re-render inside the same chapter');
+  d.querySelector('#backq').click();
+  await wait(100);
+  check(!!d.querySelector('#taskcard') && d.querySelector('#code').value.includes('wrong'), 'back pill returns to the task with the code still there');
+  clickIn(d, 'BOOK');
+
+  // --- a missed question points at the section that answers it ---
+  const q2 = d.querySelector('#bq2');
+  [...q2.querySelectorAll('button')].find(b => b.textContent === 'Reveal answer').click();
+  const look = q2.querySelector('.qlook');
+  check(look && look.style.display === 'none', 'no section pointer before the question is marked');
+  [...q2.querySelectorAll('button')].find(b => b.textContent === 'Missed it').click();
+  const c01 = w.BOOK.chapters.ch01, secT = c01.sections[c01.questions[2].sec].t;
+  check(look.style.display === 'block' && look.textContent.includes(`Chapter 1, "${secT}"`), 'Missed it names the chapter and the exact section');
+  [...q2.querySelectorAll('button')].find(b => b.textContent === 'I had it').click();
+  check(look.style.display === 'none', 'I had it hides the pointer again');
+  [...q2.querySelectorAll('button')].find(b => b.textContent === 'Missed it').click();
+  [...look.querySelectorAll('button')].find(b => b.textContent.startsWith('Reread')).click();
+  const pill = d.querySelector('#backq');
+  check(!!pill && pill.textContent === 'Back to question 3', 'jumping to the section offers a way back to the question');
+  pill.click();
+  check(!d.querySelector('#backq'), 'the back pill removes itself once used');
+
+  // --- written answers save while typing, without a blur ---
+  const qa3 = d.querySelector('#bq3 textarea.qans');
+  qa3.value = 'typed but never blurred';
+  qa3.dispatchEvent(new w.Event('input'));
+  await wait(900);
+  const stT = JSON.parse(w.localStorage.getItem(KEY));
+  check(stT.book.ans.ch01['3'] === 'typed but never blurred', 'answer saved after typing stops, no blur needed');
+  check(d.querySelector('#bq3 .qsaved').textContent === 'Saved', 'Saved label confirms the answer');
+
+  // --- chapter jump row, written count, path revisit count ---
+  check(['Questions', 'Exercises', 'Try it'].every(t => [...d.querySelectorAll('.jumprow button')].some(b => b.textContent === t)), 'chapter has Questions / Exercises / Try it jump buttons');
+  check(!!d.querySelector('#bqs') && !!d.querySelector('#bxs') && !!d.querySelector('#btry'), 'jump targets exist');
+  check(/\d+ written/.test(d.querySelector('#bqs .row').textContent), 'questions header counts written answers');
+  clickIn(d, 'All chapters');
+  const step1 = [...d.querySelectorAll('.step')][0].textContent;
+  check(step1.includes('1 to revisit'), 'chapter path shows how many questions to revisit');
+  clickIn(d, 'BOOK');
+
+  // --- ledger lists the missed question with a link to its section ---
+  clickIn(d, 'LEDGER');
+  const revisit = [...d.querySelectorAll('.card')].find(c => c.textContent.includes('Questions to revisit'));
+  check(!!revisit && revisit.textContent.includes('Chapter 1 · Question 3'), 'ledger lists the missed question');
+  [...revisit.querySelectorAll('button')].find(b => b.textContent.startsWith('Reread')).click();
+  await wait(150);
+  check(!!d.querySelector('#bookcard') && d.querySelector('#backq') && d.querySelector('#backq').textContent === 'Back to question 3', 'ledger link opens the chapter with a way back to the question');
 
   // --- reload: resume ---
   const dom2 = makeDom(w.localStorage.getItem(KEY));
@@ -211,9 +264,35 @@ setTimeout(async () => {
     const secs = card ? card.querySelectorAll('[id^="bsec"]').length : 0;
     const revs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Reveal answer')).length : 0;
     const exs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Start exercise')).length : 0;
-    check(!!card && card.textContent.includes(m.t) && secs === m.s && revs === m.q && exs === m.x,
-      `ch${m.n} "${m.t}": ${secs}/${m.s} sections, ${revs}/${m.q} questions, ${exs}/${m.x} exercises`);
+    const looks = card ? card.querySelectorAll('.qlook button').length : 0;
+    check(!!card && card.textContent.includes(m.t) && secs === m.s && revs === m.q && exs === m.x && looks === m.q,
+      `ch${m.n} "${m.t}": ${secs}/${m.s} sections, ${revs}/${m.q} questions, ${exs}/${m.x} exercises, ${looks}/${m.q} Missed-it pointers`);
     clickIn(d3, 'All chapters');
+  }
+
+  // --- the R book gets the same treatment: listed, opens, renders declared counts ---
+  const dom4 = makeDom(null);
+  const w4 = dom4.window, d4 = w4.document;
+  w4.eval('S.lang="r"; view="book"; render()');
+  const RORDER = JSON.parse(w4.eval('JSON.stringify(BOOKS.r.order)'));
+  const RMETA = JSON.parse(w4.eval(
+    'JSON.stringify(Object.fromEntries(Object.entries(BOOKS.r.chapters()).map(' +
+    '([id,c])=>[id,{n:c.n,t:c.title,s:c.sections.length,q:c.questions.length,x:c.exercises.length}])))'));
+  check(RORDER.length > 0 && RORDER.every(id => RMETA[id]), `every R BOOK_ORDER id has a loaded chapter file (${RORDER.length} wired)`);
+  check(d4.querySelector('#app').textContent.includes('R for Data Science'), 'R tab shows the R book');
+  for (let i = 0; i < RORDER.length; i++) {
+    const m = RMETA[RORDER[i]];
+    const open = [...d4.querySelectorAll('.knob')];
+    if (open.length !== RORDER.length) { check(false, `R path shows ${open.length} chapters, want ${RORDER.length}`); break; }
+    open[i].click();
+    const card = d4.querySelector('#bookcard');
+    const secs = card ? card.querySelectorAll('[id^="bsec"]').length : 0;
+    const revs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Reveal answer')).length : 0;
+    const exs = card ? [...card.querySelectorAll('button')].filter(b => b.textContent.includes('Start exercise')).length : 0;
+    const looks = card ? card.querySelectorAll('.qlook button').length : 0;
+    check(!!card && card.textContent.includes(m.t) && secs === m.s && revs === m.q && exs === m.x && looks === m.q,
+      `R ch${m.n} "${m.t}": ${secs}/${m.s} sections, ${revs}/${m.q} questions, ${exs}/${m.x} exercises, ${looks}/${m.q} Missed-it pointers`);
+    clickIn(d4, 'All chapters');
   }
 
   // --- second chapter deep flow: exercise opens, queue tags, drain credits ---

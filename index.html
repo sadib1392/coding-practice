@@ -7,7 +7,9 @@
 <meta name="supported-color-schemes" content="light">
 <title>Practice Log</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Practice">
@@ -49,7 +51,7 @@
   body{
     min-height:100vh; color:var(--ink); background:var(--paper);
     font-family:var(--sans);
-    padding:calc(26px + env(safe-area-inset-top)) 18px calc(60px + env(safe-area-inset-bottom));
+    padding:calc(26px + env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
     -webkit-text-size-adjust:100%;
   }
   #app{max-width:660px;margin:0 auto}
@@ -58,7 +60,8 @@
   header{border-bottom:1px solid var(--rule);padding-bottom:16px;margin-bottom:22px;
     display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px}
   .meta{font-size:12px;color:var(--soft);letter-spacing:.04em}
-  nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+  nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .navgrp{display:flex;gap:6px;flex-wrap:wrap}
   .card{background:var(--card);border:1px solid var(--rule);border-radius:10px;
     padding:20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(20,25,22,.04)}
   .card.thick{border-width:2px}
@@ -109,7 +112,35 @@
   #hlbtn{position:fixed;display:none;z-index:60;background:var(--fill);color:var(--onFill);border:none;
     border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;letter-spacing:.03em;
     box-shadow:0 2px 10px rgba(20,25,22,.28)}
+  .jumprow{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .jumprow .ghost{flex:1 1 auto}
+  .extlink{color:var(--teal);display:inline-flex;align-items:center;min-height:44px}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  textarea:focus-visible{outline-offset:0}
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+  .qsaved{display:block;min-height:16px;margin-top:4px;text-align:right}
+  .note,.verdict,.why,.hint{overflow-wrap:break-word}
+  .diffnote{margin-top:10px;color:var(--ink);font-size:15px;overflow-wrap:anywhere}
+  .diffnote code{font-family:var(--mono);font-size:14px;background:var(--deep);border:1px solid var(--rule);
+    border-radius:4px;padding:1px 5px;white-space:pre-wrap}
+  #keybar{position:fixed;left:0;right:0;bottom:0;z-index:66;display:none;gap:6px;overflow-x:auto;
+    padding:6px max(8px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    background:var(--card);border-top:1px solid var(--rule);box-shadow:0 -2px 10px rgba(20,25,22,.10);
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  #keybar::-webkit-scrollbar{display:none}
+  #keybar .kb{flex:0 0 auto;min-width:44px;min-height:44px;padding:0 10px;font-family:var(--mono);font-size:17px;
+    color:var(--ink);background:var(--deep);border:1px solid var(--rule);border-radius:7px}
+  #keybar .kb:active{background:var(--rule)}
+  #keybar .kbrun{font-family:var(--sans);font-size:14px;font-weight:600;background:var(--fill);color:var(--onFill);border-color:var(--fill)}
+  #keybar .kb[aria-label="Indent"],#keybar .kb[aria-label="Dedent"]{font-family:var(--sans);font-size:14px;font-weight:500}
+  body.kbopen{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+  body.kbopen .backq{display:none}
+  .secflash{animation:secflash 2.2s ease-out 1;border-radius:6px}
+  @keyframes secflash{0%,35%{box-shadow:0 0 0 6px var(--hl);background:var(--hl);color:var(--onHl)}100%{box-shadow:0 0 0 6px transparent}}
+  @media (prefers-reduced-motion:reduce){ .secflash{animation:none} }
+  .backq{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));
+    z-index:65;background:var(--fill);color:var(--onFill);border:none;border-radius:999px;
+    min-height:44px;padding:10px 20px;font-size:14px;font-weight:500;box-shadow:0 3px 14px rgba(20,25,22,.26)}
   .why{font-family:var(--serif);font-size:15px;line-height:1.6;margin:8px 0 0;color:var(--soft)}
 
   /* ---- game chrome ---- */
@@ -162,16 +193,34 @@
   .wk span{font-size:10px;color:var(--soft)}
   /* ---- toasts + celebration ---- */
   #toasts{position:fixed;left:0;right:0;top:calc(8px + env(safe-area-inset-top));z-index:70;
-    display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;padding:0 12px}
+    display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;
+    padding:0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left))}
   .toast{background:var(--fill);color:var(--onFill);border-radius:999px;padding:9px 16px;font-size:13.5px;
     font-weight:500;box-shadow:0 3px 14px rgba(20,25,22,.26);max-width:100%}
   .toast.badge-t{background:var(--gold);color:var(--onAccent)} .toast.level-t{background:var(--teal);color:var(--onAccent)}
   #party{position:fixed;inset:0;z-index:80;background:var(--paper);display:flex;flex-direction:column;
-    align-items:center;justify-content:center;text-align:center;padding:28px}
+    align-items:center;justify-content:center;text-align:center;
+    padding:calc(28px + env(safe-area-inset-top)) max(28px, env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left))}
   #party h2{font-size:27px;margin:14px 0 4px}
   #party .xpbig{font-size:44px;font-weight:600;color:var(--gold);font-variant-numeric:tabular-nums}
   #confetti{position:fixed;inset:0;z-index:79;pointer-events:none}
   @media (prefers-reduced-motion:reduce){ .pulse{animation:none} }
+  /* Phones: language and view tabs each fill their own row, and every
+     control clears the 44px touch target. Desktop keeps the compact sizes. */
+  @media (max-width:560px){
+    nav{flex-direction:column;align-items:stretch;gap:8px}
+    .navgrp{flex-wrap:nowrap}
+    .navgrp .tab{flex:1 1 0;min-width:0;padding-left:4px;padding-right:4px}
+  }
+  @media (pointer:coarse),(max-width:560px){
+    /* iOS Safari zooms the page into any field under 16px when it gets focus
+       and leaves it zoomed. 16px stops that. */
+    textarea,textarea.qans,textarea.runbox,input,select{font-size:16px}
+    .tab,.ghost{min-height:44px}
+    .tab{font-size:13px}
+    .ghost{font-size:14px}
+    #hlbtn{min-height:44px;padding:10px 18px}
+  }
 
   /* Re-assert the light palette if the container or OS forces dark mode.
      This is the fix for the owner's device force-inverting the page, so it
@@ -1276,7 +1325,14 @@ async function runPython(code){
   const py=await bootPython(); const out=[];
   py.setStdout({batched:s=>out.push(s)}); py.setStderr({batched:s=>out.push(s)});
   try{ await py.runPythonAsync(code); return {ok:true,output:out.join("\n")}; }
-  catch(e){ return {ok:false,output:out.join("\n"),error:String(e.message||e).split("\n").filter(Boolean).slice(-3).join("\n")}; }
+  // Show the learner's own frames: everything from the first File "<exec>"
+  // line (capped at 6), else the last 3 lines. Pyodide's internal frames and
+  // caret-only lines (one unbroken run that overflows a phone) are dropped.
+  catch(e){
+    const ls=String(e.message||e).split("\n").filter(l=>l.trim()&&!/^\s*\^+\s*$/.test(l));
+    const i=ls.findIndex(l=>l.includes('File "<exec>"'));
+    return {ok:false,output:out.join("\n"),error:(i>=0?ls.slice(i).slice(-6):ls.slice(-3)).join("\n")};
+  }
 }
 async function runJS(code){
   const out=[]; const fmt=v=>typeof v==="string"?v:(()=>{try{return JSON.stringify(v)}catch(e){return String(v)}})();
@@ -1306,11 +1362,19 @@ async function bootR(){
     throw new Error(online()?"R runtime unreachable":"no connection");
   }
 }
+// Packages installed from their R-universe WebAssembly build instead of the
+// default WebR repo. repo.r-wasm.org's RSQLite stopped loading on WebR 0.6.0
+// (Oct 2026: "could not load dynamic lib"); r-dbi's build loads. Mirrored in
+// tests/rverify.mjs so the verify scripts run what the app runs.
+const R_UNIVERSE={RSQLite:"https://r-dbi.r-universe.dev"};
 async function ensureRPkgs(pkgs){
   const want=(pkgs||[]).filter(p=>!rInstalled.has(p));
   if(!want.length) return;
   const w=await bootR();
-  await w.installPackages(want,true);
+  for(const p of want.filter(p=>R_UNIVERSE[p]))
+    await w.installPackages([p],{repos:[R_UNIVERSE[p],"https://repo.r-wasm.org/"],quiet:true});
+  const rest=want.filter(p=>!R_UNIVERSE[p]);
+  if(rest.length) await w.installPackages(rest,true);
   want.forEach(p=>rInstalled.add(p));
 }
 async function runR(code,pkgs){
@@ -1325,6 +1389,10 @@ async function runR(code,pkgs){
     const lines=cap.output.filter(o=>o.type==="stdout"||o.type==="stderr");
     const out=lines.map(o=>o.data).join("\n");
     const bad=lines.find(o=>o.type==="stderr"&&/^Error\b/.test(o.data));
+    // A package whose compiled library will not load is a runtime fault, not
+    // the learner's: flag it so nothing is graded. Seen 2026-10-19 with
+    // RSQLite and duckdb, and the failure poisons later loads until reload.
+    if(bad&&/could not load dynamic lib|unable to load shared object/.test(out)) return {ok:false,output:out,error:bad.data,runtime:true};
     return bad?{ok:false,output:out,error:bad.data}:{ok:true,output:out};
   }catch(e){
     return {ok:false,output:"",error:String((e&&e.message)||e)};
@@ -1343,6 +1411,147 @@ async function renderMermaid(code){
   const r=await mod.render("mmdrun"+(++mmdN),code);
   return r.svg;
 }
+/* ============ code editing ============ */
+// Every code box gets the same phone-friendly editing: Tab and Shift+Tab
+// indent, Enter keeps the indent (and adds one after : or {), Ctrl/Cmd+Enter
+// runs, and on touch screens a key bar carries the symbols a phone keyboard
+// hides. Escape releases Tab so keyboard users can still leave the box.
+const EDIT_INDENT={python:"    ",r:"  ",javascript:"  ",mermaid:"    "};
+const EDIT_KEYS={
+  python:["(",")","[","]","{","}",":","=","\"","'","#","_",".",",","+","*"],
+  javascript:["(",")","{","}","[","]",";","=","=>","\"","'","`",".",",","+","!"],
+  r:["(",")","[","]","<-","|>","$","~","\"","'","=",",","#","%","{","}"],
+  mermaid:["-->","[","]","(",")","{","}","|",":",";","%%"]
+};
+function editInsert(ta,text){
+  ta.focus();
+  let ok=false;
+  try{ ok=document.execCommand&&document.execCommand("insertText",false,text); }catch(e){ ok=false; }
+  if(!ok){
+    const a=ta.selectionStart,b=ta.selectionEnd;
+    ta.value=ta.value.slice(0,a)+text+ta.value.slice(b);
+    ta.selectionStart=ta.selectionEnd=a+text.length;
+    ta.dispatchEvent(new Event("input",{bubbles:true}));
+  }
+}
+// Indent or dedent every line the selection touches.
+function editShift(ta,unit,out){
+  const v=ta.value, a=ta.selectionStart, b=ta.selectionEnd;
+  const start=v.lastIndexOf("\n",a-1)+1;
+  const endNl=v.indexOf("\n",b>a&&v[b-1]==="\n"?b-1:b);
+  const end=endNl===-1?v.length:endNl;
+  const lines=v.slice(start,end).split("\n");
+  let firstDelta=0,total=0;
+  const next=lines.map((l,i)=>{
+    let d;
+    if(out){ const m=l.match(/^( +|\t)/); const n=!m?0:m[0]==="\t"?1:Math.min(m[0].length,unit.length); d=-n; l=l.slice(n); }
+    else { d=unit.length; l=unit+l; }
+    if(i===0) firstDelta=d; total+=d; return l;
+  });
+  ta.focus(); ta.selectionStart=start; ta.selectionEnd=end;
+  editInsert(ta,next.join("\n"));
+  if(a===b){ const c=Math.max(start,a+firstDelta); ta.selectionStart=ta.selectionEnd=c; }
+  else { ta.selectionStart=Math.max(start,a+firstDelta); ta.selectionEnd=b+total; }
+}
+function wireEditor(ta,lang,run){
+  ta.classList.add("codeed"); ta.dataset.lang=lang; ta._run=run;
+  ta.setAttribute("autocomplete","off"); ta.setAttribute("enterkeyhint","enter");
+  let tabFree=false;
+  ta.addEventListener("keydown",e=>{
+    if(e.isComposing) return;
+    const unit=EDIT_INDENT[lang]||"    ";
+    if(e.key==="Escape"){ tabFree=true; return; }
+    if(e.key==="Tab"&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
+      if(tabFree){ tabFree=false; return; }
+      e.preventDefault();
+      if(e.shiftKey||ta.selectionStart!==ta.selectionEnd) editShift(ta,unit,e.shiftKey);
+      else editInsert(ta,unit);
+      return;
+    }
+    tabFree=false;
+    if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){ if(run){ e.preventDefault(); run(); } return; }
+    if(e.key==="Enter"&&!e.shiftKey&&!e.altKey){
+      const v=ta.value, a=ta.selectionStart;
+      const line=v.slice(v.lastIndexOf("\n",a-1)+1,a);
+      let ind=(line.match(/^[ \t]*/)||[""])[0];
+      const t=line.trimEnd();
+      if((lang==="python"&&t.endsWith(":"))||(lang!=="python"&&lang!=="mermaid"&&/[{([]$/.test(t))) ind+=unit;
+      e.preventDefault(); editInsert(ta,"\n"+ind);
+    }
+  });
+  return ta;
+}
+// One shared key bar, shown while a code box has focus on a touch screen and
+// pinned just above the on-screen keyboard through visualViewport.
+let keybarFor=null;
+function keybarEl(){
+  let bar=$("#keybar");
+  if(bar) return bar;
+  bar=el("div",{id:"keybar",role:"toolbar","aria-label":"Code keys"});
+  document.body.append(bar);
+  return bar;
+}
+function placeKeybar(){
+  const bar=$("#keybar"); if(!bar||bar.style.display==="none") return;
+  const vv=window.visualViewport;
+  if(vv){ const gap=window.innerHeight-(vv.offsetTop+vv.height); bar.style.bottom=Math.max(0,gap)+"px"; }
+}
+function showKeybar(ta){
+  const coarse=window.matchMedia&&window.matchMedia("(pointer:coarse)").matches;
+  if(!coarse) return;
+  const bar=keybarEl(); keybarFor=ta;
+  const lang=ta.dataset.lang||"python", unit=EDIT_INDENT[lang]||"    ";
+  bar.innerHTML="";
+  const key=(label,aria,fn)=>{
+    const b=el("button",{type:"button",class:"kb","aria-label":aria},label);
+    b.addEventListener("pointerdown",e=>e.preventDefault()); // keep focus and the keyboard up
+    b.addEventListener("mousedown",e=>e.preventDefault());
+    b.addEventListener("click",()=>{ if(keybarFor) fn(keybarFor); });
+    bar.append(b);
+  };
+  // Run sits first: with the keyboard up, the Run button below the box is
+  // hidden, and a phone has no Ctrl+Enter.
+  if(ta._run){
+    const r=el("button",{type:"button",class:"kb kbrun","aria-label":"Run code"},"Run ▶");
+    r.addEventListener("pointerdown",e=>e.preventDefault());
+    r.addEventListener("mousedown",e=>e.preventDefault());
+    r.addEventListener("click",()=>{ const t=keybarFor; if(t&&t._run){ t.blur(); hideKeybar(); t._run(); } });
+    bar.append(r);
+  }
+  key("Tab","Indent",t=>t.selectionStart!==t.selectionEnd?editShift(t,unit,false):editInsert(t,unit));
+  key("⇤Tab","Dedent",t=>editShift(t,unit,true));
+  (EDIT_KEYS[lang]||[]).forEach(k=>key(k,"Insert "+k,t=>editInsert(t,k)));
+  bar.style.display="flex"; document.body.classList.add("kbopen");
+  placeKeybar();
+}
+function hideKeybar(){
+  const bar=$("#keybar"); if(bar) bar.style.display="none";
+  document.body.classList.remove("kbopen"); keybarFor=null;
+}
+document.addEventListener("focusin",e=>{ if(e.target&&e.target.classList&&e.target.classList.contains("codeed")) showKeybar(e.target); });
+document.addEventListener("focusout",e=>{ if(e.target&&e.target.classList&&e.target.classList.contains("codeed"))
+  setTimeout(()=>{ const a=document.activeElement; if(!(a&&a.classList&&a.classList.contains("codeed"))) hideKeybar(); },0); });
+if(window.visualViewport){ window.visualViewport.addEventListener("resize",placeKeybar); window.visualViewport.addEventListener("scroll",placeKeybar); }
+// When the on-screen keyboard opens it shrinks the visual viewport. If the
+// field being typed into ends up under the keyboard (or the key bar), scroll
+// it back up so the text you are writing stays visible.
+function keepFocusVisible(){
+  const vv=window.visualViewport, a=document.activeElement;
+  if(!vv||!a||!/^(TEXTAREA|INPUT)$/.test(a.tagName)) return;
+  const r=a.getBoundingClientRect(), bar=$("#keybar");
+  const barH=bar&&bar.style.display!=="none"?bar.offsetHeight:0;
+  const bottom=vv.height-barH;
+  if(r.top>bottom-72) window.scrollBy(0,r.top-Math.max(16,bottom*0.25));
+  else if(r.bottom<0) window.scrollBy(0,r.top-16);
+}
+if(window.visualViewport){
+  let lastH=window.visualViewport.height;
+  window.visualViewport.addEventListener("resize",()=>{
+    const h=window.visualViewport.height, shrank=h<lastH-60; lastH=h;
+    if(shrank) setTimeout(keepFocusVisible,50);
+  });
+}
+
 function runnerEl(lang,opts){
   const wrap=el("div",{});
   const ta=el("textarea",{class:"runbox",spellcheck:"false",autocapitalize:"off",autocorrect:"off",
@@ -1374,7 +1583,8 @@ function runnerEl(lang,opts){
           const detected=[...code.matchAll(/\b(?:library|require)\(\s*["']?([A-Za-z][A-Za-z0-9.]*)["']?\s*\)/g)].map(m=>m[1]);
           res=await runR(code,[...new Set([...(opts&&opts.pkgs||[]),...detected])]);
         }else res={ok:false,output:"",error:"This language does not execute in the app."};
-        outLab.textContent=res.ok?"Output":"Output · error";
+        outLab.textContent=res.ok?"Output":res.runtime?"Could not load a package":"Output · error";
+        if(res.runtime) res.error=(res.error||"")+"\n\nThat is a fault in the WebR runtime, not in your code. Reload the app before running more R.";
         outPre.textContent=(res.output||"")+(res.ok?"":((res.output?"\n":"")+(res.error||"")))||"(nothing printed)";
         outWrap.style.display="block"; diagram.style.display="none";
       }
@@ -1385,6 +1595,7 @@ function runnerEl(lang,opts){
     }
     btn.disabled=false; btn.textContent=orig;
   });
+  wireEditor(ta,lang,()=>btn.click());
   wrap.append(ta,btn,outWrap,diagram);
   return wrap;
 }
@@ -1458,13 +1669,13 @@ function pickTask(){
 function teach(){
   lesson=nextConcept(); task=null; exec=null; grade=null; banner=null;
   render();
-  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 function newTask(){
   task=pickTask(); lesson=null; hintTier=0; exec=null; grade=null; banner=null; secs=0;
   if(!task){ flash("No exercises left in this language. Add more to BANK."); return; }
   startTimer(); render();
-  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 async function submit(){
   const code=$("#code").value;
@@ -1495,10 +1706,17 @@ async function submit(){
       banner=`R could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
     }
   }
+  if(exec&&exec.runtime){
+    // Not the learner's fault, so no grade, no session, no heart.
+    const pkg=(String(exec.output).match(/library\/([A-Za-z0-9.]+)\/libs/)||[])[1];
+    banner=`R could not load ${pkg?"the "+pkg+" package":"a package"} this code needs. That is a fault in the WebR runtime, not in your code: nothing was graded and no heart was lost. Reload the app before running more R; if it keeps happening, this exercise cannot run in the app for now.`;
+    exec=null; grade=null; busy=null; render(); return;
+  }
+  if(exec) exec.code=code;
   grade=gradeIt(S.lang,code,exec,task);
   logSession(grade);
   busy=null; render();
-  setTimeout(()=>{const n=$("#gradecard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#gradecard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 function logSession(g){
   ensureGame();
@@ -1536,7 +1754,7 @@ function logSession(g){
       awardXP(XP.chapter,"chapter");
       badgeEarned("chapter");
       party={title:"Chapter complete",sub:ch?`${ch.n}. ${ch.title}`:"",xp:gained+bonus+XP.chapter,
-             lines:[`${ch?ch.exercises.length:0} exercises passed`,`Streak: ${S.streak.count} days`]};
+             lines:[`${ch?ch.exercises.length:0} exercises passed`,`Streak: ${plural(S.streak.count,"day")}`]};
       sfx("done");
     }
   }else{
@@ -1587,7 +1805,14 @@ function quizState(chId,qi){ return (S.book&&S.book.quiz&&S.book.quiz[chId])?S.b
 function quizScore(chId){
   const q=(S.book&&S.book.quiz&&S.book.quiz[chId])||{};
   const vals=Object.values(q);
-  return {right:vals.filter(v=>v===true).length, marked:vals.length};
+  return {right:vals.filter(v=>v===true).length, missed:vals.filter(v=>v===false).length, marked:vals.length};
+}
+// Answers typed but not yet saved; flushed when the page is hidden.
+const ansPending={};
+function flushAnswers(){ Object.keys(ansPending).forEach(k=>{ try{ ansPending[k](); }catch(e){} }); }
+if(typeof document!=="undefined"){
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flushAnswers(); });
+  window.addEventListener("pagehide",flushAnswers);
 }
 function saveAns(chId,qi,txt){
   ensureBook();
@@ -1610,7 +1835,11 @@ function openBook(chId,sec){
   if(S.lang!==lang){ S.lang=lang; persist(); }
   render();
   const target=sec!=null?sec:firstUnread(chId);
-  setTimeout(()=>{const n=$("#bsec"+target); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#bsec"+target); if(!n) return;
+    if(n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});
+    // A pointed-to section briefly marks itself so you can see where you landed.
+    if(sec!=null){ n.classList.remove("secflash"); void n.offsetWidth; n.classList.add("secflash"); }
+  },60);
 }
 function markRead(chId,i){
   ensureBook();
@@ -1634,7 +1863,7 @@ function startBookExercise(chId,i){
   if(ch.pkgs&&ch.pkgs.length) task.pkgs=clone(ch.pkgs);
   lesson=null; hintTier=0; exec=null; grade=null; banner=null; secs=0; view="practice";
   startTimer(); render();
-  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 
 function exportData(){
@@ -1788,6 +2017,7 @@ function wireHighlighting(){
 /* ============ render ============ */
 function render(){
   ensureGame();
+  const bq=$("#backq"); if(bq&&(view!=="book"||bq.dataset.ch!==bookCh)) bq.remove();
   const app=$("#app"); app.innerHTML="";
   const solid=S.solid[S.lang]||[], shaky=S.shaky[S.lang]||[];
   const totalMins=S.sessions.reduce((a,s)=>a+s.mins,0);
@@ -1798,12 +2028,16 @@ function render(){
   ));
   renderStats(app);
 
+  // Two groups: language and view. On a phone each becomes its own full-width
+  // row instead of the two wrapping into one ragged block.
   const nav=el("nav",{});
+  const langs=el("div",{class:"navgrp",role:"group","aria-label":"Language"});
   for(const[k,v]of Object.entries(LANGS))
-    nav.append(el("button",{class:"tab"+(S.lang===k?" on":""),onclick:()=>{S.lang=k;persist();task=null;lesson=null;exec=null;grade=null;stopTimer();render();}},v.tag+(v.star?" ★":"")));
-  nav.append(el("span",{style:"flex:1"}));
+    langs.append(el("button",{class:"tab"+(S.lang===k?" on":""),"aria-pressed":S.lang===k?"true":"false","aria-label":v.label,onclick:()=>{S.lang=k;persist();task=null;lesson=null;exec=null;grade=null;stopTimer();render();}},v.tag+(v.star?" ★":"")));
+  const views=el("div",{class:"navgrp",role:"group","aria-label":"View"});
   [["practice","PRACTICE"],["book","BOOK"],["ledger","LEDGER"]].forEach(([v,label])=>
-    nav.append(el("button",{class:"tab"+(view===v?" on":""),onclick:()=>{view=v;render();}},label)));
+    views.append(el("button",{class:"tab"+(view===v?" on":""),"aria-pressed":view===v?"true":"false",onclick:()=>{view=v;render();}},label)));
+  nav.append(langs,views);
   app.append(nav);
 
   if(banner) app.append(el("div",{class:"card banner"},banner));
@@ -2019,7 +2253,10 @@ function renderLesson(app){
     c.append(pr);
   }
 
-  c.append(el("button",{class:"primary",onclick:newTask},"Give me an exercise on this"));
+  if(task) c.append(el("button",{class:"primary",onclick:()=>{
+    const n=$("#taskcard"); if(n&&n.scrollIntoView) n.scrollIntoView({behavior:scrollMode(),block:"start"});
+  }},"Back to your exercise"));
+  else c.append(el("button",{class:"primary",onclick:newTask},"Give me an exercise on this"));
   app.append(c);
 }
 function renderTask(app){
@@ -2037,6 +2274,7 @@ function renderTask(app){
   ta.value = window._draft || "";
   ta.addEventListener("input",e=>{window._draft=e.target.value;});
   ta.addEventListener("focus",()=>{if(!running&&!grade)startTimer();});
+  wireEditor(ta,S.lang,()=>{ if(!busy) submit(); });
   c.append(ta);
   c.append(el("button",{class:"primary",disabled:busy?"":null,onclick:submit},busy||(LANGS[S.lang].runs?"Run and grade":"Check and grade")));
   app.append(c);
@@ -2049,12 +2287,60 @@ function renderRun(app){
   c.append(el("div",{class:"row"},el("span",{class:"lab"},"Execution"),
     el("span",{class:cls,style:"font-size:13px;font-weight:500;letter-spacing:.06em"},
       !exec.ok?"ERROR":task.o==null?"RAN":pass?"PASS":"MISMATCH")));
-  if(!exec.ok){ c.append(el("span",{class:"lab",style:"margin-top:10px"},"Traceback"),el("pre",{class:"sig"},exec.error)); }
+  if(!exec.ok){
+    // Lead with where it broke: the line number and the line itself, then the
+    // error, with a button that selects that line in the editor.
+    const at=errorLine(exec.error,exec.code);
+    if(at){
+      c.append(el("p",{class:"note diffnote"},`Line ${at.n} of your code raised it: `,el("code",{},at.src)));
+      c.append(el("button",{class:"ghost",style:"margin-top:8px",onclick:()=>selectLine(at.n)},`Show line ${at.n} in the editor`));
+    }
+    c.append(el("span",{class:"lab",style:"margin-top:10px"},"Traceback"),el("pre",{class:"sig"},exec.error));
+  }
   c.append(el("span",{class:"lab",style:"margin-top:10px"},"Your output"),el("pre",{},exec.output||"(nothing printed)"));
   if(task.o!=null&&!pass) c.append(el("span",{class:"lab",style:"margin-top:10px"},"Expected"),el("pre",{class:"teal"},task.o));
+  if(exec.ok&&task.o!=null&&!pass){ const d=firstDiff(exec.output,task.o); if(d) c.append(d); }
   app.append(c);
 }
 
+// Python tracebacks name the failing line as  File "<exec>", line N.
+// Returns {n, src} for the last such line that exists in the code, else null.
+function errorLine(err,code){
+  const ms=[...String(err||"").matchAll(/File "<exec>", line (\d+)/g)];
+  if(!ms.length||code==null) return null;
+  const n=+ms[ms.length-1][1], lines=String(code).split("\n");
+  if(n<1||n>lines.length) return null;
+  return {n,src:lines[n-1].trim()||"(blank line)"};
+}
+function selectLine(n){
+  const ta=$("#code"); if(!ta) return;
+  const lines=ta.value.split("\n"); if(n>lines.length) return;
+  const start=lines.slice(0,n-1).reduce((a,l)=>a+l.length+1,0);
+  ta.focus(); ta.setSelectionRange(start,start+lines[n-1].length);
+  if(ta.scrollIntoView) ta.scrollIntoView({behavior:scrollMode(),block:"center"});
+}
+const plural=(n,word)=>`${n} ${word}${n===1?"":"s"}`;
+// Smooth scrolling unless the device asks for reduced motion.
+function scrollMode(){
+  try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"; }
+  catch(e){ return "smooth"; }
+}
+// Names the first line where the output and the expected text part ways,
+// compared the way norm() grades: trailing spaces and blank lines ignored.
+// Returns an element (values in monospace, so 0 and o stay distinct) or null.
+function firstDiff(got,want){
+  const lines=t=>String(t??"").replace(/\r/g,"").split("\n").map(l=>l.replace(/\s+/g," ").trim()).filter(l=>l!=="");
+  const a=lines(got), b=lines(want), code=t=>el("code",{},t);
+  for(let i=0;i<Math.max(a.length,b.length);i++){
+    if(a[i]===b[i]) continue;
+    const p=el("p",{class:"note diffnote"});
+    if(a[i]===undefined) p.append(`Line ${i+1} is missing. Expected `,code(b[i]));
+    else if(b[i]===undefined) p.append(`Line ${i+1} is extra: `,code(a[i]),` The expected output ends after line ${b.length}.`);
+    else p.append(`First difference is line ${i+1}. You printed `,code(a[i]),` where the expected line is `,code(b[i]));
+    return p;
+  }
+  return null;
+}
 function renderGrade(app){
   const c=el("div",{class:"card thick",id:"gradecard"});
   c.append(el("div",{class:"row"},el("span",{class:"lab"},"Graded"),
@@ -2081,12 +2367,31 @@ function renderGrade(app){
       const where=si!=null?`Chapter ${bch.n}, "${bch.sections[si].t}"`:`Chapter ${bch.n}: ${bch.title}`;
       c.append(el("div",{class:"hint",style:"margin-top:16px"},
         el("b",{},"WHERE TO LOOK"),el("br"),
-        (task.fb?task.fb+" ":"")+`This exercise comes from ${where} in ${meta.title||"the book"} — that reading covers exactly this. Reread it, then try again.`));
-      c.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>openBook(task.book,si!=null?si:undefined)},
+        (task.fb?task.fb+" ":"")+`This exercise comes from ${where} in ${meta.title||"the book"}. That reading covers exactly this. Reread it, then try again.`));
+      c.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>{
+        openBook(task.book,si!=null?si:undefined);
+        // The task, draft and grade stay in memory; the pill returns to them.
+        setTimeout(()=>showBackPill("Back to your exercise",()=>{
+          view="practice"; render();
+          setTimeout(()=>{const n=$("#taskcard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
+        }),80);
+      }},
         si!=null?`Reread "${bch.sections[si].t}"`:"Reread the chapter"));
     }
   }
+  // A wrong ladder drill points at the lesson for its concept. The draft and
+  // the task stay put; the lesson opens above them.
+  else if(task&&!task.book&&exec&&grade.scores.correctness<4&&LESSONS[S.lang]&&LESSONS[S.lang][task.c]){
+    c.append(el("div",{class:"hint",style:"margin-top:16px"},
+      el("b",{},"WHERE TO LOOK"),el("br"),
+      `This drill practises ${task.c}. The ${task.c} lesson's reading and common mistakes cover it. Read them, then come back to your code.`));
+    c.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>openLessonFor(task.c)},`Open the ${task.c} lesson`));
+  }
   app.append(c);
+}
+function openLessonFor(concept){
+  lesson=concept; render();
+  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});},60);
 }
 
 function renderBook(app){
@@ -2108,7 +2413,7 @@ function renderBook(app){
     el("p",{class:"note"},`${META.author} · ${META.edition}. ${META.credit}`),
     el("div",{class:"meta",style:"margin-top:10px"},`${doneCount} / ${loaded.length} chapters complete`),
     el("div",{class:"bar",style:"margin-top:6px"},el("i",{style:`width:${Math.round(doneCount/loaded.length*100)}%;background:var(--teal)`})),
-    el("div",{style:"margin-top:10px"},el("a",{href:META.url,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:14px"},"Read the original online →")));
+    el("div",{style:"margin-top:10px"},el("a",{class:"extlink",href:META.url,target:"_blank",rel:"noopener",style:"font-size:14px"},"Read the original online →")));
   app.append(head);
 
   // The path. Chapters stay unlocked (the owner asked for that) — progression is
@@ -2131,19 +2436,39 @@ function renderBook(app){
     const qsc=quizScore(id);
     const info=el("div",{class:"stepinfo"},
       el("div",{class:"t"},ch.title),
-      el("div",{class:"m"},done?"Complete · tap to revisit":`${readN}/${total} sections · ${exN}/${exT} exercises`+(qsc.marked?` · ${qsc.right}/${ch.questions.length} questions`:"")));
+      el("div",{class:"m"},(done?"Complete · tap to revisit":`${readN}/${total} sections · ${exN}/${exT} exercises`+(qsc.marked?` · ${qsc.right}/${ch.questions.length} questions`:""))
+        +(qsc.missed?` · ${qsc.missed} to revisit`:"")));
     path.append(el("div",{class:"step"+(i%2?" right":"")},knob,info));
   });
   wrap.append(path);
   app.append(wrap);
 }
 
+// After jumping from a question or a failed exercise to the section that
+// answers it, a pill takes you back. It removes itself once used, and when
+// you leave the chapter (render() checks data-ch).
+function showBackPill(label,onBack){
+  const old=$("#backq"); if(old) old.remove();
+  const b=el("button",{id:"backq",class:"backq",onclick:()=>{ b.remove(); onBack(); }},label);
+  b.dataset.ch=bookCh||"";
+  document.body.append(b);
+}
+function showBackTo(qi){
+  showBackPill(`Back to question ${qi+1}`,()=>{
+    const q=$("#bq"+qi); if(q&&q.scrollIntoView) q.scrollIntoView({behavior:scrollMode(),block:"center"});
+  });
+}
 function renderChapter(app,chId,ch){
   const c=el("div",{class:"card",id:"bookcard"});
   c.append(el("button",{class:"ghost",style:"margin-bottom:16px",onclick:()=>{bookCh=null;render();}},"← All chapters"));
   c.append(el("span",{class:"lab"},"Chapter "+ch.n+" · "+((bookFor(bookLangOf(chId))||{meta:{}}).meta.title||"")),el("h2",{},ch.title));
   if(window.getSelection) c.append(el("div",{class:"meta",style:"margin:-2px 0 2px"},"Select any text to highlight it · tap a highlight to remove"));
-  c.append(el("div",{style:"margin:8px 0 2px"},el("a",{href:ch.src,target:"_blank",rel:"noopener",style:"color:var(--teal);font-size:13px"},"Read the original chapter →")));
+  c.append(el("div",{style:"margin:8px 0 2px"},el("a",{class:"extlink",href:ch.src,target:"_blank",rel:"noopener",style:"font-size:13px"},"Read the original chapter →")));
+  // Jump links: on a phone the questions sit below 6-9 sections of reading.
+  const jump=el("div",{class:"jumprow",role:"navigation","aria-label":"Jump within this chapter"});
+  [["bqs","Questions"],["bxs","Exercises"],["btry","Try it"]].forEach(([id,label])=>
+    jump.append(el("button",{class:"ghost",onclick:()=>{const n=$("#"+id); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:scrollMode(),block:"start"});}},label)));
+  c.append(jump);
 
   const r=chRead(chId);
   ch.sections.forEach((sec,si)=>{
@@ -2161,23 +2486,36 @@ function renderChapter(app,chId,ch){
     c.append(s);
   });
 
+  const jumpToSection=(qi,si)=>{
+    const n=$("#bsec"+si); if(!n) return;
+    if(n.scrollIntoView) n.scrollIntoView({behavior:scrollMode(),block:"start"});
+    n.classList.remove("secflash"); void n.offsetWidth; n.classList.add("secflash");
+    showBackTo(qi);
+  };
   if(ch.questions&&ch.questions.length){
-    const qs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+    const qs=el("div",{id:"bqs",style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
     const scoreEl=el("span",{class:"meta",style:"font-size:12px"});
     const paintScore=()=>{
       const sc=quizScore(chId);
-      scoreEl.textContent=sc.marked?`${sc.right} right · ${sc.marked}/${ch.questions.length} checked`:"";
+      const written=Object.values((S.book&&S.book.ans&&S.book.ans[chId])||{}).filter(t=>String(t).trim()).length;
+      scoreEl.textContent=[written?`${written} written`:"",sc.marked?`${sc.right} right · ${sc.marked}/${ch.questions.length} checked`:""].filter(Boolean).join(" · ");
     };
     qs.append(el("div",{class:"row"},el("span",{class:"lab"},"Practice questions"),scoreEl));
     paintScore();
     qs.append(el("p",{class:"note",style:"margin-top:4px"},"Write your answer in your own words, reveal to compare, then mark yourself honestly — marks feed the chapter meter, nothing else."));
     ch.questions.forEach((item,qi)=>{
-      const box=el("div",{class:"prob"});
+      const box=el("div",{class:"prob",id:"bq"+qi});
       box.append(hlElK("p","read","book|"+chId+"|q"+qi,item.q));
-      const ta=el("textarea",{class:"qans",placeholder:"Write your answer here…"});
+      const ta=el("textarea",{class:"qans",placeholder:"Write your answer here…",autocapitalize:"sentences",
+        "aria-label":`Your answer to question ${qi+1}`});
       ta.value=(S.book&&S.book.ans&&S.book.ans[chId]&&S.book.ans[chId][qi])||"";
-      ta.addEventListener("change",()=>saveAns(chId,qi,ta.value));
-      box.append(ta);
+      const saved=el("span",{class:"meta qsaved","aria-live":"polite"},ta.value.trim()?"Saved":"");
+      const save=()=>{ saveAns(chId,qi,ta.value); delete ansPending[chId+"|"+qi]; saved.textContent=ta.value.trim()?"Saved":""; paintScore(); };
+      // Save while typing (debounced), not only on blur: a phone can drop the
+      // page when you switch apps before the box ever loses focus.
+      ta.addEventListener("input",()=>{ saved.textContent=""; ansPending[chId+"|"+qi]=save; clearTimeout(ta._t); ta._t=setTimeout(save,700); });
+      ta.addEventListener("change",save);
+      box.append(ta,saved);
       const ans=el("div",{style:"display:none;margin-top:8px"});
       ans.append(el("span",{class:"lab"},"Book answer"),el("p",{class:"why"},item.a));
       // self-check: compare, then say so. Self-marks pay no XP — only executed
@@ -2192,10 +2530,21 @@ function renderChapter(app,chId,ch){
       };
       gotB.addEventListener("click",()=>{markQuiz(chId,qi,true);paintMarks();});
       missB.addEventListener("click",()=>{markQuiz(chId,qi,false);paintMarks();});
-      const mrow=el("div",{style:"display:flex;align-items:center;gap:8px;margin-top:10px"},
+      const mrow=el("div",{style:"display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap"},
         el("span",{class:"lab",style:"display:inline"},"Did you have it?"),gotB,missB);
       ans.append(mrow);
-      paintMarks();
+      // A missed question names the section that answers it and jumps there.
+      const sTitle=(typeof item.sec==="number"&&ch.sections[item.sec])?ch.sections[item.sec].t:null;
+      const look=el("div",{class:"qlook",style:"display:none;margin-top:12px"});
+      if(sTitle){
+        look.append(el("div",{class:"hint",style:"margin-bottom:0"},el("b",{},"WHERE TO LOOK"),el("br"),
+          `Chapter ${ch.n}, "${sTitle}" answers this one.`));
+        look.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>jumpToSection(qi,item.sec)},`Reread "${sTitle}"`));
+      }
+      const paintLook=()=>{look.style.display=(sTitle&&quizState(chId,qi)===false)?"block":"none";};
+      missB.addEventListener("click",paintLook); gotB.addEventListener("click",paintLook);
+      ans.append(look);
+      paintMarks(); paintLook();
       const btn=el("button",{class:"ghost",style:"margin-top:8px"},"Reveal answer");
       btn.addEventListener("click",()=>{
         saveAns(chId,qi,ta.value);
@@ -2211,7 +2560,7 @@ function renderChapter(app,chId,ch){
 
   if(ch.exercises&&ch.exercises.length){
     const done=bookExDone(chId);
-    const xs=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+    const xs=el("div",{id:"bxs",style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
     xs.append(el("span",{class:"lab"},"Graded exercises"));
     xs.append(el("p",{class:"note",style:"margin-top:4px"},"These run your code for real. Pass them all to complete the chapter."));
     ch.exercises.forEach((ex,xi)=>{
@@ -2229,7 +2578,7 @@ function renderChapter(app,chId,ch){
   }
 
   const tryLang=bookLangOf(chId);
-  const tr=el("div",{style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
+  const tr=el("div",{id:"btry",style:"margin-top:26px;padding-top:18px;border-top:1px solid var(--rule)"});
   tr.append(el("span",{class:"lab"},"Try it yourself"));
   tr.append(el("p",{class:"note",style:"margin-top:4px"},
     `Scratch space — run any ${LANGS[tryLang].label} here while you work through the chapter. Nothing is graded and nothing is saved.`));
@@ -2239,6 +2588,22 @@ function renderChapter(app,chId,ch){
   app.append(c);
 }
 
+function missedQuestions(){
+  const out=[], quiz=(S.book&&S.book.quiz)||{};
+  ["python","r"].forEach(lang=>{
+    const bk=bookFor(lang); if(!bk) return;
+    const chs=bk.chapters();
+    bk.order.forEach(id=>{
+      const ch=chs[id], marks=quiz[id]; if(!ch||!marks) return;
+      ch.questions.forEach((item,qi)=>{
+        if(marks[qi]===false) out.push({chId:id,ch,qi,q:item.q,
+          sec:(typeof item.sec==="number"&&ch.sections[item.sec])?item.sec:null,
+          book:lang==="r"?"R for Data Science":"Automate the Boring Stuff"});
+      });
+    });
+  });
+  return out;
+}
 function renderLedger(app,solid,shaky){
   const g=S.game, li=levelInfo(g.xp);
   // Level + daily goal
@@ -2269,15 +2634,37 @@ function renderLedger(app,solid,shaky){
   app.append(q);
 
   // Weekly XP — your own history, not a leaderboard against strangers.
+  // Questions you marked "Missed it", across both books, each one link away
+  // from the section that answers it. Self-marks earn nothing; this is a
+  // review list, not a score.
+  const missed=missedQuestions();
+  if(missed.length){
+    const rv=el("div",{class:"card"});
+    rv.append(el("div",{class:"row"},el("span",{class:"lab"},"Questions to revisit"),
+      el("span",{class:"meta"},`${missed.length} marked missed`)));
+    missed.slice(0,8).forEach(m=>{
+      const row=el("div",{class:"quest",style:"flex-direction:column;align-items:stretch;gap:6px"});
+      row.append(el("div",{class:"meta"},`${m.book} · Chapter ${m.ch.n} · Question ${m.qi+1}`),
+        el("div",{class:"note",style:"color:var(--ink);font-size:15px"},m.q.length>140?m.q.slice(0,137)+"…":m.q));
+      const go=()=>{ openBook(m.chId,m.sec!=null?m.sec:undefined); setTimeout(()=>showBackTo(m.qi),80); };
+      row.append(el("button",{class:"ghost",style:"align-self:flex-start",onclick:go},
+        m.sec!=null?`Reread "${m.ch.sections[m.sec].t}"`:"Open the chapter"));
+      rv.append(row);
+    });
+    if(missed.length>8) rv.append(el("p",{class:"meta",style:"margin-top:8px"},`and ${missed.length-8} more, in book order`));
+    app.append(rv);
+  }
+
   const wkCard=el("div",{class:"card"},el("span",{class:"lab"},"Last 7 days"));
   const days=[]; for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*864e5).toISOString().slice(0,10); days.push([d,(g.hist||{})[d]||0]); }
   const peak=Math.max(10,...days.map(d=>d[1]));
   const wk=el("div",{class:"wk"});
-  days.forEach(([d,v])=>wk.append(el("div",{title:`${d}: ${v} XP`},
-    el("i",{style:`height:${Math.round(v/peak*100)}%;background:${v>=g.goal?"var(--teal)":"var(--gold)"}`}),
+  days.forEach(([d,v])=>wk.append(el("div",{title:`${d}: ${v} XP`,"aria-label":`${d}: ${v} XP`},
+    // An empty day is a grey stub, not a short gold bar that reads as some XP.
+    el("i",{style:`height:${Math.round(v/peak*100)}%;background:${v<=0?"var(--rule)":v>=g.goal?"var(--teal)":"var(--gold)"}`}),
     el("span",{},d.slice(8)))));
   wkCard.append(wk);
-  wkCard.append(el("p",{class:"note",style:"margin-top:8px"},`Best streak ${Math.max(S.streak.count||0,0)} days · best run of correct answers ${g.bestCombo||0}.`));
+  wkCard.append(el("p",{class:"note",style:"margin-top:8px"},`Best streak ${plural(Math.max(S.streak.count||0,0),"day")} · best run of correct answers ${g.bestCombo||0}.`));
   app.append(wkCard);
 
   // Badges

@@ -12,11 +12,20 @@
 // needed the first time a package is used in a run.
 import { WebR } from 'webr';
 
+// Mirrors R_UNIVERSE in index.html. Keep the two in step.
+export const R_UNIVERSE = { RSQLite: 'https://r-dbi.r-universe.dev' };
+
 // Boot one WebR instance and install the packages a chapter needs.
 export async function makeR(packages = []) {
   const webR = new WebR({ interactive: false });
   await webR.init();
-  if (packages.length) await webR.installPackages(packages, true);
+  // Same split as the app's ensureRPkgs(): packages listed in R_UNIVERSE come
+  // from their R-universe WebAssembly build (repo.r-wasm.org's RSQLite build
+  // stopped loading on WebR 0.6.0 in Oct 2026; r-dbi's loads).
+  const uni = packages.filter((p) => R_UNIVERSE[p]);
+  for (const p of uni) await webR.installPackages([p], { repos: [R_UNIVERSE[p], 'https://repo.r-wasm.org/'], quiet: true });
+  const rest = packages.filter((p) => !R_UNIVERSE[p]);
+  if (rest.length) await webR.installPackages(rest, true);
 
   // Run R source and return everything the learner would see on screen: stdout
   // and stderr in order, exactly as the app's runR() collects it.

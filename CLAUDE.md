@@ -97,13 +97,38 @@ Everything below is merged to `main` and deployed:
   owner has been offered locked progression and hasn't asked for it.
 - **Write-in question answers** (owner's July 27 ask): every book question has
   a `textarea.qans` above its Reveal button; answers persist in `S.book.ans`
-  (saved on change and on reveal) and restore on reload.
+  and restore on reload. They save 0.7s after typing stops, on change, on
+  reveal, and are flushed on `visibilitychange`/`pagehide` (a phone can drop
+  the page before a blur). A "Saved" label confirms each one.
 - **Failed-exercise feedback** (owner's July 27 ask): when a book exercise is
   proven wrong **by execution** (never on a static/queued grade), the grade
   card appends a WHERE TO LOOK hint naming the chapter — and the exact section
   plus a tie-back sentence when the exercise carries `sec`/`fb` — with a
-  "Reread" button that jumps there. ch01 has `sec`/`fb` on all 4 exercises;
-  the other 52 chapters fall back to chapter-level pointers until backfilled.
+  "Reread" button that jumps there. **Every exercise in all 53 chapters
+  carries `sec`/`fb`, and every question carries `sec`** (backfilled
+  2026-10-19); `shape_check` now requires them. Reread from an exercise shows
+  a "Back to your exercise" pill; the landing section briefly highlights.
+- **Missed-question pointer**: marking a question "Missed it" shows WHERE TO
+  LOOK with the question's `sec` and a Reread button, plus a "Back to
+  question N" pill (`showBackPill`). The ledger's "Questions to revisit" card
+  lists every Missed-it question across both books (`missedQuestions()`), and
+  the chapter path shows "N to revisit".
+- **Drill feedback**: a wrong ladder drill points at its concept's lesson
+  (opens above the task, draft kept). A MISMATCH names the first differing
+  line (`firstDiff`, same normalisation as `norm`). A Python crash names the
+  learner's failing line from the innermost `File "<exec>"` frame
+  (`errorLine`) with a button that selects it; `runPython` keeps the
+  learner's frames and drops Pyodide internals and caret-only lines.
+- **Code editing** (`wireEditor`, one module for every code box): Tab /
+  Shift+Tab indent, Escape releases Tab, Enter auto-indents after `:` or an
+  open bracket, Ctrl/Cmd+Enter runs. On touch screens a shared `#keybar`
+  (Run key first, then Tab keys and per-language symbols) sits above the
+  on-screen keyboard via `visualViewport`. A focused field that ends up under
+  the keyboard is scrolled back into view. Fields are 16px on touch screens
+  so iOS does not zoom on focus.
+- **Phone layout**: under 560px the nav is two full-width rows (languages,
+  views); on touch screens every control is at least 44px; body, toasts,
+  overlay, key bar and pills respect all four safe-area insets.
 - `openBook()` now derives the language from the chapter id (`bookLangOf`);
   it previously forced python, which broke opening R chapters directly.
 - **Question self-checks**: after revealing a book answer, "I had it" /
@@ -120,7 +145,7 @@ Everything below is merged to `main` and deployed:
   cache so rendering works offline after first use. Rendering is display
   only — Mermaid **grading** is still static and still capped, as disclosed.
 - Nav is three tabs: PRACTICE / BOOK / LEDGER, plus language tabs.
-- Service worker `SHELL` is at `shell-v10`.
+- Service worker `SHELL` is at `shell-v11`.
 - **Themes**: Light (default) / Dark / System, chosen in the ledger. See the
   theme constraint under "Hard constraints".
 
@@ -189,16 +214,16 @@ window.BOOK.chapters.chNN = {
   n, title, src,                       // src links to the original chapter
   blurb,
   sections: [ { t, body: [ ["p",text] | ["code",text] | ["note",text] ] } ],
-  questions: [ { q, a } ],             // reveal-style self-checks
+  questions: [ { sec, q, a } ],        // reveal-style self-checks; sec is the
+                                       // section that answers it ("Missed it")
   exercises: [ { c, t, b, o, h:[3], book:"chNN",
-                 sec?, fb? } ]  // BANK-shaped, graded. Optional: sec is the index
-                                // of the section that teaches this exercise, fb a
-                                // one-sentence tie-back shown on a failed attempt.
-                                // Both feed the WHERE TO LOOK feedback in
-                                // renderGrade; without sec it falls back to a
-                                // chapter-level pointer. ch01 is the exemplar —
-                                // backfilling sec/fb across chapters is an open
-                                // content task. shape_check validates both.
+                 sec, fb } ]    // BANK-shaped, graded. sec is the index of the
+                                // section that teaches this exercise, fb one or
+                                // two sentences on the likely mistake (never the
+                                // answer or the expected output). Both feed the
+                                // WHERE TO LOOK feedback in renderGrade.
+                                // shape_check REQUIRES sec on every question and
+                                // sec + fb on every exercise.
 };
 ```
 Exercise `c` maps to a `LADDER.python` concept so passing also advances the
@@ -328,13 +353,29 @@ would apply. Until verified, keep writing original text.
 
 ## Testing
 
-No framework; jsdom harnesses in `tests/`. Setup: `npm install jsdom`
-(gitignored). Run from repo root:
+No framework; jsdom harnesses in `tests/`. Setup: `npm install jsdom webr`
+(both dev-only and gitignored; `webr` drives the R verify scripts). Run the
+Python verifiers with Python 3.11+ (Pyodide is 3.12): on 3.9, ch4 and ch21
+fail on error-message wording that changed in 3.10/3.11, not on content.
+As of 2026-10-19, repo.r-wasm.org's RSQLite build does not load on WebR 0.6.0
+("could not load dynamic lib"). The app and `tests/rverify.mjs` both install
+the packages in `R_UNIVERSE` (just RSQLite, from r-dbi.r-universe.dev) from
+R-universe instead, so R ch21 runs and `rch21_verify.mjs` passes all 74
+checks on 0.6.0. Keep the two `R_UNIVERSE` maps in step. If a package's
+compiled library ever fails to load, the app refuses to grade (no heart) and
+rch21 skips with the reason. Install all dev packages in ONE command
+(`npm install jsdom webr playwright-core mermaid@11 --no-save`): a later
+`--no-save` install of one package prunes the others. `tests/mmd_verify.mjs`
+uses mermaid@11 (the app's version), runs from `tests/` with `tests/node_modules`
+linked to the root one, and takes a local Chrome via `CHROMIUM=...`. To run
+the Python verifiers with zero skips, use a Python 3.12 venv with
+beautifulsoup4, openpyxl, pypdf, python-docx, pillow, matplotlib, pyperclip.
+Run from repo root:
 
 ```bash
 node tests/smoke.mjs    # core: renders, lesson shows, JS drill PASS 5/5, wrong answer MISMATCH
 node tests/smoke2.mjs   # lessons: reading/practice sections, reveal toggle, highlight round-trip
-node tests/smoke3.mjs   # book: deep flows + auto-checks EVERY wired chapter's render counts
+node tests/smoke3.mjs   # book: deep flows + auto-checks EVERY wired chapter (both books)
 node tests/smoke4.mjs   # game + theme: XP, hearts, quests, badges, levels, celebration
 node tests/contrast_check.mjs     # WCAG AA for both palettes (parses the CSS variables)
 node tests/shape_check.mjs        # data contract for all book/ch*.js (counts, concepts, register)
@@ -351,7 +392,9 @@ battery is green on a stdlib-only machine. All suites must pass before
 pushing. Always test the failing case too — a grader that passes everything
 is worse than no grader. Note: jsdom skips external `<script src>`; smoke3
 reads every `book/ch*.js` and evals them in `beforeParse` to replicate real
-script order, so new chapters need no smoke3 edits.
+script order, so new chapters need no smoke3 edits. It now loads `book/r*.js`
+too and runs the same render-count loop over the R book, including one
+Missed-it pointer per question.
 
 ## Deploy
 
@@ -361,6 +404,12 @@ the pattern. iOS install: Safari only → Add to Home Screen; then "Cache
 Python for offline" on wifi.
 
 ## Known limitations — do not "fix" silently
+
+- `today()` is the **UTC** date, so the app's day (streak, daily goal,
+  quests, weekly chart) rolls over at 8 PM in New York (7 PM in winter).
+  Switching to local dates moves stored day keys (`S.game.hist`, `day`,
+  `streak.last`, quest days) and needs a migration plan; it is waiting on
+  the owner's call (raised 2026-10-19).
 
 - Mermaid **grading** never executes; correctness capped at 3/5 (disclosed in
   footer). Mermaid does **render** in the free-run runners — display only, it

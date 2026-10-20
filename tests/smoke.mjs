@@ -81,6 +81,60 @@ setTimeout(async () => {
     }
     check(pips2 < 5, `wrong answer correctness < 5 (got ${pips2})`);
 
+    // 6. a wrong drill points at its concept's lesson, keeping the task
+    const g2 = d.querySelector('#gradecard').textContent;
+    check(g2.includes('WHERE TO LOOK') && g2.includes('lesson'), 'wrong drill shows a WHERE TO LOOK lesson pointer');
+    const codeEl = d.querySelector('#code');
+    codeEl.value = '// my second try'; codeEl.dispatchEvent(new w.Event('input'));
+    clickText('Open the');
+    await wait(20);
+    check(!!d.querySelector('#lessoncard') && !!d.querySelector('#taskcard'), 'lesson opens above the still-open task');
+    check(d.querySelector('#code').value === '// my second try', 'draft is not discarded by opening the lesson');
+    check(buttons().some(b => b.textContent === 'Back to your exercise'), 'lesson offers Back to your exercise while a task is open');
+
+    // 7. first-difference note: changed, missing and extra lines; none on a whitespace-only gap
+    const fd = (a, b) => { const n = w.firstDiff(a, b); return n ? n.textContent : null; };
+    check(fd('a\nb\nc', 'a\nB\nc') === 'First difference is line 2. You printed b where the expected line is B', 'firstDiff names a changed line');
+    check((fd('a', 'a\nb') || '').startsWith('Line 2 is missing'), 'firstDiff names a missing line');
+    check((fd('a\nb', 'a') || '').startsWith('Line 2 is extra'), 'firstDiff names an extra line');
+    check(fd('x  y\n\n', 'x y') === null, 'firstDiff ignores whitespace norm() ignores');
+    check(!!d.querySelector('.diffnote code'), 'MISMATCH card shows the first-difference note');
+
+    // 7b. a Python crash names the learner's failing line (innermost <exec> frame)
+    const tb = '  File "<exec>", line 5, in <module>\n  File "<exec>", line 2, in f\nNameError: x';
+    const at = w.errorLine(tb, 'def f():\n    return x\n\n\nprint(f())');
+    check(at && at.n === 2 && at.src === 'return x', 'errorLine picks the innermost frame and quotes the line');
+    check(w.errorLine('NameError: x', 'print(x)') === null, 'errorLine stays quiet when no line is named');
+    check(w.errorLine('  File "<exec>", line 9, in <module>', 'one line') === null, 'errorLine ignores a line number past the end of the code');
+
+    // 8. code editor keys: Tab indents, Enter auto-indents after a colon, Shift+Tab dedents
+    const ta = d.createElement('textarea'); d.body.append(ta);
+    w.wireEditor(ta, 'python', null);
+    const key = (k, o = {}) => ta.dispatchEvent(new w.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...o }));
+    ta.value = 'for i in range(3):'; ta.selectionStart = ta.selectionEnd = ta.value.length;
+    key('Enter');
+    check(ta.value === 'for i in range(3):\n    ', 'Enter after a colon adds one Python indent');
+    key('Tab', { shiftKey: true });
+    check(ta.value === 'for i in range(3):\n', 'Shift+Tab removes the indent');
+    key('Tab');
+    check(ta.value === 'for i in range(3):\n    ', 'Tab inserts four spaces in Python');
+    key('Escape');
+    check(key('Tab') === true, 'after Escape, Tab is not captured (focus can leave the box)');
+
+    // 9. the key bar's Run key runs the focused box (forced coarse pointer)
+    w.matchMedia = q => ({ matches: q.includes('coarse'), addListener(){}, removeListener(){}, addEventListener(){}, removeEventListener(){} });
+    let ran = 0;
+    const tr = d.createElement('textarea'); d.body.append(tr);
+    w.wireEditor(tr, 'python', () => { ran++; });
+    tr.dispatchEvent(new w.FocusEvent('focusin', { bubbles: true }));
+    const runKey = d.querySelector('#keybar .kbrun');
+    check(!!runKey && runKey.textContent.startsWith('Run'), 'key bar leads with a Run key on touch screens');
+    runKey.click();
+    check(ran === 1 && d.querySelector('#keybar').style.display === 'none', 'Run key runs the focused box and closes the bar');
+
+    // 10. plural helper used by the ledger
+    check(w.eval('plural(1,"day")') === '1 day' && w.eval('plural(3,"day")') === '3 days', 'plural() says 1 day, 3 days');
+
     console.log(fails === 0 ? '\nSMOKE: ALL PASS' : `\nSMOKE: ${fails} FAILURE(S)`);
     process.exit(fails === 0 ? 0 : 1);
   } catch (e) {
