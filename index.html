@@ -117,6 +117,7 @@
   textarea:focus-visible{outline-offset:0}
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
   .qsaved{display:block;min-height:16px;margin-top:4px;text-align:right}
+  .note,.verdict,.why,.hint{overflow-wrap:break-word}
   .diffnote{margin-top:10px;color:var(--ink);font-size:15px;overflow-wrap:anywhere}
   .diffnote code{font-family:var(--mono);font-size:14px;background:var(--deep);border:1px solid var(--rule);
     border-radius:4px;padding:1px 5px;white-space:pre-wrap}
@@ -1318,7 +1319,14 @@ async function runPython(code){
   const py=await bootPython(); const out=[];
   py.setStdout({batched:s=>out.push(s)}); py.setStderr({batched:s=>out.push(s)});
   try{ await py.runPythonAsync(code); return {ok:true,output:out.join("\n")}; }
-  catch(e){ return {ok:false,output:out.join("\n"),error:String(e.message||e).split("\n").filter(Boolean).slice(-3).join("\n")}; }
+  // Show the learner's own frames: everything from the first File "<exec>"
+  // line (capped at 6), else the last 3 lines. Pyodide's internal frames and
+  // caret-only lines (one unbroken run that overflows a phone) are dropped.
+  catch(e){
+    const ls=String(e.message||e).split("\n").filter(l=>l.trim()&&!/^\s*\^+\s*$/.test(l));
+    const i=ls.findIndex(l=>l.includes('File "<exec>"'));
+    return {ok:false,output:out.join("\n"),error:(i>=0?ls.slice(i).slice(-6):ls.slice(-3)).join("\n")};
+  }
 }
 async function runJS(code){
   const out=[]; const fmt=v=>typeof v==="string"?v:(()=>{try{return JSON.stringify(v)}catch(e){return String(v)}})();
@@ -1670,6 +1678,7 @@ async function submit(){
       banner=`R could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
     }
   }
+  if(exec) exec.code=code;
   grade=gradeIt(S.lang,code,exec,task);
   logSession(grade);
   busy=null; render();
@@ -2240,13 +2249,38 @@ function renderRun(app){
   c.append(el("div",{class:"row"},el("span",{class:"lab"},"Execution"),
     el("span",{class:cls,style:"font-size:13px;font-weight:500;letter-spacing:.06em"},
       !exec.ok?"ERROR":task.o==null?"RAN":pass?"PASS":"MISMATCH")));
-  if(!exec.ok){ c.append(el("span",{class:"lab",style:"margin-top:10px"},"Traceback"),el("pre",{class:"sig"},exec.error)); }
+  if(!exec.ok){
+    // Lead with where it broke: the line number and the line itself, then the
+    // error, with a button that selects that line in the editor.
+    const at=errorLine(exec.error,exec.code);
+    if(at){
+      c.append(el("p",{class:"note diffnote"},`Line ${at.n} of your code raised it: `,el("code",{},at.src)));
+      c.append(el("button",{class:"ghost",style:"margin-top:8px",onclick:()=>selectLine(at.n)},`Show line ${at.n} in the editor`));
+    }
+    c.append(el("span",{class:"lab",style:"margin-top:10px"},"Traceback"),el("pre",{class:"sig"},exec.error));
+  }
   c.append(el("span",{class:"lab",style:"margin-top:10px"},"Your output"),el("pre",{},exec.output||"(nothing printed)"));
   if(task.o!=null&&!pass) c.append(el("span",{class:"lab",style:"margin-top:10px"},"Expected"),el("pre",{class:"teal"},task.o));
   if(exec.ok&&task.o!=null&&!pass){ const d=firstDiff(exec.output,task.o); if(d) c.append(d); }
   app.append(c);
 }
 
+// Python tracebacks name the failing line as  File "<exec>", line N.
+// Returns {n, src} for the last such line that exists in the code, else null.
+function errorLine(err,code){
+  const ms=[...String(err||"").matchAll(/File "<exec>", line (\d+)/g)];
+  if(!ms.length||code==null) return null;
+  const n=+ms[ms.length-1][1], lines=String(code).split("\n");
+  if(n<1||n>lines.length) return null;
+  return {n,src:lines[n-1].trim()||"(blank line)"};
+}
+function selectLine(n){
+  const ta=$("#code"); if(!ta) return;
+  const lines=ta.value.split("\n"); if(n>lines.length) return;
+  const start=lines.slice(0,n-1).reduce((a,l)=>a+l.length+1,0);
+  ta.focus(); ta.setSelectionRange(start,start+lines[n-1].length);
+  if(ta.scrollIntoView) ta.scrollIntoView({behavior:scrollMode(),block:"center"});
+}
 // Smooth scrolling unless the device asks for reduced motion.
 function scrollMode(){
   try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"; }
