@@ -121,6 +121,20 @@ setTimeout(async () => {
     key('Escape');
     check(key('Tab') === true, 'after Escape, Tab is not captured (focus can leave the box)');
 
+    // 9. the key bar's Run key runs the focused box (forced coarse pointer)
+    w.matchMedia = q => ({ matches: q.includes('coarse'), addListener(){}, removeListener(){}, addEventListener(){}, removeEventListener(){} });
+    let ran = 0;
+    const tr = d.createElement('textarea'); d.body.append(tr);
+    w.wireEditor(tr, 'python', () => { ran++; });
+    tr.dispatchEvent(new w.FocusEvent('focusin', { bubbles: true }));
+    const runKey = d.querySelector('#keybar .kbrun');
+    check(!!runKey && runKey.textContent.startsWith('Run'), 'key bar leads with a Run key on touch screens');
+    runKey.click();
+    check(ran === 1 && d.querySelector('#keybar').style.display === 'none', 'Run key runs the focused box and closes the bar');
+
+    // 10. plural helper used by the ledger
+    check(w.eval('plural(1,"day")') === '1 day' && w.eval('plural(3,"day")') === '3 days', 'plural() says 1 day, 3 days');
+
     console.log(fails === 0 ? '\nSMOKE: ALL PASS' : `\nSMOKE: ${fails} FAILURE(S)`);
     process.exit(fails === 0 ? 0 : 1);
   } catch (e) {

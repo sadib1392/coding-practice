@@ -195,6 +195,15 @@ setTimeout(async () => {
   check(stT.book.ans.ch01['3'] === 'typed but never blurred', 'answer saved after typing stops, no blur needed');
   check(d.querySelector('#bq3 .qsaved').textContent === 'Saved', 'Saved label confirms the answer');
 
+  // --- chapter jump row, written count, path revisit count ---
+  check(['Questions', 'Exercises', 'Try it'].every(t => [...d.querySelectorAll('.jumprow button')].some(b => b.textContent === t)), 'chapter has Questions / Exercises / Try it jump buttons');
+  check(!!d.querySelector('#bqs') && !!d.querySelector('#bxs') && !!d.querySelector('#btry'), 'jump targets exist');
+  check(/\d+ written/.test(d.querySelector('#bqs .row').textContent), 'questions header counts written answers');
+  clickIn(d, 'All chapters');
+  const step1 = [...d.querySelectorAll('.step')][0].textContent;
+  check(step1.includes('1 to revisit'), 'chapter path shows how many questions to revisit');
+  clickIn(d, 'BOOK');
+
   // --- ledger lists the missed question with a link to its section ---
   clickIn(d, 'LEDGER');
   const revisit = [...d.querySelectorAll('.card')].find(c => c.textContent.includes('Questions to revisit'));
