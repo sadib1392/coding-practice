@@ -159,6 +159,32 @@ setTimeout(async () => {
   await wait(80);
   check(!!d.querySelector('#bookcard'), 'reread button jumps back into the book chapter');
 
+  // --- a missed question points at the section that answers it ---
+  const q2 = d.querySelector('#bq2');
+  [...q2.querySelectorAll('button')].find(b => b.textContent === 'Reveal answer').click();
+  const look = q2.querySelector('.qlook');
+  check(look && look.style.display === 'none', 'no section pointer before the question is marked');
+  [...q2.querySelectorAll('button')].find(b => b.textContent === 'Missed it').click();
+  const c01 = w.BOOK.chapters.ch01, secT = c01.sections[c01.questions[2].sec].t;
+  check(look.style.display === 'block' && look.textContent.includes(`Chapter 1, "${secT}"`), 'Missed it names the chapter and the exact section');
+  [...q2.querySelectorAll('button')].find(b => b.textContent === 'I had it').click();
+  check(look.style.display === 'none', 'I had it hides the pointer again');
+  [...q2.querySelectorAll('button')].find(b => b.textContent === 'Missed it').click();
+  [...look.querySelectorAll('button')].find(b => b.textContent.startsWith('Reread')).click();
+  const pill = d.querySelector('#backq');
+  check(!!pill && pill.textContent === 'Back to question 3', 'jumping to the section offers a way back to the question');
+  pill.click();
+  check(!d.querySelector('#backq'), 'the back pill removes itself once used');
+
+  // --- written answers save while typing, without a blur ---
+  const qa3 = d.querySelector('#bq3 textarea.qans');
+  qa3.value = 'typed but never blurred';
+  qa3.dispatchEvent(new w.Event('input'));
+  await wait(900);
+  const stT = JSON.parse(w.localStorage.getItem(KEY));
+  check(stT.book.ans.ch01['3'] === 'typed but never blurred', 'answer saved after typing stops, no blur needed');
+  check(d.querySelector('#bq3 .qsaved').textContent === 'Saved', 'Saved label confirms the answer');
+
   // --- reload: resume ---
   const dom2 = makeDom(w.localStorage.getItem(KEY));
   const w2 = dom2.window, d2 = w2.document;
