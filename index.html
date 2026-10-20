@@ -131,6 +131,7 @@
   #keybar .kb{flex:0 0 auto;min-width:44px;min-height:44px;padding:0 10px;font-family:var(--mono);font-size:17px;
     color:var(--ink);background:var(--deep);border:1px solid var(--rule);border-radius:7px}
   #keybar .kb:active{background:var(--rule)}
+  #keybar .kbrun{font-family:var(--sans);font-size:14px;font-weight:600;background:var(--fill);color:var(--onFill);border-color:var(--fill)}
   #keybar .kb[aria-label="Indent"],#keybar .kb[aria-label="Dedent"]{font-family:var(--sans);font-size:14px;font-weight:500}
   body.kbopen{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
   body.kbopen .backq{display:none}
@@ -1441,7 +1442,7 @@ function editShift(ta,unit,out){
   else { ta.selectionStart=Math.max(start,a+firstDelta); ta.selectionEnd=b+total; }
 }
 function wireEditor(ta,lang,run){
-  ta.classList.add("codeed"); ta.dataset.lang=lang;
+  ta.classList.add("codeed"); ta.dataset.lang=lang; ta._run=run;
   ta.setAttribute("autocomplete","off"); ta.setAttribute("enterkeyhint","enter");
   let tabFree=false;
   ta.addEventListener("keydown",e=>{
@@ -1496,6 +1497,15 @@ function showKeybar(ta){
     b.addEventListener("click",()=>{ if(keybarFor) fn(keybarFor); });
     bar.append(b);
   };
+  // Run sits first: with the keyboard up, the Run button below the box is
+  // hidden, and a phone has no Ctrl+Enter.
+  if(ta._run){
+    const r=el("button",{type:"button",class:"kb kbrun","aria-label":"Run code"},"Run ▶");
+    r.addEventListener("pointerdown",e=>e.preventDefault());
+    r.addEventListener("mousedown",e=>e.preventDefault());
+    r.addEventListener("click",()=>{ const t=keybarFor; if(t&&t._run){ t.blur(); hideKeybar(); t._run(); } });
+    bar.append(r);
+  }
   key("Tab","Indent",t=>t.selectionStart!==t.selectionEnd?editShift(t,unit,false):editInsert(t,unit));
   key("⇤Tab","Dedent",t=>editShift(t,unit,true));
   (EDIT_KEYS[lang]||[]).forEach(k=>key(k,"Insert "+k,t=>editInsert(t,k)));
