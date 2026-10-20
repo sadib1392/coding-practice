@@ -111,6 +111,9 @@
     border-radius:7px;padding:8px 15px;font-size:13px;font-weight:500;letter-spacing:.03em;
     box-shadow:0 2px 10px rgba(20,25,22,.28)}
   .prob{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+  .diffnote{margin-top:10px;color:var(--ink);font-size:15px;overflow-wrap:anywhere}
+  .diffnote code{font-family:var(--mono);font-size:14px;background:var(--deep);border:1px solid var(--rule);
+    border-radius:4px;padding:1px 5px;white-space:pre-wrap}
   .backq{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));
     z-index:65;background:var(--fill);color:var(--onFill);border:none;border-radius:999px;
     min-height:44px;padding:10px 20px;font-size:14px;font-weight:500;box-shadow:0 3px 14px rgba(20,25,22,.26)}
@@ -2043,7 +2046,10 @@ function renderLesson(app){
     c.append(pr);
   }
 
-  c.append(el("button",{class:"primary",onclick:newTask},"Give me an exercise on this"));
+  if(task) c.append(el("button",{class:"primary",onclick:()=>{
+    const n=$("#taskcard"); if(n&&n.scrollIntoView) n.scrollIntoView({behavior:"smooth",block:"start"});
+  }},"Back to your exercise"));
+  else c.append(el("button",{class:"primary",onclick:newTask},"Give me an exercise on this"));
   app.append(c);
 }
 function renderTask(app){
@@ -2076,9 +2082,26 @@ function renderRun(app){
   if(!exec.ok){ c.append(el("span",{class:"lab",style:"margin-top:10px"},"Traceback"),el("pre",{class:"sig"},exec.error)); }
   c.append(el("span",{class:"lab",style:"margin-top:10px"},"Your output"),el("pre",{},exec.output||"(nothing printed)"));
   if(task.o!=null&&!pass) c.append(el("span",{class:"lab",style:"margin-top:10px"},"Expected"),el("pre",{class:"teal"},task.o));
+  if(exec.ok&&task.o!=null&&!pass){ const d=firstDiff(exec.output,task.o); if(d) c.append(d); }
   app.append(c);
 }
 
+// Names the first line where the output and the expected text part ways,
+// compared the way norm() grades: trailing spaces and blank lines ignored.
+// Returns an element (values in monospace, so 0 and o stay distinct) or null.
+function firstDiff(got,want){
+  const lines=t=>String(t??"").replace(/\r/g,"").split("\n").map(l=>l.replace(/\s+/g," ").trim()).filter(l=>l!=="");
+  const a=lines(got), b=lines(want), code=t=>el("code",{},t);
+  for(let i=0;i<Math.max(a.length,b.length);i++){
+    if(a[i]===b[i]) continue;
+    const p=el("p",{class:"note diffnote"});
+    if(a[i]===undefined) p.append(`Line ${i+1} is missing. Expected `,code(b[i]));
+    else if(b[i]===undefined) p.append(`Line ${i+1} is extra: `,code(a[i]),` The expected output ends after line ${b.length}.`);
+    else p.append(`First difference is line ${i+1}. You printed `,code(a[i]),` where the expected line is `,code(b[i]));
+    return p;
+  }
+  return null;
+}
 function renderGrade(app){
   const c=el("div",{class:"card thick",id:"gradecard"});
   c.append(el("div",{class:"row"},el("span",{class:"lab"},"Graded"),
@@ -2110,7 +2133,19 @@ function renderGrade(app){
         si!=null?`Reread "${bch.sections[si].t}"`:"Reread the chapter"));
     }
   }
+  // A wrong ladder drill points at the lesson for its concept. The draft and
+  // the task stay put; the lesson opens above them.
+  else if(task&&!task.book&&exec&&grade.scores.correctness<4&&LESSONS[S.lang]&&LESSONS[S.lang][task.c]){
+    c.append(el("div",{class:"hint",style:"margin-top:16px"},
+      el("b",{},"WHERE TO LOOK"),el("br"),
+      `This drill practises ${task.c}. The ${task.c} lesson's reading and common mistakes cover it. Read them, then come back to your code.`));
+    c.append(el("button",{class:"ghost",style:"margin-top:10px",onclick:()=>openLessonFor(task.c)},`Open the ${task.c} lesson`));
+  }
   app.append(c);
+}
+function openLessonFor(concept){
+  lesson=concept; render();
+  setTimeout(()=>{const n=$("#lessoncard"); if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"start"});},60);
 }
 
 function renderBook(app){
