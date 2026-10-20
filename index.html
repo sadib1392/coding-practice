@@ -2640,8 +2640,9 @@ function renderLedger(app,solid,shaky){
   const days=[]; for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*864e5).toISOString().slice(0,10); days.push([d,(g.hist||{})[d]||0]); }
   const peak=Math.max(10,...days.map(d=>d[1]));
   const wk=el("div",{class:"wk"});
-  days.forEach(([d,v])=>wk.append(el("div",{title:`${d}: ${v} XP`},
-    el("i",{style:`height:${Math.round(v/peak*100)}%;background:${v>=g.goal?"var(--teal)":"var(--gold)"}`}),
+  days.forEach(([d,v])=>wk.append(el("div",{title:`${d}: ${v} XP`,"aria-label":`${d}: ${v} XP`},
+    // An empty day is a grey stub, not a short gold bar that reads as some XP.
+    el("i",{style:`height:${Math.round(v/peak*100)}%;background:${v<=0?"var(--rule)":v>=g.goal?"var(--teal)":"var(--gold)"}`}),
     el("span",{},d.slice(8)))));
   wkCard.append(wk);
   wkCard.append(el("p",{class:"note",style:"margin-top:8px"},`Best streak ${plural(Math.max(S.streak.count||0,0),"day")} · best run of correct answers ${g.bestCombo||0}.`));
