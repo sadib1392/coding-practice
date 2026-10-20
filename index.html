@@ -1381,6 +1381,10 @@ async function runR(code,pkgs){
     const lines=cap.output.filter(o=>o.type==="stdout"||o.type==="stderr");
     const out=lines.map(o=>o.data).join("\n");
     const bad=lines.find(o=>o.type==="stderr"&&/^Error\b/.test(o.data));
+    // A package whose compiled library will not load is a runtime fault, not
+    // the learner's: flag it so nothing is graded. Seen 2026-10-19 with
+    // RSQLite and duckdb, and the failure poisons later loads until reload.
+    if(bad&&/could not load dynamic lib|unable to load shared object/.test(out)) return {ok:false,output:out,error:bad.data,runtime:true};
     return bad?{ok:false,output:out,error:bad.data}:{ok:true,output:out};
   }catch(e){
     return {ok:false,output:"",error:String((e&&e.message)||e)};
@@ -1571,7 +1575,8 @@ function runnerEl(lang,opts){
           const detected=[...code.matchAll(/\b(?:library|require)\(\s*["']?([A-Za-z][A-Za-z0-9.]*)["']?\s*\)/g)].map(m=>m[1]);
           res=await runR(code,[...new Set([...(opts&&opts.pkgs||[]),...detected])]);
         }else res={ok:false,output:"",error:"This language does not execute in the app."};
-        outLab.textContent=res.ok?"Output":"Output · error";
+        outLab.textContent=res.ok?"Output":res.runtime?"Could not load a package":"Output · error";
+        if(res.runtime) res.error=(res.error||"")+"\n\nThat is a fault in the WebR runtime, not in your code. Reload the app before running more R.";
         outPre.textContent=(res.output||"")+(res.ok?"":((res.output?"\n":"")+(res.error||"")))||"(nothing printed)";
         outWrap.style.display="block"; diagram.style.display="none";
       }
@@ -1692,6 +1697,12 @@ async function submit(){
       S.queue.push({date:today(),lang:S.lang,concept:task.c,title:task.t,code,expected:task.o,secs,book:task.book||null,pkgs:task.pkgs||null}); persist();
       banner=`R could not run (${e.message}). Your submission is queued — reconnect and tap "Grade queued" to run it for real. Static checks below still apply.`;
     }
+  }
+  if(exec&&exec.runtime){
+    // Not the learner's fault, so no grade, no session, no heart.
+    const pkg=(String(exec.output).match(/library\/([A-Za-z0-9.]+)\/libs/)||[])[1];
+    banner=`R could not load ${pkg?"the "+pkg+" package":"a package"} this code needs. That is a fault in the WebR runtime, not in your code: nothing was graded and no heart was lost. Reload the app before running more R; if it keeps happening, this exercise cannot run in the app for now.`;
+    exec=null; grade=null; busy=null; render(); return;
   }
   if(exec) exec.code=code;
   grade=gradeIt(S.lang,code,exec,task);
