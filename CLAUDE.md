@@ -357,14 +357,20 @@ No framework; jsdom harnesses in `tests/`. Setup: `npm install jsdom webr`
 (both dev-only and gitignored; `webr` drives the R verify scripts). Run the
 Python verifiers with Python 3.11+ (Pyodide is 3.12): on 3.9, ch4 and ch21
 fail on error-message wording that changed in 3.10/3.11, not on content.
-Known as of 2026-10-19: WebR 0.6.0 (npm `webr` and the app's CDN "latest")
-cannot load RSQLite's or duckdb's compiled library, so `rch21_verify.mjs`
-skips its execution checks there with the reason printed. On webr 0.5.9,
-whose RSQLite loads, it runs all 74 checks and passes; install 0.5.9 in a
-scratch folder to run it, since `npm install --no-save` of one package prunes
-the other dev packages. `tests/mmd_verify.mjs` needs `playwright-core` and
-`mermaid@11` (the app's version), runs from `tests/`, and takes a local
-Chrome via `CHROMIUM=...`. Run from repo root:
+As of 2026-10-19, repo.r-wasm.org's RSQLite build does not load on WebR 0.6.0
+("could not load dynamic lib"). The app and `tests/rverify.mjs` both install
+the packages in `R_UNIVERSE` (just RSQLite, from r-dbi.r-universe.dev) from
+R-universe instead, so R ch21 runs and `rch21_verify.mjs` passes all 74
+checks on 0.6.0. Keep the two `R_UNIVERSE` maps in step. If a package's
+compiled library ever fails to load, the app refuses to grade (no heart) and
+rch21 skips with the reason. Install all dev packages in ONE command
+(`npm install jsdom webr playwright-core mermaid@11 --no-save`): a later
+`--no-save` install of one package prunes the others. `tests/mmd_verify.mjs`
+uses mermaid@11 (the app's version), runs from `tests/` with `tests/node_modules`
+linked to the root one, and takes a local Chrome via `CHROMIUM=...`. To run
+the Python verifiers with zero skips, use a Python 3.12 venv with
+beautifulsoup4, openpyxl, pypdf, python-docx, pillow, matplotlib, pyperclip.
+Run from repo root:
 
 ```bash
 node tests/smoke.mjs    # core: renders, lesson shows, JS drill PASS 5/5, wrong answer MISMATCH
